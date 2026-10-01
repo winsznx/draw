@@ -1,0 +1,353 @@
+module Draw.Test.CapitalCallTest where
+
+import DA.Assert ((===))
+import DA.Date (Month(..), date)
+import DA.Foldable (forA_)
+import DA.List (sort)
+import DA.Text (isInfixOf)
+import DA.Action (unless)
+import DA.Optional (isNone, isSome)
+import DA.Time (time, days, addRelTime)
+import Daml.Script
+
+import Splice.Api.Token.MetadataV1 (emptyMetadata, emptyChoiceContext, ExtraArgs(..))
+import Splice.Api.Token.HoldingV1 (Holding, InstrumentId(..))
+import Splice.Api.Token.AllocationV1
+
+import Draw.CapitalCall
+import Draw.Test.Token
+
+data Parties = Parties with
+  admin : Party
+  lpA : Party
+  lpB : Party
+  lpC : Party
+  outsider : Party
+  registrar : Party
+
+data World = World with
+  parties : Parties
+  instrument : InstrumentId
+  fundCid : ContractId Fund
+  callCid : ContractId CapitalCall
+  obligationA : ContractId CapitalCallObligation
+  obligationB : ContractId CapitalCallObligation
+  obligationC : ContractId CapitalCallObligation
+  dueAt : Time
+
+issuedAt : Time
+issuedAt = time (date 2026 Oct 1) 9 0 0
+
+refA, refB, refC : Text
+refA = "DRAW:FUND-1:CALL-1:LP-A"
+refB = "DRAW:FUND-1:CALL-1:LP-B"
+refC = "DRAW:FUND-1:CALL-1:LP-C"
+
+noExtraArgs : ExtraArgs
+noExtraArgs = ExtraArgs with context = emptyChoiceContext; meta = emptyMetadata
+
+-- | Fund, three accepted commitments, one call, three obligations.
+setup : Script World
+setup = do
+  setTime issuedAt
+  admin <- allocatePartyByHint (PartyIdHint "admin")
+  lpA <- allocatePartyByHint (PartyIdHint "lpA")
+  lpB <- allocatePartyByHint (PartyIdHint "lpB")
+  lpC <- allocatePartyByHint (PartyIdHint "lpC")
+  outsider <- allocatePartyByHint (PartyIdHint "outsider")
+  registrar <- allocatePartyByHint (PartyIdHint "registrar")
+  let parties = Parties with ..
+      instrument = InstrumentId with admin = registrar; id = "TestCoin"
+      dueAt = addRelTime issuedAt (days 10)
+
+  fundCid <- submit admin do
+    createCmd Fund with admin; fundId = "FUND-1"; fundName = "Example Ventures I"
+
+  commitments <- forA [(lpA, 1000000.0), (lpB, 700000.0), (lpC, 500000.0)] \(lp, committed) -> do
+    invitationCid <- submit admin do
+      exerciseCmd fundCid Fund_InviteInvestor with
+        lp; committedScenarioAmount = committed; instrumentId = instrument
+    submit lp do exerciseCmd invitationCid Invitation_Accept
+
+  let [commitA, commitB, commitC] = commitments
+      request commitmentCid obligationRef amountDue scenarioAmount =
+        ObligationRequest with commitmentCid; obligationRef; amountDue; scenarioAmount
+
+  (callCid, obligations) <- submit admin do
+    exerciseCmd fundCid Fund_IssueCall with
+      callId = "CALL-1"
+      description = "Initial close drawdown"
+      dueAt
+      requests =
+        [ request commitA refA 40.0 400000.0
+        , request commitB refB 35.0 350000.0
+        , request commitC refC 25.0 250000.0
+        ]
+  let [obligationA, obligationB, obligationC] = obligations
+  pure World with ..
+
+-- | LP funds its sender side and creates an allocation, as the registry would.
+allocate : Parties -> InstrumentId -> Party -> Party -> Text -> Text -> Decimal -> Script (ContractId Allocation)
+allocate p instrument sender executor settlementRefId legId amount = do
+  cid <- submit (actAs [sender, p.registrar]) do
+    createCmd TestAllocation with
+      registrar = p.registrar
+      lockedHoldingCids = []
+      spec = AllocationSpecification with
+        settlement = SettlementInfo with
+          executor
+          settlementRef = Reference with id = settlementRefId; cid = None
+          requestedAt = issuedAt
+          allocateBefore = addRelTime issuedAt (days 9)
+          settleBefore = addRelTime issuedAt (days 30)
+          meta = emptyMetadata
+        transferLegId = legId
+        transferLeg = TransferLeg with
+          sender
+          receiver = p.admin
+          amount
+          instrumentId = instrument
+          meta = emptyMetadata
+  pure (toInterfaceContractId cid)
+
+allocateFor : World -> Party -> Text -> Decimal -> Script (ContractId Allocation)
+allocateFor w sender ref amount = allocate w.parties w.instrument sender w.parties.admin ref ref amount
+
+-- | Fail closed for the stated reason, not merely for any reason.
+expectFailure : Text -> Party -> Commands a -> Script ()
+expectFailure expected party cmds = do
+  result <- trySubmit party cmds
+  case result of
+    Right _ -> abort ("expected failure but succeeded: " <> expected)
+    Left err -> do
+      let actual = show err
+      unless (expected `isInfixOf` actual) $
+        abort ("expected failure '" <> expected <> "' but got: " <> actual)
+
+obligationState : Party -> ContractId CapitalCallObligation -> Script ObligationState
+obligationState reader cid = do
+  Some o <- queryContractId reader cid
+  pure o.state
+
+refsVisibleTo : Party -> Script [Text]
+refsVisibleTo party = do
+  obligations <- query @CapitalCallObligation party
+  pure (sort (map ((.obligationRef) . snd) obligations))
+
+-- | Each party's own ledger query returns exactly what the matrix says.
+test_visibility : Script ()
+test_visibility = script do
+  w <- setup
+  let p = w.parties
+
+  refsVisibleTo p.admin >>= (=== [refA, refB, refC])
+  refsVisibleTo p.lpA >>= (=== [refA])
+  refsVisibleTo p.lpB >>= (=== [refB])
+  refsVisibleTo p.lpC >>= (=== [refC])
+  refsVisibleTo p.outsider >>= (=== [])
+
+  -- Knowing a contract id is not enough to read another LP's obligation.
+  queryContractId p.lpA w.obligationB >>= \o -> assertMsg "lpA read lpB obligation" (isNone o)
+  queryContractId p.lpA w.obligationC >>= \o -> assertMsg "lpA read lpC obligation" (isNone o)
+  queryContractId p.lpB w.obligationA >>= \o -> assertMsg "lpB read lpA obligation" (isNone o)
+  queryContractId p.outsider w.obligationA >>= \o -> assertMsg "outsider read lpA obligation" (isNone o)
+  queryContractId p.lpA w.obligationA >>= \o -> assertMsg "lpA cannot read own obligation" (isSome o)
+
+  -- Fund and call header are admin-only, so no LP sees the roster or totals.
+  forA_ [p.lpA, p.lpB, p.lpC, p.outsider] \party -> do
+    funds <- query @Fund party
+    length funds === 0
+    calls <- query @CapitalCall party
+    length calls === 0
+  length <$> query @Fund p.admin >>= (=== 1)
+  length <$> query @CapitalCall p.admin >>= (=== 1)
+
+  -- Each LP sees only its own commitment.
+  forA_ [(p.lpA, 1000000.0), (p.lpB, 700000.0), (p.lpC, 500000.0)] \(lp, committed) -> do
+    commitments <- query @InvestorCommitment lp
+    map ((.committedScenarioAmount) . snd) commitments === [committed]
+    map ((.lp) . snd) commitments === [lp]
+  length <$> query @InvestorCommitment p.admin >>= (=== 3)
+  length <$> query @InvestorCommitment p.outsider >>= (=== 0)
+
+-- | Only the admin may move an obligation, and only through its choices.
+test_authority : Script ()
+test_authority = script do
+  w <- setup
+  let p = w.parties
+
+  -- An LP cannot change its own obligation state.
+  expectFailure "Authorization failure" p.lpA do exerciseCmd w.obligationA (Obligation_FlagManualReview "self-review")
+  expectFailure "Authorization failure" p.lpA do exerciseCmd w.obligationA (Obligation_Waive "self-waive")
+  expectFailure "Authorization failure" p.lpA do archiveCmd w.obligationA
+
+  -- An LP cannot touch another LP's obligation.
+  expectFailure "Could not find contract" p.lpA do exerciseCmd w.obligationB (Obligation_FlagManualReview "meddle")
+  expectFailure "Could not find contract" p.lpA do archiveCmd w.obligationB
+
+  -- An unrelated party controls nothing.
+  expectFailure "Could not find contract" p.outsider do exerciseCmd w.obligationA (Obligation_FlagManualReview "meddle")
+  submitMustFail p.outsider do
+    exerciseCmd w.fundCid Fund_InviteInvestor with
+      lp = p.outsider; committedScenarioAmount = 1.0; instrumentId = w.instrument
+
+  -- The admin cannot impose an obligation on an LP without its commitment.
+  submitMustFail p.admin do
+    createCmd CapitalCallObligation with
+      admin = p.admin; lp = p.lpA; fundId = "FUND-1"; fundName = "Example Ventures I"
+      callId = "CALL-X"; obligationRef = "DRAW:FORGED"; amountDue = 1.0; scenarioAmount = 1.0
+      instrumentId = w.instrument; dueAt = w.dueAt; state = Issued
+      pendingAllocationCid = None; settlement = None; reviewNote = None
+
+  -- An LP cannot forge a funded obligation for itself.
+  submitMustFail p.lpA do
+    createCmd CapitalCallObligation with
+      admin = p.admin; lp = p.lpA; fundId = "FUND-1"; fundName = "Example Ventures I"
+      callId = "CALL-1"; obligationRef = refA; amountDue = 40.0; scenarioAmount = 400000.0
+      instrumentId = w.instrument; dueAt = w.dueAt; state = Funded
+      pendingAllocationCid = None; settlement = None; reviewNote = None
+
+  -- An LP cannot settle its own obligation, even with a matching allocation.
+  allocationA <- allocateFor w p.lpA refA 40.0
+  submitMustFail p.lpA do
+    exerciseCmd w.obligationA Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs
+
+  -- A call cannot exceed the remaining commitment.
+  [(commitC, _)] <- query @InvestorCommitment p.lpC
+  submitMustFail p.admin do
+    exerciseCmd w.fundCid Fund_IssueCall with
+      callId = "CALL-2"; description = "Over-call"; dueAt = w.dueAt
+      requests = [ObligationRequest with commitmentCid = commitC; obligationRef = "DRAW:FUND-1:CALL-2:LP-C"; amountDue = 26.0; scenarioAmount = 250001.0]
+
+  -- Duplicate references within a call are refused.
+  [(commitA, _)] <- query @InvestorCommitment p.lpA
+  [(commitB, _)] <- query @InvestorCommitment p.lpB
+  submitMustFail p.admin do
+    exerciseCmd w.fundCid Fund_IssueCall with
+      callId = "CALL-3"; description = "Duplicate refs"; dueAt = w.dueAt
+      requests =
+        [ ObligationRequest with commitmentCid = commitA; obligationRef = "DUP"; amountDue = 1.0; scenarioAmount = 1.0
+        , ObligationRequest with commitmentCid = commitB; obligationRef = "DUP"; amountDue = 1.0; scenarioAmount = 1.0
+        ]
+
+  -- Nothing above moved any obligation.
+  forA_ [w.obligationA, w.obligationB, w.obligationC] \cid ->
+    obligationState p.admin cid >>= (=== Issued)
+
+-- | Canonical lifecycle with every negative settlement case.
+test_settlement_lifecycle : Script ()
+test_settlement_lifecycle = script do
+  w <- setup
+  let p = w.parties
+      settle obligationCid allocationCid =
+        exerciseCmd obligationCid Obligation_Settle with allocationCid; extraArgs = noExtraArgs
+
+  -- LP A allocates exactly; admin observes it as pending, then settles.
+  allocationA <- allocateFor w p.lpA refA 40.0
+  obligationA1 <- submit p.admin do exerciseCmd w.obligationA (Obligation_MarkPaymentPending allocationA)
+  obligationState p.lpA obligationA1 >>= (=== PaymentPending)
+  obligationA2 <- submit p.admin do settle obligationA1 allocationA
+  Some fundedA <- queryContractId p.lpA obligationA2
+  fundedA.state === Funded
+  let Some recordA = fundedA.settlement
+  recordA.settledAmount === 40.0
+  recordA.settledAfterDue === False
+
+  -- Replay: the consumed allocation cannot fund A again or fund B.
+  expectFailure "obligation is not open for settlement" p.admin do settle obligationA2 allocationA
+  expectFailure "Could not find contract" p.admin do settle w.obligationB allocationA
+
+  -- Wrong amount: 30 against 35 due.
+  wrongAmount <- allocateFor w p.lpB refB 30.0
+  expectFailure "allocation amount does not equal amount due" p.admin do settle w.obligationB wrongAmount
+  expectFailure "allocation amount does not equal amount due" p.admin do exerciseCmd w.obligationB (Obligation_MarkPaymentPending wrongAmount)
+
+  -- Overpayment is not silently accepted either.
+  overAmount <- allocateFor w p.lpB refB 36.0
+  expectFailure "allocation amount does not equal amount due" p.admin do settle w.obligationB overAmount
+
+  -- Wrong party: LP C pays carrying LP B's reference.
+  wrongSender <- allocateFor w p.lpC refB 35.0
+  expectFailure "allocation sender is not the obligated LP" p.admin do settle w.obligationB wrongSender
+
+  -- Wrong reference: LP B pays carrying LP A's reference.
+  wrongRef <- allocateFor w p.lpB refA 35.0
+  expectFailure "allocation settlement reference does not match obligation" p.admin do settle w.obligationB wrongRef
+
+  -- Wrong call: right LP and amount, reference from a different call.
+  wrongCall <- allocateFor w p.lpB "DRAW:FUND-1:CALL-9:LP-B" 35.0
+  expectFailure "allocation settlement reference does not match obligation" p.admin do settle w.obligationB wrongCall
+
+  -- Wrong executor: the allocation names the outsider as executor.
+  wrongExecutor <- allocate p w.instrument p.lpB p.outsider refB refB 35.0
+  expectFailure "allocation executor is not the fund admin" p.admin do settle w.obligationB wrongExecutor
+
+  -- Wrong instrument.
+  let otherInstrument = InstrumentId with admin = p.registrar; id = "OtherCoin"
+  wrongInstrument <- allocate p otherInstrument p.lpB p.admin refB refB 35.0
+  expectFailure "allocation instrument does not match obligation" p.admin do settle w.obligationB wrongInstrument
+
+  -- None of that moved B.
+  obligationState p.admin w.obligationB >>= (=== Issued)
+
+  -- LP B then pays correctly.
+  allocationB <- allocateFor w p.lpB refB 35.0
+  obligationB1 <- submit p.admin do settle w.obligationB allocationB
+  obligationState p.lpB obligationB1 >>= (=== Funded)
+
+  -- LP C never pays. Overdue is refused before the deadline.
+  expectFailure "obligation is not yet due" p.admin do exerciseCmd w.obligationC Obligation_MarkOverdue
+  setTime (addRelTime w.dueAt (days 1))
+  obligationC1 <- submit p.admin do exerciseCmd w.obligationC Obligation_MarkOverdue
+  obligationState p.lpC obligationC1 >>= (=== Overdue)
+
+  -- A funded obligation cannot be made overdue, waived, or flagged.
+  expectFailure "only an unpaid obligation can become overdue" p.admin do exerciseCmd obligationA2 Obligation_MarkOverdue
+  expectFailure "only an overdue or reviewed obligation can be waived" p.admin do exerciseCmd obligationA2 (Obligation_Waive "no")
+  expectFailure "only an open obligation can be flagged" p.admin do exerciseCmd obligationA2 (Obligation_FlagManualReview "no")
+
+  -- Admin totals recomputed from admin-visible obligations.
+  obligations <- map snd <$> query @CapitalCallObligation p.admin
+  let fundedScenario = sum [o.scenarioAmount | o <- obligations, o.state == Funded]
+      unresolvedScenario = sum [o.scenarioAmount | o <- obligations, o.state /= Funded, o.state /= Waived]
+      fundedUnits = sum [o.amountDue | o <- obligations, o.state == Funded]
+  fundedScenario === 750000.0
+  unresolvedScenario === 250000.0
+  fundedUnits === 75.0
+
+  [(_, call)] <- query @CapitalCall p.admin
+  fundedScenario + unresolvedScenario === call.totalScenarioAmount
+
+  -- The admin's received holdings match the funded units exactly.
+  holdings <- queryInterface @Holding p.admin
+  let adminUnits = sum [v.amount | (_, Some v) <- holdings, v.owner == p.admin, v.instrumentId == w.instrument]
+  adminUnits === fundedUnits
+
+  -- After settlement each LP still sees only its own obligation.
+  refsVisibleTo p.lpA >>= (=== [refA])
+  refsVisibleTo p.lpB >>= (=== [refB])
+  refsVisibleTo p.lpC >>= (=== [refC])
+  refsVisibleTo p.outsider >>= (=== [])
+
+-- | Late payment, manual review, and waiver paths.
+test_resolution_paths : Script ()
+test_resolution_paths = script do
+  w <- setup
+  let p = w.parties
+
+  setTime (addRelTime w.dueAt (days 2))
+  obligationA1 <- submit p.admin do exerciseCmd w.obligationA Obligation_MarkOverdue
+  allocationA <- allocateFor w p.lpA refA 40.0
+  obligationA2 <- submit p.admin do
+    exerciseCmd obligationA1 Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs
+  Some lateA <- queryContractId p.lpA obligationA2
+  lateA.state === Funded
+  fmap (.settledAfterDue) lateA.settlement === Some True
+
+  obligationB1 <- submit p.admin do exerciseCmd w.obligationB (Obligation_FlagManualReview "wire received off-ledger, needs ops check")
+  obligationState p.lpB obligationB1 >>= (=== ManualReview)
+  obligationB2 <- submit p.admin do exerciseCmd obligationB1 (Obligation_Waive "side letter")
+  obligationState p.lpB obligationB2 >>= (=== Waived)
+
+  -- An issued obligation cannot be waived without first being overdue or reviewed.
+  expectFailure "only an overdue or reviewed obligation can be waived" p.admin do exerciseCmd w.obligationC (Obligation_Waive "skip")

@@ -1,0 +1,279 @@
+-- | Capital-call lifecycle for one fund.
+--
+-- Privacy shape: every per-LP contract has exactly two stakeholders, the fund
+-- admin and that LP. Fund and CapitalCall have the admin as sole stakeholder,
+-- so no LP-visible contract carries the LP roster or another LP's amount.
+--
+-- Settlement shape: an obligation moves to Funded only inside
+-- 'Obligation_Settle', which checks a CIP-0056 Allocation against the
+-- obligation and executes it in the same transaction. The LP's signature on
+-- the obligation, given when it accepted its commitment, is the authority that
+-- lets the admin execute that LP's matching allocation and nothing else.
+module Draw.CapitalCall where
+
+import DA.Foldable (forA_)
+import DA.List (unique)
+import DA.Optional (isNone)
+import DA.Time (isLedgerTimeGE)
+
+import Splice.Api.Token.MetadataV1 (ExtraArgs)
+import Splice.Api.Token.HoldingV1 (Holding, HoldingView(..), InstrumentId)
+import Splice.Api.Token.AllocationV1
+
+data ObligationState
+  = Issued
+  | PaymentPending
+  | Funded
+  | Overdue
+  | Waived
+  | ManualReview
+  deriving (Eq, Show)
+
+data SettlementRecord = SettlementRecord
+  with
+    allocationCid : ContractId Allocation
+    transferLegId : Text
+    receiverHoldingCids : [ContractId Holding]
+    settledAmount : Decimal
+    settledAfterDue : Bool
+  deriving (Eq, Show)
+
+data ObligationRequest = ObligationRequest
+  with
+    commitmentCid : ContractId InvestorCommitment
+    obligationRef : Text
+    amountDue : Decimal
+    scenarioAmount : Decimal
+  deriving (Eq, Show)
+
+template Fund
+  with
+    admin : Party
+    fundId : Text
+    fundName : Text
+  where
+    signatory admin
+
+    nonconsuming choice Fund_InviteInvestor : ContractId CommitmentInvitation
+      with
+        lp : Party
+        committedScenarioAmount : Decimal
+        instrumentId : InstrumentId
+      controller admin
+      do
+        assertMsg "lp must differ from admin" (lp /= admin)
+        create CommitmentInvitation with
+          admin; lp; fundId; fundName; committedScenarioAmount; instrumentId
+
+    nonconsuming choice Fund_IssueCall : (ContractId CapitalCall, [ContractId CapitalCallObligation])
+      with
+        callId : Text
+        description : Text
+        dueAt : Time
+        requests : [ObligationRequest]
+      controller admin
+      do
+        assertMsg "call must request at least one obligation" (not (null requests))
+        let refs = map (.obligationRef) requests
+        assertMsg "obligation references must be unique within the call" (unique refs)
+        issued <- forA requests \req ->
+          exercise req.commitmentCid Commitment_IssueObligation with
+            expectedFundId = fundId
+            callId
+            obligationRef = req.obligationRef
+            amountDue = req.amountDue
+            scenarioAmount = req.scenarioAmount
+            dueAt
+        callCid <- create CapitalCall with
+          admin; fundId; callId; description; dueAt
+          obligationRefs = refs
+          totalScenarioAmount = sum (map (.scenarioAmount) requests)
+          totalAmountDue = sum (map (.amountDue) requests)
+        pure (callCid, map snd issued)
+
+template CommitmentInvitation
+  with
+    admin : Party
+    lp : Party
+    fundId : Text
+    fundName : Text
+    committedScenarioAmount : Decimal
+    instrumentId : InstrumentId
+  where
+    signatory admin
+    observer lp
+    ensure committedScenarioAmount > 0.0
+
+    choice Invitation_Accept : ContractId InvestorCommitment
+      controller lp
+      do
+        create InvestorCommitment with
+          admin; lp; fundId; fundName; committedScenarioAmount; instrumentId
+          calledScenarioAmount = 0.0
+
+    choice Invitation_Decline : ()
+      controller lp
+      do pure ()
+
+    choice Invitation_Withdraw : ()
+      controller admin
+      do pure ()
+
+-- | One LP's commitment to the fund. Co-signed, so the admin can issue calls
+-- against it up to the committed amount without a fresh LP signature per call.
+template InvestorCommitment
+  with
+    admin : Party
+    lp : Party
+    fundId : Text
+    fundName : Text
+    committedScenarioAmount : Decimal
+    calledScenarioAmount : Decimal
+    instrumentId : InstrumentId
+  where
+    signatory admin, lp
+    ensure committedScenarioAmount > 0.0
+      && calledScenarioAmount >= 0.0
+      && calledScenarioAmount <= committedScenarioAmount
+
+    choice Commitment_IssueObligation : (ContractId InvestorCommitment, ContractId CapitalCallObligation)
+      with
+        expectedFundId : Text
+        callId : Text
+        obligationRef : Text
+        amountDue : Decimal
+        scenarioAmount : Decimal
+        dueAt : Time
+      controller admin
+      do
+        assertMsg "commitment belongs to a different fund" (expectedFundId == fundId)
+        let newCalled = calledScenarioAmount + scenarioAmount
+        assertMsg "call exceeds remaining commitment" (newCalled <= committedScenarioAmount)
+        commitmentCid <- create this with calledScenarioAmount = newCalled
+        obligationCid <- create CapitalCallObligation with
+          admin; lp; fundId; fundName; callId; obligationRef
+          amountDue; scenarioAmount; instrumentId; dueAt
+          state = Issued
+          pendingAllocationCid = None
+          settlement = None
+          reviewNote = None
+        pure (commitmentCid, obligationCid)
+
+-- | Fund-level call header. Admin-only: it lists obligation references but no
+-- LP parties or per-LP amounts.
+template CapitalCall
+  with
+    admin : Party
+    fundId : Text
+    callId : Text
+    description : Text
+    dueAt : Time
+    obligationRefs : [Text]
+    totalScenarioAmount : Decimal
+    totalAmountDue : Decimal
+  where
+    signatory admin
+
+template CapitalCallObligation
+  with
+    admin : Party
+    lp : Party
+    fundId : Text
+    fundName : Text
+    callId : Text
+    obligationRef : Text
+    amountDue : Decimal
+    scenarioAmount : Decimal
+    instrumentId : InstrumentId
+    dueAt : Time
+    state : ObligationState
+    pendingAllocationCid : Optional (ContractId Allocation)
+    settlement : Optional SettlementRecord
+    reviewNote : Optional Text
+  where
+    signatory admin, lp
+    ensure amountDue > 0.0 && scenarioAmount > 0.0
+
+    choice Obligation_MarkPaymentPending : ContractId CapitalCallObligation
+      with
+        allocationCid : ContractId Allocation
+      controller admin
+      do
+        assertMsg "only an issued obligation can become payment-pending" (state == Issued)
+        allocation <- fetch allocationCid
+        assertAllocationMatches this (view allocation)
+        create this with state = PaymentPending; pendingAllocationCid = Some allocationCid
+
+    choice Obligation_Settle : ContractId CapitalCallObligation
+      with
+        allocationCid : ContractId Allocation
+        extraArgs : ExtraArgs
+      controller admin
+      do
+        assertMsg "obligation is not open for settlement"
+          (state `elem` [Issued, PaymentPending, Overdue, ManualReview])
+        assertMsg "obligation already carries a settlement" (isNone settlement)
+        allocation <- fetch allocationCid
+        let allocationView = view allocation
+        assertAllocationMatches this allocationView
+        result <- exercise allocationCid Allocation_ExecuteTransfer with extraArgs
+        receivedAmounts <- forA result.receiverHoldingCids \holdingCid -> do
+          holding <- fetch holdingCid
+          let HoldingView{owner, instrumentId = heldInstrument, amount} = view holding
+          assertMsg "settled holding is not owned by the fund admin" (owner == admin)
+          assertMsg "settled holding has the wrong instrument" (heldInstrument == instrumentId)
+          pure amount
+        let settledAmount = sum receivedAmounts
+        assertMsg "settled amount does not equal amount due" (settledAmount == amountDue)
+        settledAfterDue <- isLedgerTimeGE dueAt
+        create this with
+          state = Funded
+          pendingAllocationCid = None
+          settlement = Some SettlementRecord with
+            allocationCid
+            transferLegId = allocationView.allocation.transferLegId
+            receiverHoldingCids = result.receiverHoldingCids
+            settledAmount
+            settledAfterDue
+
+    choice Obligation_MarkOverdue : ContractId CapitalCallObligation
+      controller admin
+      do
+        assertMsg "only an unpaid obligation can become overdue" (state `elem` [Issued, PaymentPending])
+        pastDue <- isLedgerTimeGE dueAt
+        assertMsg "obligation is not yet due" pastDue
+        create this with state = Overdue
+
+    choice Obligation_FlagManualReview : ContractId CapitalCallObligation
+      with
+        note : Text
+      controller admin
+      do
+        assertMsg "only an open obligation can be flagged" (state `elem` [Issued, PaymentPending, Overdue])
+        create this with state = ManualReview; reviewNote = Some note
+
+    choice Obligation_Waive : ContractId CapitalCallObligation
+      with
+        note : Text
+      controller admin
+      do
+        assertMsg "only an overdue or reviewed obligation can be waived" (state `elem` [Overdue, ManualReview])
+        create this with state = Waived; reviewNote = Some note
+
+-- | The allocation must name this obligation's reference as both settlement
+-- reference and transfer leg id, come from this LP, pay this admin, be executed
+-- by this admin, and carry exactly the amount and instrument due.
+assertAllocationMatches : CapitalCallObligation -> AllocationView -> Update ()
+assertAllocationMatches obligation allocationView = do
+  let spec = allocationView.allocation
+      leg = spec.transferLeg
+      checks =
+        [ ("allocation settlement reference does not match obligation", spec.settlement.settlementRef.id == obligation.obligationRef)
+        , ("allocation transfer leg id does not match obligation", spec.transferLegId == obligation.obligationRef)
+        , ("allocation executor is not the fund admin", spec.settlement.executor == obligation.admin)
+        , ("allocation sender is not the obligated LP", leg.sender == obligation.lp)
+        , ("allocation receiver is not the fund admin", leg.receiver == obligation.admin)
+        , ("allocation instrument does not match obligation", leg.instrumentId == obligation.instrumentId)
+        , ("allocation amount does not equal amount due", leg.amount == obligation.amountDue)
+        ]
+  forA_ checks \(message, ok) -> assertMsg message ok

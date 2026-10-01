@@ -1,0 +1,73 @@
+-- | Minimal CIP-0056 Holding and Allocation implementation for Daml Script
+-- tests only. It exists so `dpm test` can exercise the real interface choices
+-- that Amulet implements on LocalNet. It is never deployed and never evidence
+-- of settlement.
+module Draw.Test.Token where
+
+import Splice.Api.Token.MetadataV1 (emptyMetadata)
+import Splice.Api.Token.HoldingV1
+import Splice.Api.Token.AllocationV1
+
+template TestHolding
+  with
+    registrar : Party
+    owner : Party
+    instrumentId : InstrumentId
+    amount : Decimal
+  where
+    signatory registrar
+    observer owner
+    ensure amount > 0.0
+
+    interface instance Holding for TestHolding where
+      view = HoldingView with
+        owner
+        instrumentId
+        amount
+        lock = None
+        meta = emptyMetadata
+
+template TestAllocation
+  with
+    registrar : Party
+    spec : AllocationSpecification
+    lockedHoldingCids : [ContractId Holding]
+  where
+    signatory registrar, spec.transferLeg.sender
+    observer spec.settlement.executor, spec.transferLeg.receiver
+
+    interface instance Allocation for TestAllocation where
+      view = AllocationView with
+        allocation = spec
+        holdingCids = lockedHoldingCids
+        meta = emptyMetadata
+
+      allocation_executeTransferImpl _self _arg = do
+        let leg = spec.transferLeg
+        receiverCid <- create TestHolding with
+          registrar
+          owner = leg.receiver
+          instrumentId = leg.instrumentId
+          amount = leg.amount
+        pure Allocation_ExecuteTransferResult with
+          senderHoldingCids = []
+          receiverHoldingCids = [toInterfaceContractId receiverCid]
+          meta = emptyMetadata
+
+      allocation_cancelImpl _self _arg = do
+        senderHoldingCids <- refundSender registrar spec
+        pure Allocation_CancelResult with senderHoldingCids; meta = emptyMetadata
+
+      allocation_withdrawImpl _self _arg = do
+        senderHoldingCids <- refundSender registrar spec
+        pure Allocation_WithdrawResult with senderHoldingCids; meta = emptyMetadata
+
+refundSender : Party -> AllocationSpecification -> Update [ContractId Holding]
+refundSender registrar spec = do
+  let leg = spec.transferLeg
+  senderCid <- create TestHolding with
+    registrar
+    owner = leg.sender
+    instrumentId = leg.instrumentId
+    amount = leg.amount
+  pure [toInterfaceContractId senderCid]

@@ -1,0 +1,11 @@
+internal/
+.env
+.env.*
+!.env.example
+.DS_Store
+node_modules/
+.daml/
+contracts/**/.daml/
+*.log
+localnet/
+evidence/**/secrets*
