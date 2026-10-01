@@ -9,3 +9,4 @@ contracts/**/.daml/
 *.log
 localnet/
 evidence/**/secrets*
+!evidence/**/*.log

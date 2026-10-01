@@ -1,0 +1,55 @@
+# Ceiling for README, UI, video, and submission text. Statuses follow evidence.
+claims:
+  - id: private-obligations
+    text: "Each LP can read only its own capital-call obligation and commitment. Other LPs and unrelated parties cannot read it, even with its contract id."
+    status: script_verified
+    environments: [daml-script]
+    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
+    next: PRIVACY_CAMPAIGN on LocalNet with per-party tokens
+
+  - id: settlement-gates-funded
+    text: "An obligation becomes funded only in the transaction that executes a CIP-0056 allocation carrying its reference, from its LP, to the fund admin, for the exact amount and instrument."
+    status: script_verified
+    environments: [daml-script]
+    evidence:
+      - evidence/local/daml_core/20261001T160054Z/result.json
+      - evidence/local/mutation
+    limits: "Script runs use a test Allocation implementation, not Amulet."
+
+  - id: negative-settlement
+    text: "Wrong amount, wrong sender, wrong reference, wrong call, wrong executor, wrong instrument, and replay do not fund an obligation."
+    status: script_verified
+    environments: [daml-script]
+    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
+
+  - id: unpaid-unresolved
+    text: "An LP that does not pay stays unresolved, and can be marked overdue only after the due time."
+    status: script_verified
+    environments: [daml-script]
+    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
+
+  - id: admin-totals
+    text: "Admin funded and unresolved totals equal the sum of the underlying obligations and the admin's received holdings."
+    status: script_verified
+    environments: [daml-script]
+    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
+
+  - id: real-token-settlement
+    text: "A real Canton Coin allocation on LocalNet settles one obligation and is independently read back."
+    status: unverified
+    environments: []
+    evidence: []
+
+  - id: devnet
+    text: "DRAW runs end-to-end on HackCanton DevNet."
+    status: blocked
+    environments: []
+    evidence: []
+    blocker: BLOCKED_ON_HUMAN, no AppsFactory or NODERS DevNet credentials
+
+  - id: grofty
+    text: "An LP funds an obligation through Grofty on MainNet."
+    status: blocked
+    environments: []
+    evidence: []
+    blocker: out of scope this pass, see docs/DECISIONS.md D-001

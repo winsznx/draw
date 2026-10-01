@@ -42,6 +42,7 @@ for entry in "${MUTANTS[@]}"; do
 done
 
 printf '%s\n' "${results[@]}" | jq -s --arg runId "$RUN_ID" \
-  '{check: "MUTATION", runId: $runId, verdict: (if all(.[]; .status == "KILLED") then "PASS" else "FAIL" end), mutants: .}' \
+  --arg commit "$(git -C "$ROOT" rev-parse HEAD)" \
+  '{check: "MUTATION", runId: $runId, commit: $commit, verdict: (if all(.[]; .status == "KILLED") then "PASS" else "FAIL" end), mutants: .}' \
   >"$OUT/result.json"
 cat "$OUT/result.json"
