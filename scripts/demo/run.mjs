@@ -447,7 +447,7 @@ const result = {
   splice: '0.8.4',
   canton: (await operatorProvider.request('GET', '/v2/version')).version,
   commit: execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD']).toString().trim(),
-  uncommittedFiles: execFileSync('git', ['-C', ROOT, 'status', '--porcelain']).toString().split('\n').filter(Boolean).length,
+  uncommittedFiles: execFileSync('git', ['-C', ROOT, 'status', '--porcelain', '--', '.', ':!evidence']).toString().split('\n').filter(Boolean).length,
   packageId,
   darSha256,
   instrument,

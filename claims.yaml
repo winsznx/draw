@@ -2,43 +2,58 @@
 claims:
   - id: private-obligations
     text: "Each LP can read only its own capital-call obligation and commitment. Other LPs and unrelated parties cannot read it, even with its contract id."
-    status: script_verified
-    environments: [daml-script]
-    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
-    next: PRIVACY_CAMPAIGN on LocalNet with per-party tokens
+    status: local_verified
+    environments: [daml-script, localnet]
+    evidence:
+      - evidence/local/daml_core/20261001T160054Z/result.json
+      - evidence/local/runs/20261001T162427Z/visibility-after-issue.json
+      - evidence/local/runs/20261001T162427Z/visibility-final.json
+    limits: "All LPs share one participant on LocalNet. The participant operator can see all hosted parties. In production each LP would use its own validator." 
 
   - id: settlement-gates-funded
     text: "An obligation becomes funded only in the transaction that executes a CIP-0056 allocation carrying its reference, from its LP, to the fund admin, for the exact amount and instrument."
-    status: script_verified
-    environments: [daml-script]
+    status: local_verified
+    environments: [daml-script, localnet]
     evidence:
       - evidence/local/daml_core/20261001T160054Z/result.json
-      - evidence/local/mutation
-    limits: "Script runs use a test Allocation implementation, not Amulet."
+      - evidence/local/mutation/20261001T160135Z/result.json
+      - evidence/local/runs/20261001T162427Z/receipt-lpA.json
+      - evidence/local/runs/20261001T162427Z/receipt-lpB.json
 
   - id: negative-settlement
     text: "Wrong amount, wrong sender, wrong reference, wrong call, wrong executor, wrong instrument, and replay do not fund an obligation."
-    status: script_verified
-    environments: [daml-script]
-    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
+    status: local_verified
+    environments: [daml-script, localnet]
+    evidence:
+      - evidence/local/daml_core/20261001T160054Z/result.json
+      - evidence/local/runs/20261001T162427Z/result.json
+    limits: "LocalNet covers wrong amount, wrong payer, wrong reference, and replay. Wrong executor, wrong call, and wrong instrument are Daml Script only." 
 
   - id: unpaid-unresolved
     text: "An LP that does not pay stays unresolved, and can be marked overdue only after the due time."
-    status: script_verified
-    environments: [daml-script]
-    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
+    status: local_verified
+    environments: [daml-script, localnet]
+    evidence:
+      - evidence/local/daml_core/20261001T160054Z/result.json
+      - evidence/local/runs/20261001T162427Z/result.json
+    limits: "Overdue is set by an admin action after the deadline. There is no scheduler." 
 
   - id: admin-totals
     text: "Admin funded and unresolved totals equal the sum of the underlying obligations and the admin's received holdings."
-    status: script_verified
-    environments: [daml-script]
-    evidence: [evidence/local/daml_core/20261001T160054Z/result.json]
+    status: local_verified
+    environments: [daml-script, localnet]
+    evidence:
+      - evidence/local/daml_core/20261001T160054Z/result.json
+      - evidence/local/runs/20261001T162427Z/totals.json
 
   - id: real-token-settlement
-    text: "A real Canton Coin allocation on LocalNet settles one obligation and is independently read back."
-    status: unverified
-    environments: []
-    evidence: []
+    text: "A real Amulet (Canton Coin on LocalNet) allocation settles an obligation, and a separate read-only verifier credential reads the result back before it counts as funded."
+    status: local_verified
+    environments: [localnet]
+    evidence:
+      - evidence/local/runs/20261001T162427Z/receipt-lpA.json
+      - evidence/local/runs/20261001T162427Z/receipt-lpB.json
+    limits: "LocalNet DevNet-tap Amulet, 40 and 35 units. Not DevNet, not MainNet." 
 
   - id: devnet
     text: "DRAW runs end-to-end on HackCanton DevNet."
