@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { LedgerClient, TEMPLATES, INTERFACES, transactionEvents, templateName } from './lib/ledger.mjs';
-import { allocationFactory, amuletInstrument, executeTransferContext, tapContext } from './lib/registry.mjs';
+import { allocationFactory, amuletInstrument, executeTransferContext, tapContext, withdrawContext } from './lib/registry.mjs';
 import { SettlementVerifier } from './lib/verifier.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -221,14 +221,14 @@ assertMatrix('after-issue', await visibilityMatrix('after-issue'));
 
 const obligationB0 = await obligationFor('lpB');
 await expectRejection('privacy: lpA cannot fetch lpB obligation by contract id',
-  () => client.lpA.eventsByContractId(party.lpA, obligationB0.contractId));
+  () => client.lpA.eventsByContractId(party.lpA, obligationB0.contractId), 'CONTRACT_EVENTS_NOT_FOUND');
 await expectRejection('authority: lpA cannot exercise on lpB obligation',
   () => client.lpA.exercise({ actAs: [party.lpA], templateId: TEMPLATES.CapitalCallObligation, contractId: obligationB0.contractId,
-    choice: 'Obligation_FlagManualReview', argument: { note: 'meddle' } }));
+    choice: 'Obligation_FlagManualReview', argument: { note: 'meddle' } }), 'CONTRACT_NOT_FOUND');
 const obligationA0 = await obligationFor('lpA', 'lpA');
 await expectRejection('authority: lpA cannot change its own obligation state',
   () => client.lpA.exercise({ actAs: [party.lpA], templateId: TEMPLATES.CapitalCallObligation, contractId: obligationA0.contractId,
-    choice: 'Obligation_FlagManualReview', argument: { note: 'self' } }));
+    choice: 'Obligation_FlagManualReview', argument: { note: 'self' } }), 'DAML_AUTHORIZATION_ERROR');
 
 // ---------------------------------------------------------------- settlement helpers
 async function allocate(role, { obligationRef, amount }) {
@@ -347,8 +347,10 @@ const wrongRef = await allocate('lpB', { obligationRef: `DRAW-${randomBytes(8).t
 await expectRejection('negative: wrong reference does not fund', () => settle('lpB', wrongRef.allocationCid),
   'allocation settlement reference does not match obligation');
 
-await expectRejection('negative: replayed allocation from lpA does not fund lpB', () => settle('lpB', allocationA.allocationCid));
-await expectRejection('negative: replayed allocation does not fund lpA twice', () => settle('lpA', allocationA.allocationCid));
+await expectRejection('negative: replayed allocation from lpA does not fund lpB', () => settle('lpB', allocationA.allocationCid),
+  `Contract could not be found with id ${allocationA.allocationCid}`);
+await expectRejection('negative: replayed allocation does not fund lpA twice', () => settle('lpA', allocationA.allocationCid),
+  'obligation is not open for settlement');
 
 const replayReceipt = await verifier.verify({ obligationRef: ref.lpB, claimedUpdateId: settledA.transaction.updateId });
 writeJson('receipt-replay-attempt-lpB.json', replayReceipt);
@@ -357,6 +359,27 @@ check('negative: verifier rejects lpA settlement evidence offered for lpB', repl
 
 const stateB = (await obligationFor('lpB', 'lpB')).payload.state;
 check('negative: lpB still unfunded after every bad attempt', stateB === 'Issued', stateB);
+
+// Rejected allocations stay locked LP funds until the LP withdraws them.
+async function withdraw(role, allocationCid) {
+  const context = await withdrawContext(allocationCid);
+  return client[role].exercise({
+    actAs: [party[role]],
+    templateId: INTERFACES.Allocation,
+    contractId: allocationCid,
+    choice: 'Allocation_Withdraw',
+    argument: { extraArgs: { context: context.choiceContextData, meta: { values: {} } } },
+    disclosedContracts: context.disclosedContracts,
+    synchronizerId: context.disclosedContracts[0]?.synchronizerId,
+  });
+}
+for (const [role, rejected] of [['lpB', wrongAmount], ['lpC', wrongParty], ['lpB', wrongRef]]) {
+  const result = await withdraw(role, rejected.allocationCid);
+  step(`${role} withdrew rejected allocation`, { allocationCid: rejected.allocationCid, updateId: result.transaction.updateId });
+}
+const lockedAfterWithdraw = await client.admin.activeContracts(party.admin, { interfaceId: INTERFACES.Allocation });
+check('negative: rejected allocations withdrawn, none left for admin to execute', lockedAfterWithdraw.length === 0,
+  lockedAfterWithdraw.map((a) => a.contractId));
 
 // ---------------------------------------------------------------- LP B pays correctly
 await settleAndVerify('lpB');
@@ -405,6 +428,11 @@ check('totals: funded is 750,000 USD scenario', totals.fundedScenarioUsd === 750
 check('totals: unresolved is 250,000 USD scenario', totals.unresolvedScenarioUsd === 250000, totals.unresolvedScenarioUsd);
 check('totals: funded + unresolved equals the call total', totals.fundedScenarioUsd + totals.unresolvedScenarioUsd === totals.callTotalScenarioUsd);
 check('totals: funded units equal verified receipt units', totals.fundedUnits === totals.verifiedReceiptUnits, totals);
+for (const role of ['lpA', 'lpB', 'lpC']) {
+  const paid = fundedDisplay.some((o) => o.payload.lp === party[role]) ? Number(plan[role].amountDue) : 0;
+  const delta = balancesBefore[role] - balancesAfter[role];
+  check(`totals: ${role} unlocked balance fell by exactly what it settled (${paid})`, Math.abs(delta - paid) < 1e-9, { delta, paid });
+}
 check('totals: admin Amulet balance grew by exactly the funded units', Math.abs(totals.adminAmuletReceived - totals.fundedUnits) < 1e-9,
   { received: totals.adminAmuletReceived, funded: totals.fundedUnits });
 

@@ -1,0 +1,43 @@
+{
+  "fundedScenarioUsd": 750000,
+  "unresolvedScenarioUsd": 250000,
+  "callTotalScenarioUsd": 1000000,
+  "fundedUnits": 75,
+  "adminAmuletReceived": 75,
+  "verifiedReceiptUnits": 75,
+  "byObligation": [
+    {
+      "lp": "lpA",
+      "state": "Funded",
+      "evidence": "VERIFIED_FUNDED",
+      "scenarioUsd": 400000,
+      "units": 40
+    },
+    {
+      "lp": "lpB",
+      "state": "Funded",
+      "evidence": "VERIFIED_FUNDED",
+      "scenarioUsd": 350000,
+      "units": 35
+    },
+    {
+      "lp": "lpC",
+      "state": "Overdue",
+      "evidence": "NONE",
+      "scenarioUsd": 250000,
+      "units": 25
+    }
+  ],
+  "balancesBefore": {
+    "admin": 0,
+    "lpA": 100,
+    "lpB": 100,
+    "lpC": 100
+  },
+  "balancesAfter": {
+    "admin": 75,
+    "lpA": 60,
+    "lpB": 0,
+    "lpC": 65
+  }
+}
