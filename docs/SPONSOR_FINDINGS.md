@@ -37,19 +37,19 @@ DARs pinned from `hyperledger-labs/splice` tag `0.8.4`, `daml/dars/`:
 | `AllocationView{allocation: AllocationSpecification{settlement: SettlementInfo{executor, settlementRef: Reference{id, cid}, ...}, transferLegId, transferLeg: TransferLeg{sender, receiver, amount, instrumentId, meta}}, holdingCids, meta}` | `token-standard/splice-api-token-allocation-v1/daml/Splice/Api/Token/AllocationV1.daml` at 0.8.4 | obligation correlation: `settlementRef.id` and `transferLegId` carry the obligation reference | SCRIPT_VERIFIED against a test implementation |
 | `Allocation_ExecuteTransfer`, controllers = executor, sender, receiver | same | executed inside `Obligation_Settle` with admin + LP authority from the co-signed obligation | SCRIPT_VERIFIED against a test implementation |
 | `HoldingView{owner, instrumentId{admin,id}, amount, lock, meta}` | `HoldingV1.daml` at 0.8.4 | check received holding owner, instrument, amount | SCRIPT_VERIFIED against a test implementation |
-| Amulet implements Allocation V1 | cn-quickstart `quickstart/daml/licensing/daml/Licensing/License.daml` pays licence fees through an Amulet allocation executed by the provider | real settlement path | UNVERIFIED |
-| `POST /registry/allocation-instruction/v1/allocation-factory`, `POST /registry/allocations/v1/{id}/choice-contexts/execute-transfer` | Splice token-standard OpenAPI, reached through `http://scan.localhost:4000/registry` on LocalNet | get factory, choice context, and disclosed contracts | UNVERIFIED |
-| Amulet instrument id `{admin = DSO party, id = "Amulet"}` | `GET /registry/metadata/v1/instruments` | obligation instrument | UNVERIFIED |
+| Amulet implements Allocation V1 | cn-quickstart `quickstart/daml/licensing/daml/Licensing/License.daml`, registry `/metadata/v1/instruments` lists `splice-api-token-allocation-v1` for Amulet | real settlement path | LOCAL_VERIFIED (run 20261001T162427Z) |
+| `POST /registry/allocation-instruction/v1/allocation-factory`, `POST /registry/allocations/v1/{id}/choice-contexts/execute-transfer`, `.../withdraw` | `token-standard/*/openapi/*.yaml` at 0.8.4, reached at `http://scan.localhost:4000/registry` | factory, choice context, disclosed contracts (AmuletRules, OpenMiningRound, ExternalPartyConfigState, ExternalPartyAmuletRules) | LOCAL_VERIFIED (run 20261001T162427Z) |
+| Amulet instrument id `{admin = DSO party, id = "Amulet"}` | `GET /registry/metadata/v1/info` (`adminId`) and `/instruments` | obligation instrument | LOCAL_VERIFIED (run 20261001T162427Z) |
 | V2 token standard | `TOKEN_STANDARD_V2_DEVNET.md` | not used, experimental DevNet only | n/a |
 
 ## LocalNet and Ledger API
 
 | Primitive | Source | Use | Status |
 |---|---|---|---|
-| Splice LocalNet 0.8.4 docker compose, profiles `sv`, `app-provider`, `app-user` | https://docs.dev.sync.global/app_dev/testing/localnet.html | local network | UNVERIFIED |
-| Auth: HS256 secret `unsafe`, audience `https://canton.network.global`, admin user `ledger-api-user` | `cluster/compose/localnet/conf/canton/*/app-auth.conf`, `env/*-auth-on.env` | per-party JWTs | UNVERIFIED |
-| JSON Ledger API v2: `POST /v2/dars`, `POST /v2/parties`, `POST /v2/users`, `POST /v2/commands/submit-and-wait-for-transaction`, `POST /v2/state/active-contracts`, `GET /v2/state/ledger-end`, `POST /v2/updates`, `POST /v2/updates/update-by-id` | https://docs.canton.network/reference/json-api-reference/ | deploy, parties, commands, party-scoped reads | UNVERIFIED |
-| `AmuletRules_DevNet_Tap` / `POST /api/validator/v0/wallet/tap` | Splice `AmuletRules.daml`, `wallet-internal.yaml` | fund LP test balances | UNVERIFIED |
+| Splice LocalNet 0.8.4 docker compose, profiles `sv`, `app-provider`, `app-user` | https://docs.dev.sync.global/app_dev/testing/localnet.html | local network | LOCAL_VERIFIED. Images run natively on arm64 |
+| Auth: HS256 secret `unsafe`, audience `https://canton.network.global`, admin user `ledger-api-user` | `docker-compose/localnet/env/*-auth-on.env` in the 0.8.4 bundle | per-party JWTs | LOCAL_VERIFIED. `ledger-api-user` gets HTTP 403 reading a party it has no rights for |
+| JSON Ledger API v2: `POST /v2/packages`, `POST /v2/parties`, `POST /v2/users`, `POST /v2/commands/submit-and-wait-for-transaction`, `POST /v2/state/active-contracts`, `GET /v2/state/ledger-end`, `POST /v2/updates/update-by-id`, `POST /v2/events/events-by-contract-id` | https://docs.canton.network/reference/json-api-reference/ (Canton 3.5.19 on LocalNet) | deploy, parties, commands, party-scoped reads | LOCAL_VERIFIED (run 20261001T162427Z) |
+| `AmuletRules_DevNet_Tap` with AmuletRules and an open OpenMiningRound disclosed from Scan `POST /api/scan/v0/amulet-rules` and `/v0/open-and-issuing-mining-rounds` | Splice `AmuletRules.daml` at 0.8.4 | fund LP test balances, submitted by each LP's own user | LOCAL_VERIFIED (run 20261001T162427Z). Wallet tap endpoint not used |
 
 ## AppsFactory and NODERS
 

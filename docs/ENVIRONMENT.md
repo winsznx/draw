@@ -9,7 +9,7 @@ Recorded 2026-10-01 on the build machine. No secrets are stored here.
 | Java | OpenJDK 21.0.12 (Homebrew `openjdk@21`), `JAVA_HOME=/opt/homebrew/opt/openjdk@21` |
 | Docker | Docker Desktop 29.7.2, Compose 5.4.0, about 12.5 GB RAM allotted to the VM |
 | Node | 24.19.0, npm 11.17.0, pnpm available |
-| Splice LocalNet | target 0.8.4 (released 2026-09-25, Canton 3.5.19). Not yet pulled |
+| Splice LocalNet | 0.8.4 (released 2026-09-25, Canton 3.5.19), bundle under `localnet/` (gitignored), images native arm64, about 5.5 GB |
 | AppsFactory starter | none in repo |
 | NODERS material | none in repo |
 | DevNet credentials | none present. `BLOCKED_ON_HUMAN` |

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRAW capital call</title>
+<style>
+  :root { --ink: #1c2024; --muted: #5f6b76; --line: #dde2e7; --bg: #f7f8fa; --card: #fff; --ok: #1f6f43; --warn: #8a5a00; --bad: #9b2c2c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  h1 { font-size: 20px; margin: 0; }
+  .env { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; }
+  nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
+  nav button { font: inherit; border: 1px solid var(--line); background: var(--card); padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  nav button[aria-pressed="true"] { border-color: var(--ink); font-weight: 600; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 16px; margin-top: 12px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
+  .totals { display: flex; flex-wrap: wrap; gap: 24px; }
+  .totals div span { display: block; font-size: 12px; color: var(--muted); }
+  .totals div strong { font-size: 22px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .Funded { color: var(--ok); font-weight: 600; }
+  .Overdue { color: var(--bad); font-weight: 600; }
+  .pending { color: var(--warn); }
+  .empty { color: var(--muted); }
+  details { margin-top: 12px; font-size: 13px; color: var(--muted); }
+  code { font-size: 12px; word-break: break-all; }
+  @media (max-width: 600px) { th:nth-child(4), td:nth-child(4) { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>DRAW capital call</h1>
+    <span class="env">LocalNet demo environment · run __RUN_ID__</span>
+  </header>
+  <nav aria-label="Party">
+    <button data-role="admin">Fund admin</button>
+    <button data-role="lpA">LP A</button>
+    <button data-role="lpB">LP B</button>
+    <button data-role="lpC">LP C</button>
+    <button data-role="outsider">Unrelated party</button>
+  </nav>
+  <div id="view"><p class="empty">Choose a party.</p></div>
+</main>
+<script>
+const usd = (n) => '$' + Number(n).toLocaleString('en-US');
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const label = { lpA: 'LP A', lpB: 'LP B', lpC: 'LP C', admin: 'Fund admin', outsider: 'Unrelated party' };
+
+async function show(role) {
+  document.querySelectorAll('nav button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.role === role)));
+  const view = document.getElementById('view');
+  view.innerHTML = '<p class="empty">Querying the ledger as ' + label[role] + '…</p>';
+  const response = await fetch('/api/view?role=' + role);
+  const data = await response.json();
+  if (!response.ok) { view.innerHTML = '<p class="Overdue">' + esc(data.error) + '</p>'; return; }
+
+  let html = '';
+  if (data.totals) {
+    html += '<section><h2>' + esc(data.fund?.name ?? '') + ' · ' + esc(data.call.callId) + '</h2><div class="totals">'
+      + '<div><span>Called</span><strong>' + usd(data.call.totalUsd) + '</strong></div>'
+      + '<div><span>Funded, verified</span><strong>' + usd(data.totals.fundedUsd) + '</strong></div>'
+      + '<div><span>Unresolved</span><strong>' + usd(data.totals.unresolvedUsd) + '</strong></div></div></section>';
+  }
+  html += '<section><h2>' + (role === 'admin' ? 'Investor obligations' : 'Your obligation') + '</h2>';
+  if (data.obligations.length === 0) {
+    html += '<p class="empty">No obligations are visible to this party on the ledger.</p>';
+  } else {
+    html += '<table><thead><tr><th>Investor</th><th>Amount</th><th>Settled in</th><th>Due</th><th>Status</th></tr></thead><tbody>'
+      + data.obligations.map((o) => '<tr><td>' + label[o.investor] + '</td><td>' + usd(o.scenarioUsd) + '</td><td>' + o.units + ' Amulet</td><td>'
+        + new Date(o.dueAt).toLocaleString() + '</td><td class="' + (o.status === 'Funded' || o.status === 'Overdue' ? o.status : 'pending') + '">' + esc(o.status) + '</td></tr>').join('')
+      + '</tbody></table>';
+  }
+  html += '</section>';
+  html += '<details><summary>Ledger query details</summary><p>Read with ledger user <code>' + esc(data.queriedAs.userId)
+    + '</code> as party <code>' + esc(data.queriedAs.party) + '</code> on participant <code>' + esc(data.queriedAs.participant)
+    + '</code>. USD amounts are the business scenario. Amulet amounts are what moved on LocalNet. Funded means an independent verifier read the settlement back.</p></details>';
+  view.innerHTML = html;
+}
+document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => show(b.dataset.role)));
+</script>
+</body>
+</html>
