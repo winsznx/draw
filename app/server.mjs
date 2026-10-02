@@ -1,18 +1,22 @@
-// DRAW app server. Every view is built from ledger reads made with the
+// DRAW application server. Every view is built from ledger reads made with the
 // selected role's own ledger user, and every action is submitted by the role
 // that takes it. FUNDED is shown only after the independent verifier issues a
 // VERIFIED_FUNDED receipt for that obligation.
-// Usage: node app/server.mjs   then open http://localhost:4173
+// Usage: node app/server.mjs   (serves app/web/dist, build it with `npm run build` in app/web)
 import { createServer } from 'node:http';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, extname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { TEMPLATES } from '../scripts/demo/lib/ledger.mjs';
 import { DrawSession, LPS, eventually, newRef, packageInfo, sum } from '../scripts/demo/lib/draw.mjs';
 import { ROLES, ROOT, network } from '../scripts/demo/lib/network.mjs';
+import { OUTCOME, classifyPayments, obligationOutcome } from '../scripts/demo/lib/reconcile.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+const WEB = join(HERE, 'web/dist');
+const EVIDENCE = join(ROOT, 'evidence');
+const NETWORK_DIR = network.name === 'localnet' ? 'local' : network.name;
 const PORT = Number(process.env.PORT ?? 4173);
 const SESSION_FILE = join(HERE, `.session-${network.name}.json`);
 const NETWORK_LABEL = { localnet: 'LocalNet', devnet: 'DevNet' }[network.name] ?? network.name;
@@ -21,40 +25,78 @@ const COMMITMENTS = { lpA: '1000000.0', lpB: '700000.0', lpC: '500000.0' };
 let session = existsSync(SESSION_FILE) ? JSON.parse(readFileSync(SESSION_FILE, 'utf8')) : null;
 let draw = session ? await DrawSession.resume(session) : null;
 
-const evidenceDir = () => join(ROOT, 'evidence', network.name === 'localnet' ? 'local' : network.name, 'app', session.fundId);
+// ---------------------------------------------------------------- app evidence
+const appEvidenceDir = () => join(EVIDENCE, NETWORK_DIR, 'app', session.fundId);
 function record(action, detail) {
-  mkdirSync(evidenceDir(), { recursive: true });
-  appendFileSync(join(evidenceDir(), 'actions.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), action, ...detail })}\n`);
+  mkdirSync(appEvidenceDir(), { recursive: true });
+  appendFileSync(join(appEvidenceDir(), 'actions.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), action, ...detail })}\n`);
 }
-function receiptFor(obligationRef) {
-  if (!session) return null;
-  const file = join(evidenceDir(), `receipt-${obligationRef}.json`);
+function actionLog() {
+  const file = join(appEvidenceDir(), 'actions.jsonl');
+  return existsSync(file) ? readFileSync(file, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line)) : [];
+}
+function receiptFor(ref) {
+  const file = join(appEvidenceDir(), `receipt-${ref}.json`);
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
 }
 
-// Ledger rejections carry the Daml assertion text. Show that, not the envelope.
-function ledgerReason(error) {
-  const message = error.message ?? String(error);
-  const assertion = message.match(/\(error category \d+\):\s*([^"\\]+)/);
-  if (assertion) return assertion[1].trim();
-  if (message.includes('CONTRACT_NOT_FOUND')) return 'the contract is no longer active on the ledger';
-  if (message.includes('HTTP 403')) return 'this ledger user is not allowed to do that';
-  return message.slice(0, 300);
+// Execution stages from the app's own log. Outcome truth comes from the ledger
+// and the verifier, see obligationOutcome.
+const STAGE = { pay: 'ACTION_REQUESTED', 'pay-locked': 'ACKNOWLEDGED', 'pay-failed': 'FAILED', settle: 'TRANSFER_EXECUTED', observed: 'SETTLEMENT_OBSERVED', verify: null };
+function timelineFor(ref, log) {
+  return log.filter((entry) => entry.ref === ref && entry.action in STAGE).map((entry) => ({
+    at: entry.at,
+    stage: entry.action === 'verify' ? entry.verdict : STAGE[entry.action],
+    by: entry.role ?? 'admin',
+    updateId: entry.updateId,
+    amount: entry.amount,
+    error: entry.error,
+  }));
+}
+
+// ---------------------------------------------------------------- errors
+const FRIENDLY = [
+  [/allocation amount does not equal amount due/, 'The payment amount does not match the amount due. The investor should withdraw it and pay the exact amount.'],
+  [/allocation sender is not the obligated LP/, 'This payment came from a different investor than the one who owes it.'],
+  [/allocation settlement reference does not match obligation|allocation transfer leg id does not match/, 'This payment carries a different reference than this obligation.'],
+  [/allocation instrument does not match/, 'This payment is in a different asset than the one called.'],
+  [/obligation is not open for settlement/, 'This obligation is already closed, so it cannot take another payment.'],
+  [/obligation is not yet due/, 'The due time has not passed yet, so it cannot be marked overdue.'],
+  [/only an unpaid obligation can become overdue/, 'Only an unpaid obligation can be marked overdue.'],
+  [/only an overdue or reviewed obligation can be waived/, 'Only an overdue obligation or one in review can be waived.'],
+  [/only an open obligation can be flagged/, 'Only an open obligation can be sent to review.'],
+  [/only an obligation in manual review can be reopened/, 'Only an obligation in review can be reopened.'],
+  [/only a payment-pending obligation can be released/, 'Only an obligation waiting on a payment can be released.'],
+  [/only an issued obligation can become payment-pending/, 'This obligation is not waiting for a first payment.'],
+  [/call exceeds remaining commitment/, 'This call is larger than what the investor has left to commit.'],
+  [/CONTRACT_NOT_FOUND|Contract could not be found/, 'That record is no longer active on the ledger. It may already have been used. Refresh and try again.'],
+  [/HTTP 403/, 'This party is not allowed to do that.'],
+  [/ECONNREFUSED|fetch failed/, 'The ledger is not reachable. Check that the network is running.'],
+];
+function explain(error) {
+  const detail = error.message ?? String(error);
+  const match = FRIENDLY.find(([pattern]) => pattern.test(detail));
+  // Errors thrown by this server's own input checks are already plain language.
+  const ownMessage = !/HTTP \d{3}|Interpretation error|https?:\/\//.test(detail) && detail.length < 200;
+  return { error: match ? match[1] : ownMessage ? detail : 'The ledger refused this action.', detail: detail.slice(0, 1200) };
 }
 
 // ---------------------------------------------------------------- views
-function obligationStatus(payload, allocations) {
-  const receipt = receiptFor(payload.obligationRef);
-  if (payload.state === 'Funded') return receipt?.verdict === 'VERIFIED_FUNDED' ? 'funded' : 'unverified';
-  if (payload.state === 'PaymentPending') return 'pending';
-  if (payload.state === 'Overdue') return allocations.length ? 'submitted-late' : 'overdue';
-  if (payload.state === 'Waived') return 'waived';
-  if (payload.state === 'ManualReview') return 'review';
-  return allocations.length ? 'submitted' : 'awaiting';
+function businessStatus(state, outcome, payments) {
+  if (state === 'Funded') return outcome === OUTCOME.VERIFIED_FUNDED ? 'funded' : outcome === OUTCOME.CONTRADICTED ? 'contradicted' : 'verifying';
+  if (state === 'Waived') return 'waived';
+  if (state === 'ManualReview') return 'review';
+  if (state === 'PaymentPending') return payments.some((p) => p.kind === 'match') ? 'pending' : 'pending-stale';
+  const matched = payments.some((p) => p.kind === 'match');
+  const mismatched = payments.some((p) => p.kind !== 'match');
+  if (state === 'Overdue') return matched ? 'overdue-paid' : 'overdue';
+  if (matched) return 'submitted';
+  if (mismatched) return 'mismatched';
+  return 'due';
 }
 
 async function viewFor(role) {
-  const base = { network: NETWORK_LABEL, partyMode: network.partyMode, role };
+  const base = { network: NETWORK_LABEL, role };
   if (!session) return { ...base, session: false };
 
   const { fundId } = session;
@@ -64,72 +106,107 @@ async function viewFor(role) {
     read(TEMPLATES.InvestorCommitment), read(TEMPLATES.CapitalCallObligation), draw.allocations(role),
     role === 'outsider' ? Promise.resolve(null) : draw.balance(role),
   ]);
+  const log = actionLog();
+  // The classifier runs over this role's own reads. An LP's view classifies its
+  // own payments against its own obligations.
+  const payments = classifyPayments({ adminParty: draw.party.admin, obligations, allocations });
 
-  const allocationsFor = (ref) => allocations
-    .filter((a) => a.interfaceView.allocation.settlement.settlementRef.id === ref)
-    .map((a) => ({ allocationCid: a.contractId, amount: Number(a.interfaceView.allocation.transferLeg.amount), from: draw.roleOf(a.interfaceView.allocation.transferLeg.sender) }));
-
-  const rows = obligations.map(({ payload }) => {
-    const own = allocationsFor(payload.obligationRef);
-    const receipt = receiptFor(payload.obligationRef);
+  const rows = obligations.map((o) => {
+    const p = o.payload;
+    const own = payments.filter((x) => x.obligationRef === p.obligationRef);
+    const receipt = receiptFor(p.obligationRef);
+    const outcome = obligationOutcome(o, payments, receipt);
     return {
-      ref: payload.obligationRef,
-      investor: draw.roleOf(payload.lp),
-      fundName: payload.fundName,
-      callId: payload.callId,
-      scenarioUsd: Number(payload.scenarioAmount),
-      units: Number(payload.amountDue),
-      dueAt: payload.dueAt,
-      ledgerState: payload.state,
-      status: obligationStatus(payload, own),
-      allocations: own,
+      ref: p.obligationRef,
+      obligationCid: o.contractId,
+      callId: p.callId,
+      investor: draw.roleOf(p.lp),
+      fundName: p.fundName,
+      scenarioUsd: Number(p.scenarioAmount),
+      units: Number(p.amountDue),
+      instrument: p.instrumentId.id,
+      dueAt: p.dueAt,
+      ledgerState: p.state,
+      outcome,
+      status: businessStatus(p.state, outcome, own),
+      note: p.reviewNote,
+      settledAfterDue: p.settlement?.settledAfterDue ?? null,
+      payments: own.map((x) => ({ allocationCid: x.allocationCid, amount: x.amount, from: draw.roleOf(x.sender) ?? 'unknown', kind: x.kind, recommendation: x.recommendation })),
       receipt: receipt && {
         verdict: receipt.verdict,
         updateId: receipt.claimedUpdateId,
+        allocationCid: receipt.allocationCid,
         receivedAmount: receipt.receivedAmount,
         verifiedAt: receipt.verifiedAt,
         verifierUser: receipt.verifierUser,
-        checks: receipt.checks.length,
-        passed: receipt.checks.filter((c) => c.ok).length,
+        recordTime: receipt.recordTime,
+        checks: receipt.checks,
       },
+      timeline: timelineFor(p.obligationRef, log),
     };
   }).sort((a, b) => a.investor.localeCompare(b.investor));
 
-  const funded = rows.filter((r) => r.status === 'funded');
-  const call = calls[0]?.payload;
+  const totalsOf = (list) => ({
+    calledUsd: sum(list.map((r) => r.scenarioUsd)),
+    fundedUsd: sum(list.filter((r) => r.status === 'funded').map((r) => r.scenarioUsd)),
+    unresolvedUsd: sum(list.filter((r) => r.status !== 'funded' && r.status !== 'waived').map((r) => r.scenarioUsd)),
+    waivedUsd: sum(list.filter((r) => r.status === 'waived').map((r) => r.scenarioUsd)),
+    fundedUnits: sum(list.filter((r) => r.status === 'funded').map((r) => r.units)),
+    fundedCount: list.filter((r) => r.status === 'funded').length,
+    count: list.length,
+  });
+
+  const callIds = [...new Set([...calls.map((c) => c.payload.callId), ...rows.map((r) => r.callId)])];
+  const callViews = callIds.map((callId) => {
+    const header = calls.find((c) => c.payload.callId === callId)?.payload;
+    const list = rows.filter((r) => r.callId === callId);
+    return {
+      callId,
+      description: header?.description ?? null,
+      dueAt: header?.dueAt ?? list[0]?.dueAt,
+      headerTotalUsd: header ? Number(header.totalScenarioAmount) : null,
+      obligations: list,
+      totals: totalsOf(list),
+    };
+  }).sort((a, b) => Date.parse(b.dueAt) - Date.parse(a.dueAt));
+
   return {
     ...base,
     session: true,
     queriedAs: { userId: draw.users[role], party: draw.party[role] },
     fund: funds[0] ? { fundId, name: funds[0].payload.fundName } : null,
-    call: call && { callId: call.callId, description: call.description, dueAt: call.dueAt, totalUsd: Number(call.totalScenarioAmount) },
-    totals: call && {
-      fundedUsd: sum(funded.map((r) => r.scenarioUsd)),
-      unresolvedUsd: sum(rows.filter((r) => r.status !== 'funded' && r.status !== 'waived').map((r) => r.scenarioUsd)),
-      fundedUnits: sum(funded.map((r) => r.units)),
-    },
+    fundName: session.fundName,
+    calls: callViews,
+    totals: totalsOf(rows),
     invitations: invitations.map(({ contractId, payload }) => ({ invitationCid: contractId, investor: draw.roleOf(payload.lp), fundName: payload.fundName, committedUsd: Number(payload.committedScenarioAmount) })),
     commitments: commitments.map(({ payload }) => ({ investor: draw.roleOf(payload.lp), committedUsd: Number(payload.committedScenarioAmount), calledUsd: Number(payload.calledScenarioAmount) })),
-    obligations: rows,
+    payments: payments.map((x) => ({ ...x, from: draw.roleOf(x.sender) ?? 'unknown', investor: draw.roleOf(obligations.find((o) => o.payload.obligationRef === x.obligationRef)?.payload.lp) ?? null })),
     balance,
   };
 }
 
 // ---------------------------------------------------------------- actions
-async function obligationByRef(ref) {
-  const [obligation] = (await draw.contracts('admin', TEMPLATES.CapitalCallObligation, session.fundId)).filter((o) => o.payload.obligationRef === ref);
-  if (!obligation) throw new Error('obligation not found for the admin');
+async function adminObligation(ref) {
+  const obligation = (await draw.contracts('admin', TEMPLATES.CapitalCallObligation, session.fundId)).find((o) => o.payload.obligationRef === ref);
+  if (!obligation) throw new Error('That obligation was not found for the fund admin.');
   return obligation;
 }
 
-async function lpObligation(role) {
-  const [obligation] = await draw.contracts(role, TEMPLATES.CapitalCallObligation, session.fundId);
-  if (!obligation) throw new Error('no capital call obligation is visible to this investor');
+async function ownObligation(role, ref) {
+  const obligation = (await draw.contracts(role, TEMPLATES.CapitalCallObligation, session.fundId)).find((o) => o.payload.obligationRef === ref);
+  if (!obligation) throw new Error('No such obligation is visible to this investor.');
   return obligation;
 }
+
+const resolution = (choice, verb) => async ({ ref, note }) => {
+  if (!note?.trim()) throw new Error('Add a note so the decision is on the record.');
+  const result = await draw.resolve((await adminObligation(ref)).contractId, choice, note.trim());
+  record(verb, { ref, note, updateId: result.transaction.updateId });
+  return { message: { flag: 'Sent to manual review.', waive: 'Waived.', reopen: 'Reopened.', release: 'Released. It can take a new payment.' }[verb] };
+};
 
 const actions = {
-  async setup({ fundName = 'Example Ventures I' }) {
+  async setup({ fundName = 'Example Ventures I (demo)' }) {
     const tag = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
     const { packageId } = packageInfo();
     const next = await DrawSession.open({ tag, packageId });
@@ -146,31 +223,43 @@ const actions = {
 
   async accept({ role }) {
     const [invitation] = await draw.contracts(role, TEMPLATES.CommitmentInvitation, session.fundId);
-    if (!invitation) throw new Error('there is no invitation for this investor');
+    if (!invitation) throw new Error('There is no invitation for this investor.');
     const result = await draw.acceptInvitation(role, invitation.contractId);
     record('accept', { role, updateId: result.transaction.updateId });
     return { message: 'Commitment accepted.' };
   },
 
-  async issue({ dueMinutes = 3, rows }) {
+  async issue({ callId, description, dueAt, rows }) {
+    if (!callId?.trim()) throw new Error('Give the call a name or reference.');
+    if (!Date.parse(dueAt)) throw new Error('Pick a due date and time.');
+    const existing = await draw.contracts('admin', TEMPLATES.CapitalCall, session.fundId);
+    if (existing.some((c) => c.payload.callId === callId.trim())) throw new Error('A call with this name already exists. Use a different name.');
+    const included = rows.filter((r) => Number(r.scenarioUsd) > 0);
+    if (!included.length) throw new Error('Call at least one investor.');
     const commitments = await draw.contracts('admin', TEMPLATES.InvestorCommitment, session.fundId);
-    const requests = rows.map(({ role, scenarioUsd, units }) => {
+    const requests = included.map(({ role, scenarioUsd, units }) => {
       const commitment = commitments.find((c) => c.payload.lp === draw.party[role]);
-      if (!commitment) throw new Error(`${role} has not accepted its commitment yet`);
+      if (!commitment) throw new Error(`${role} has not accepted its commitment yet.`);
+      if (!(Number(units) > 0)) throw new Error('Every called investor needs a settlement amount above zero.');
       return { commitmentCid: commitment.contractId, obligationRef: newRef(), amountDue: String(units), scenarioAmount: String(scenarioUsd) };
     });
-    const dueAt = new Date(Date.now() + Number(dueMinutes) * 60_000).toISOString();
-    const result = await draw.issueCall(session.fundCid, { callId: 'CALL-1', description: 'Initial close drawdown', dueAt, requests });
-    record('issue', { dueAt, requests, updateId: result.transaction.updateId });
-    return { message: 'Capital call issued. Each investor now sees only its own notice.' };
+    const result = await draw.issueCall(session.fundCid, { callId: callId.trim(), description: description?.trim() || callId.trim(), dueAt: new Date(dueAt).toISOString(), requests });
+    record('issue', { callId, dueAt, requests, updateId: result.transaction.updateId });
+    return { message: `${callId.trim()} issued. Each investor now sees only its own notice.` };
   },
 
-  async pay({ role, amount }) {
-    const { payload } = await lpObligation(role);
+  async pay({ role, ref, amount }) {
+    const { payload } = await ownObligation(role, ref);
     const value = String(amount ?? payload.amountDue);
-    const allocation = await draw.allocate(role, { obligationRef: payload.obligationRef, amount: value });
-    record('pay', { role, ref: payload.obligationRef, amount: value, ...allocation });
-    return { message: `Payment of ${Number(value)} Amulet locked for the fund. The admin can now settle it.` };
+    record('pay', { role, ref, amount: value });
+    try {
+      const allocation = await draw.allocate(role, { obligationRef: ref, amount: value });
+      record('pay-locked', { role, ref, amount: value, ...allocation });
+    } catch (error) {
+      record('pay-failed', { role, ref, amount: value, error: error.message.slice(0, 300) });
+      throw error;
+    }
+    return { message: `${Number(value)} Amulet locked for the fund. The fund admin settles it next.` };
   },
 
   async withdraw({ role, allocationCid }) {
@@ -186,20 +275,23 @@ const actions = {
   },
 
   async settle({ ref, allocationCid }) {
-    let obligation = await obligationByRef(ref);
-    if (obligation.payload.state === 'Issued') {
+    let obligation = await adminObligation(ref);
+    const stateBefore = obligation.payload.state;
+    if (stateBefore === 'Issued') {
       await draw.markPending(obligation.contractId, allocationCid);
-      obligation = await eventually(() => obligationByRef(ref), (o) => o.payload.state === 'PaymentPending');
+      obligation = await eventually(() => adminObligation(ref), (o) => o.payload.state === 'PaymentPending');
     }
     const settled = await draw.settle(obligation.contractId, allocationCid);
     const updateId = settled.transaction.updateId;
     record('settle', { ref, allocationCid, updateId });
 
     const receipt = await draw.verifier.verify({ obligationRef: ref, claimedUpdateId: updateId });
-    writeFileSync(join(evidenceDir(), `receipt-${ref}.json`), `${JSON.stringify({
-      environment: network.name, fundId: session.fundId, packageId: session.packageId, ...receipt, verifiedAt: new Date().toISOString(),
+    if (receipt.checks.find((c) => c.name === 'claimed update is a transaction')?.ok) record('observed', { ref, updateId, recordTime: receipt.recordTime });
+    writeFileSync(join(appEvidenceDir(), `receipt-${ref}.json`), `${JSON.stringify({
+      environment: network.name, fundId: session.fundId, callId: obligation.payload.callId, packageId: session.packageId,
+      stateBefore, ...receipt, verifiedAt: new Date().toISOString(),
     }, null, 2)}\n`);
-    record('verify', { ref, verdict: receipt.verdict });
+    record('verify', { ref, verdict: receipt.verdict, updateId });
     if (receipt.verdict !== 'VERIFIED_FUNDED') {
       return { message: `Settled on the ledger, but the verifier did not confirm it: ${receipt.checks.filter((c) => !c.ok).map((c) => c.name).join(', ')}` };
     }
@@ -207,11 +299,15 @@ const actions = {
   },
 
   async overdue({ ref }) {
-    const obligation = await obligationByRef(ref);
-    const result = await draw.markOverdue(obligation.contractId);
+    const result = await draw.markOverdue((await adminObligation(ref)).contractId);
     record('overdue', { ref, updateId: result.transaction.updateId });
     return { message: 'Marked overdue.' };
   },
+
+  flag: resolution('Obligation_FlagManualReview', 'flag'),
+  waive: resolution('Obligation_Waive', 'waive'),
+  reopen: resolution('Obligation_Reopen', 'reopen'),
+  release: resolution('Obligation_ReleasePending', 'release'),
 
   async reset() {
     rmSync(SESSION_FILE, { force: true });
@@ -221,7 +317,7 @@ const actions = {
   },
 };
 
-// One ledger action at a time keeps demo clicks from racing each other.
+// One ledger action at a time keeps clicks from racing each other.
 let queue = Promise.resolve();
 const serialized = (fn) => {
   const run = queue.then(fn, fn);
@@ -229,8 +325,63 @@ const serialized = (fn) => {
   return run;
 };
 
+// ---------------------------------------------------------------- proof
+function latest(dir) {
+  if (!existsSync(dir)) return null;
+  const runs = readdirSync(dir).filter((d) => existsSync(join(dir, d, 'result.json'))).sort();
+  if (!runs.length) return null;
+  const id = runs.at(-1);
+  return { id, path: relative(ROOT, join(dir, id)), result: JSON.parse(readFileSync(join(dir, id, 'result.json'), 'utf8')) };
+}
+
+function proof() {
+  const base = join(EVIDENCE, NETWORK_DIR);
+  const run = latest(join(base, 'runs'));
+  const runFile = (name) => (run && existsSync(join(ROOT, run.path, name)) ? JSON.parse(readFileSync(join(ROOT, run.path, name), 'utf8')) : null);
+  const campaign = latest(join(base, 'campaign'));
+  const ablation = latest(join(base, 'ablation'));
+  const core = latest(join(base, 'daml_core'));
+  const mutation = latest(join(base, 'mutation'));
+  const visibility = runFile('visibility-final.json');
+  return {
+    network: NETWORK_LABEL,
+    canonical: run && {
+      path: run.path,
+      runId: run.id,
+      commit: run.result.commit,
+      packageId: run.result.packageId,
+      canton: run.result.canton,
+      fundId: run.result.fundId,
+      instrument: run.result.instrument,
+      gates: run.result.gates,
+      passed: run.result.passed,
+      failed: run.result.failed,
+      visibility: visibility?.matrix ?? visibility,
+      leaks: visibility?.leaks ?? null,
+      receipts: ['lpA', 'lpB'].map((role) => runFile(`receipt-${role}.json`)).filter(Boolean).map((r) => ({
+        payer: r.payer, obligationRef: r.obligationRef, verdict: r.verdict, claimedUpdateId: r.claimedUpdateId, allocationCid: r.allocationCid,
+        stateBefore: r.stateBefore, stateAfter: r.stateAfter, receivedAmount: r.receivedAmount, expected: r.expected, checks: r.checks.length,
+      })),
+      totals: runFile('totals.json'),
+      negative: run.result.checks.filter((c) => /^(negative|deadline|unpaid|authority|credential)/.test(c.id)).map((c) => ({ id: c.id, ok: c.ok })),
+    },
+    campaign: campaign && { path: campaign.path, seed: campaign.result.seed, verdict: campaign.result.verdict, metrics: campaign.result.metrics, commit: campaign.result.commit },
+    ablation: ablation && { path: ablation.path, verdict: ablation.result.verdict, comparison: ablation.result.comparison },
+    damlCore: core && { path: core.path, verdict: core.result.verdict, packageId: core.result.packageId, tests: core.result.tests },
+    mutation: mutation && { path: mutation.path, verdict: mutation.result.verdict, killed: mutation.result.mutants.filter((m) => m.status === 'KILLED').length, total: mutation.result.mutants.length },
+  };
+}
+
 // ---------------------------------------------------------------- http
-const page = () => readFileSync(join(HERE, 'index.html'), 'utf8').replaceAll('__NETWORK__', NETWORK_LABEL);
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.jsonl': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.log': 'text/plain; charset=utf-8' };
+
+function sendFile(res, base, requested) {
+  const file = normalize(join(base, requested));
+  if (!file.startsWith(base) || !existsSync(file) || !statSync(file).isFile()) return false;
+  res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' });
+  res.end(readFileSync(file));
+  return true;
+}
 
 function send(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json' });
@@ -246,28 +397,34 @@ async function readBody(req) {
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   try {
-    if (req.method === 'GET' && url.pathname === '/') {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(page());
-      return;
-    }
     if (req.method === 'GET' && url.pathname === '/api/view') {
       const role = url.searchParams.get('role');
-      if (!ROLES.includes(role)) return send(res, 400, { error: 'unknown role' });
+      if (!ROLES.includes(role)) return send(res, 400, { error: 'Unknown role.' });
       return send(res, 200, await viewFor(role));
     }
+    if (req.method === 'GET' && url.pathname === '/api/proof') return send(res, 200, proof());
     const action = url.pathname.match(/^\/api\/actions\/([a-z]+)$/)?.[1];
-    if (req.method === 'POST' && Object.hasOwn(actions, action)) {
+    if (req.method === 'POST' && action && Object.hasOwn(actions, action)) {
       const body = await readBody(req);
       if (action !== 'setup' && action !== 'reset' && !session) return send(res, 409, { error: 'Start a demo fund first.' });
       try {
         return send(res, 200, await serialized(() => actions[action](body)));
       } catch (error) {
-        return send(res, 422, { error: ledgerReason(error) });
+        return send(res, 422, explain(error));
       }
     }
-    res.writeHead(404).end();
+    if (req.method === 'GET' && url.pathname.startsWith('/evidence/')) {
+      if (sendFile(res, EVIDENCE, decodeURIComponent(url.pathname.slice('/evidence/'.length)))) return;
+      return send(res, 404, { error: 'No such evidence file.' });
+    }
+    if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
+      if (url.pathname !== '/' && sendFile(res, WEB, url.pathname)) return;
+      if (sendFile(res, WEB, 'index.html')) return;
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      return res.end('The web app is not built. Run `npm run build` in app/web.');
+    }
+    send(res, 404, { error: 'Not found.' });
   } catch (error) {
-    send(res, 502, { error: ledgerReason(error) });
+    send(res, 502, explain(error));
   }
 }).listen(PORT, () => console.log(`DRAW on ${NETWORK_LABEL}: http://localhost:${PORT}`));

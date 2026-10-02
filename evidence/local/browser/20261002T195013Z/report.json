@@ -1,0 +1,164 @@
+{
+  "config": {
+    "argv": [
+      "/Users/mac/.nvm/versions/node/v24.19.0/bin/node",
+      "/Users/mac/draw/app/web/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/Users/mac/draw/app/web/playwright.config.ts",
+    "rootDir": "/Users/mac/draw/app/web/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/mac/draw/evidence/local/browser/20261002T195013Z/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/mac/draw/app/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 600000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../../evidence/local/browser/20261002T195013Z/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node ../server.mjs",
+      "url": "http://localhost:4173/api/proof",
+      "reuseExistingServer": true,
+      "timeout": 60000
+    }
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "capital call from issue to verified funding, with privacy and an unpaid investor",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 181546,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('status').filter({ hasText: 'is set up' })\nExpected: visible\nTimeout: 180000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('status').filter({ hasText: 'is set up' }) with timeout 180000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status').filter({ hasText: 'is set up' })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('status').filter({ hasText: 'is set up' })\nExpected: visible\nTimeout: 180000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('status').filter({ hasText: 'is set up' }) with timeout 180000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status').filter({ hasText: 'is set up' })\u001b[22m\n\n    at expectToast (/Users/mac/draw/app/web/e2e/journey.spec.ts:21:23)\n    at /Users/mac/draw/app/web/e2e/journey.spec.ts:36:9",
+                    "location": {
+                      "file": "/Users/mac/draw/app/web/e2e/journey.spec.ts",
+                      "column": 23,
+                      "line": 21
+                    },
+                    "snippet": "  19 | async function expectToast(page: Page, text: string | RegExp): Promise<void> {\n  20 |   const toast = page.getByRole('status').filter({ hasText: text });\n> 21 |   await expect(toast).toBeVisible({ timeout: 180_000 });\n     |                       ^\n  22 |   await toast.getByRole('button', { name: 'Dismiss' }).click();\n  23 | }\n  24 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/mac/draw/app/web/e2e/journey.spec.ts",
+                        "column": 23,
+                        "line": 21
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('status').filter({ hasText: 'is set up' })\nExpected: visible\nTimeout: 180000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('status').filter({ hasText: 'is set up' }) with timeout 180000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status').filter({ hasText: 'is set up' })\u001b[22m\n\n\n  19 | async function expectToast(page: Page, text: string | RegExp): Promise<void> {\n  20 |   const toast = page.getByRole('status').filter({ hasText: text });\n> 21 |   await expect(toast).toBeVisible({ timeout: 180_000 });\n     |                       ^\n  22 |   await toast.getByRole('button', { name: 'Dismiss' }).click();\n  23 | }\n  24 |\n    at expectToast (/Users/mac/draw/app/web/e2e/journey.spec.ts:21:23)\n    at /Users/mac/draw/app/web/e2e/journey.spec.ts:36:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T19:50:14.158Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/mac/draw/evidence/local/browser/20261002T195013Z/artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/mac/draw/evidence/local/browser/20261002T195013Z/artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/mac/draw/evidence/local/browser/20261002T195013Z/artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/mac/draw/app/web/e2e/journey.spec.ts",
+                    "column": 23,
+                    "line": 21
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-b31396274486448b6288",
+          "file": "journey.spec.ts",
+          "line": 30,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T19:50:13.880Z",
+    "duration": 182852.664,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

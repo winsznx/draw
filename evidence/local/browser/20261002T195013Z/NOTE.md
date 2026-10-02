@@ -1,0 +1,1 @@
+This run failed before the first ledger action: LocalNet was down (Docker stopped and its disk image was removed at 20:50 local). The setup action returned "fetch failed". Kept as negative evidence of an infrastructure failure, not a product failure.
