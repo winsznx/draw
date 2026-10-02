@@ -60,6 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const controller = new AbortController();
     const load = () => {
+      if (document.hidden) return;
       fetchView(role, controller.signal)
         .then((next) => {
           setView(next);
@@ -72,9 +73,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     load();
     const timer = window.setInterval(load, POLL_MS);
+    document.addEventListener('visibilitychange', load);
     return () => {
       controller.abort();
       window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', load);
     };
   }, [role, version]);
 

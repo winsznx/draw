@@ -134,6 +134,8 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
   const [dueAt, setDueAt] = useState(defaultDue);
   const [rows, setRows] = useState(() => Object.fromEntries(INVESTORS.map((r) => [r, first ? { usd: String(FIRST_CALL[r].usd), units: String(FIRST_CALL[r].units) } : { usd: '', units: '' }])));
   const [problem, setProblem] = useState<string | null>(null);
+  const updateRow = (role: Investor, field: 'usd' | 'units', value: string) =>
+    setRows((prev) => ({ ...prev, [role]: { usd: prev[role]?.usd ?? '', units: prev[role]?.units ?? '', [field]: value } }));
 
   const total = accepted.reduce((s, r) => s + (Number(rows[r]?.usd) || 0), 0);
   const remaining = (r: Investor) => {
@@ -188,8 +190,8 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
             <tr key={r}>
               <td>{roleName(r)}</td>
               <td className="num hide-sm">{usd(remaining(r))}</td>
-              <td className="num"><input aria-label={`Amount called from ${roleName(r)}`} inputMode="numeric" value={rows[r]?.usd ?? ''} onChange={(e) => setRows({ ...rows, [r]: { usd: e.target.value, units: rows[r]?.units ?? '' } })} /></td>
-              <td className="num"><input aria-label={`Amulet for ${roleName(r)}`} inputMode="decimal" value={rows[r]?.units ?? ''} onChange={(e) => setRows({ ...rows, [r]: { usd: rows[r]?.usd ?? '', units: e.target.value } })} /></td>
+              <td className="num"><input aria-label={`Amount called from ${roleName(r)}`} inputMode="numeric" value={rows[r]?.usd ?? ''} onChange={(e) => updateRow(r, 'usd', e.target.value)} /></td>
+              <td className="num"><input aria-label={`Amulet for ${roleName(r)}`} inputMode="decimal" value={rows[r]?.units ?? ''} onChange={(e) => updateRow(r, 'units', e.target.value)} /></td>
             </tr>
           ))}
           <tr><td><strong>Total</strong></td><td className="hide-sm" /><td className="num"><strong>{usd(total)}</strong></td><td /></tr>
