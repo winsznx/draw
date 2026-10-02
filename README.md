@@ -1,76 +1,126 @@
 # DRAW
 
-Capital-call operations on Canton. A fund calls capital from its LPs. Each LP sees only its own obligation. An obligation becomes funded only when a CIP-0056 token allocation carrying its reference is executed and an independent reader confirms it. The admin's funded and unresolved totals are recomputed from those obligations.
+Private capital calls on Canton. Each investor sees and funds only its own obligation, and the fund sees how much called capital is actually deployable.
 
-Status: working on LocalNet. Not deployed on DevNet. See `claims.yaml` for exactly what has been verified and where.
+Working on Splice LocalNet with real Amulet. Not yet run on DevNet. [`claims.yaml`](claims.yaml) lists exactly what has been verified and where.
 
-## What the LocalNet run shows
+## The problem
 
-From `evidence/local/runs/20261001T162427Z` (Splice 0.8.4, Canton 3.5.19, real Amulet):
+A fund calls capital from its investors (LPs). Each LP gets a notice for its own share, pays on a separate rail, someone matches payments to what was expected, and the fund chases whoever is short or late. Until that matching is done, the fund cannot safely treat the money as deployable. Notices, payments, matching, and follow-up usually live in different systems.
 
-- A fund called $1,000,000 from three LPs: $400,000, $350,000, $250,000 (settled as 40, 35, and 25 Amulet).
-- Each LP's own ledger credential returns only its own obligation and commitment. The unrelated party sees nothing. LP A cannot fetch LP B's obligation even by contract id.
-- LP A and LP B paid through Amulet allocations. A separate read-only verifier credential read each settlement back and issued `VERIFIED_FUNDED`.
-- Wrong amount, wrong payer, wrong reference, and a replayed allocation were refused without funding.
-- LP C did not pay. Overdue was refused before the due time and set after it.
-- Admin totals: $750,000 funded, $250,000 unresolved. The admin's Amulet balance grew by exactly 75.
+That is our working hypothesis about the workflow. Public evidence and its limits are in [`docs/PROBLEM_EVIDENCE.md`](docs/PROBLEM_EVIDENCE.md). No fund operator has been interviewed yet.
 
-Print it again with `node scripts/demo/summary.mjs`.
+## What DRAW does
 
-## Demo app
+1. The fund admin issues a call. DRAW creates one obligation per LP. Each is a contract only that LP and the fund can see.
+2. The LP opens its notice and pays in a Canton token. The payment is a Token Standard allocation that carries the obligation's reference.
+3. The admin settles. In one transaction the ledger checks the reference, payer, amount, and asset, moves the money, and marks the obligation funded. A wrong amount, the wrong payer, the wrong reference, or a reused payment is refused.
+4. A separate read-only check reads the settlement back. Only then does the dashboard count it as deployable.
+5. Anyone who didn't pay stays unresolved. After the due time the admin can mark them overdue, send them to review, or waive them, each with a note.
 
-`node app/server.mjs` serves the clickable version of the same flow. The admin creates a demo fund, each LP accepts its invitation, the admin issues the call, each LP pays from its own notice, and the admin settles. "Viewing as" switches which ledger login runs every query, and the footer names that login. An LP can also pay a wrong amount to show the ledger refusing it, then withdraw it. Funded appears only after the read-only verifier writes a receipt to `evidence/<network>/app/<fundId>/`.
+The dashboard answers one question: how much of this call is deployable now, and how much is unresolved?
 
-## Layout
+## Why Canton
 
-```text
-contracts/daml/      draw package: Fund, CommitmentInvitation, InvestorCommitment, CapitalCall, CapitalCallObligation
-contracts/tests/     Daml Script suites and a test-only token used by dpm test
-scripts/gates/       DAML_CORE gate and guard mutation check
-scripts/demo/        LocalNet client, independent verifier, canonical run, summary
-app/                 clickable demo. Each view and action uses the selected party's own ledger login
-docs/                environment, architecture and visibility matrix, sponsor findings, decisions, gates
-evidence/local/      results written by the scripts, never by hand
-claims.yaml          ceiling for anything said about DRAW
-```
+We ran the same call on an ordinary database with a `paid` flag and role filtering in the app, then tried five attacks on both. Four got through the database. None got through DRAW ([`docs/CANTON_ABLATION.md`](docs/CANTON_ABLATION.md)).
 
-## Run it
+- **Privacy sits below the application.** LP A's own ledger login never gets LP B's obligation back, not even by contract id. A missing filter in the app cannot change that. Anyone holding the fund admin's credential can still read every LP, because the admin is a party to each obligation.
+- **Funded follows the money.** The obligation flips in the same transaction that moves the token, and that transfer needs the LP's prior consent.
+- **Payments can't be reused.** A settled allocation is consumed.
 
-Requirements: Daml SDK 3.5.12 via `dpm`, JDK 21, Docker with about 10 GB for the VM, Node 24.
+On the honest path both systems produce the same totals. The difference is what happens when something goes wrong.
+
+## Architecture
+
+![DRAW architecture](docs/architecture.svg)
+
+- Daml package `draw` ([`contracts/daml/daml/Draw/CapitalCall.daml`](contracts/daml/daml/Draw/CapitalCall.daml)): `Fund` and `CapitalCall` are admin-only. `InvestorCommitment` and `CapitalCallObligation` are signed by the admin and one LP. `FUNDED` is set in exactly one place, inside `Obligation_Settle`, after `Allocation_ExecuteTransfer`.
+- Settlement: CIP-0056 Allocation V1 with Amulet, through the Splice token registry.
+- App: a Node server ([`app/server.mjs`](app/server.mjs)) that reads and acts with one ledger user per party, and a React + TypeScript UI ([`app/web`](app/web)).
+- Visibility and authority matrix: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+## Working
+
+| What | Evidence |
+|---|---|
+| Per-LP private obligations, checked with each party's own ledger login, including a leak check across everything it can see | [`evidence/local/runs/`](evidence/local/runs), `visibility-final.json` |
+| Real Amulet settlement through Token Standard allocations, with an independent read-back receipt | `receipt-lpA.json`, `receipt-lpB.json` in the same runs |
+| Wrong amount, wrong payer, wrong reference, and replay refused. Unpaid LP overdue only after the due time | run `result.json` |
+| Admin totals equal the verified obligations and the admin's actual Amulet received | `totals.json` |
+| 100 seeded calls (191 obligations): 0 falsely funded, 0 privacy violations, 0 replays accepted, 0 total mismatches | [`evidence/local/campaign/20261002T193724Z`](evidence/local/campaign/20261002T193724Z/result.json) |
+| Database-with-paid-flag ablation | [`evidence/local/ablation/20261002T193830Z`](evidence/local/ablation/20261002T193830Z/result.json) |
+| Daml tests (5 suites) and 10 deliberately broken guards all caught | [`evidence/local/daml_core`](evidence/local/daml_core), [`evidence/local/mutation`](evidence/local/mutation) |
+| Clickable app: create call, pay, settle, payments inbox with mismatch explanations, review, waive, reopen, release, receipts, proof page | [`app/`](app) |
+
+Every result was written by a script. [`evidence/manifest.json`](evidence/manifest.json) indexes each run with its commit and file hashes. [`docs/PROOF.md`](docs/PROOF.md) explains how to check each claim.
+
+## Roadmap
+
+- DevNet run. The code is ready and configured from `.env` ([`docs/DEVNET_DEPLOYMENT.md`](docs/DEVNET_DEPLOYMENT.md)). Waiting on organizer access.
+- Browser journey and transaction-stream privacy check. Both are written. They have not passed yet because LocalNet went down before they could run.
+- Production sign-in where the app server holds no LP credentials ([`docs/SECURITY.md`](docs/SECURITY.md)).
+- A real settlement asset (tokenized dollar), automatic settlement on a matching payment, and a scheduler for overdue.
+
+## Roles
+
+| Role | Sees | Does |
+|---|---|---|
+| Fund admin | Every commitment and obligation in its fund, every payment addressed to the fund | Issues calls, settles matching payments, marks overdue, reviews, waives, reopens |
+| LP | Only its own commitment, obligations, and payments | Accepts its commitment, pays, withdraws a refused payment |
+| Unrelated party | Nothing | Nothing |
+
+"Viewing as" in the app switches which ledger login runs every query. It is a demo convenience, not production sign-in.
+
+## Run it locally
+
+Requirements: Daml SDK 3.5.12 via `dpm`, JDK 21, Docker with about 10 GB of RAM and 6 GB of disk for LocalNet, Node 24, Chrome for the browser test.
 
 ```sh
 export PATH="$HOME/.dpm/bin:$PATH" JAVA_HOME=/opt/homebrew/opt/openjdk@21
 
 # Contracts
+(cd contracts && dpm build --all)
 scripts/gates/daml_core.sh
 scripts/gates/mutation_check.sh
 
-# LocalNet (Splice 0.8.4 bundle extracted under localnet/, which is gitignored)
+# LocalNet (Splice 0.8.4)
 curl -sSfLO https://github.com/digital-asset/decentralized-canton-sync/releases/download/v0.8.4/0.8.4_splice-node.tar.gz
-mkdir -p localnet && tar xzf 0.8.4_splice-node.tar.gz -C localnet
+mkdir -p localnet && tar xzf 0.8.4_splice-node.tar.gz -C localnet && rm 0.8.4_splice-node.tar.gz
 cd localnet/splice-node/docker-compose/localnet
 export LOCALNET_DIR=$PWD IMAGE_TAG=0.8.4
 docker compose --env-file compose.env --env-file env/common.env -f compose.yaml -f resource-constraints.yaml \
   --profile sv --profile app-provider --profile app-user up -d
 cd -
 
-# Canonical run (takes about two minutes, it waits for LP C's due time)
-node scripts/demo/run.mjs
-node scripts/demo/summary.mjs
-
-# Clickable demo
-node app/server.mjs   # http://localhost:4173
+# The app
+(cd app/web && npm ci && npm run build)
+node app/server.mjs        # http://localhost:4173, then "Create demo fund"
 ```
 
 LocalNet uses its documented `unsafe` HS256 secret. Each party gets its own ledger user with rights on that party only.
 
-### DevNet
+## Tests and proof campaign
 
-Copy `.env.example` to `.env`, set `DRAW_NETWORK=devnet`, and fill in the participant URL, OAuth token URL, Scan and registry URLs, and one user, party, and OAuth client per role. If you were given a participant_admin user instead of ready-made parties, set `DRAW_OPERATOR_*` and run `node scripts/demo/provision.mjs`, then paste its output into `.env`. Then run `node scripts/demo/run.mjs`. Evidence goes to `evidence/devnet/runs/`.
+```sh
+node scripts/demo/run.mjs          # canonical call, writes evidence/local/runs/<run>
+node scripts/demo/summary.mjs      # plain-language summary of the latest run
+node scripts/eval/campaign.mjs     # 100 seeded cases (DRAW_EVAL_SEED, DRAW_EVAL_CASES)
+node scripts/eval/ablation.mjs     # database with a paid flag vs DRAW, same attacks
+(cd app/web && npm run e2e)        # browser journey against the real app and ledger
+scripts/setup/clean_room.sh        # fresh clone, build, test, and run
+node scripts/evidence/manifest.mjs # index every evidence run with hashes
+```
 
-## Not done yet
+## DevNet
 
-- DevNet deployment: blocked on AppsFactory or NODERS credentials.
-- Empirical ablation against a database plus `paid = true` baseline.
-- Reading the DSO's view of allocations in the privacy campaign.
-- Business brief and demo video.
+Copy `.env.example` to `.env`, set `DRAW_NETWORK=devnet`, and fill in the participant URL, OAuth token URL, Scan and registry URLs, and one user, party, and OAuth client per role. With a participant-admin user instead, run `node scripts/demo/provision.mjs` and paste its output. Then `node scripts/demo/run.mjs`. Evidence goes to `evidence/devnet/runs/`.
+
+## Known limitations
+
+All runs so far are LocalNet. All LPs share one participant there, so its operator can read them all. The demo server holds every role's credential. The token registry sees each payment's (random) reference. Full list: [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
+
+## Demo
+
+[`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) is a three-minute walkthrough that opens on the fund. The business brief is [`docs/BUSINESS_BRIEF.md`](docs/BUSINESS_BRIEF.md) and the pilot plan is [`docs/PILOT_PLAN.md`](docs/PILOT_PLAN.md).
+
+Built from scratch during HackCanton Season 3 ([`docs/HACKATHON_DELTA.md`](docs/HACKATHON_DELTA.md)).

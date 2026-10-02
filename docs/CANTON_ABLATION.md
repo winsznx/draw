@@ -32,7 +32,7 @@ Honest-path totals are identical on both: $750,000 funded, $250,000 unresolved.
 
 ## What Canton changes, narrowly
 
-1. **The privacy boundary sits below the application.** A missing filter, a compromised app server, or a new read path cannot hand LP A the LP B record, because LP A's participant never receives it. In the database, privacy is one `WHERE` clause per query.
+1. **The privacy boundary sits below the application.** LP A's own credential cannot obtain LP B's record through any query, because the ledger does not return it to LP A. A missing filter or a new read path that runs as LP A cannot change that. In the database, privacy is one `WHERE` clause per query. What Canton does not stop: anyone holding the fund admin's credential, or operating the participant that hosts several LPs, can read what those parties can read.
 2. **Funded is a consequence of moving the asset.** The obligation flips to `Funded` only in the same transaction that executes the token transfer, and the transfer needs the LP's prior authority. In the database, `paid` is a column anyone with write access can set, and a payments row is a claim about money, not money.
 3. **Evidence cannot be reused.** A settled allocation is consumed. In the database, replay protection is whatever the application remembered to check.
 

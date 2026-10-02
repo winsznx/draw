@@ -21,7 +21,7 @@
 
   <rect width="1040" height="640" fill="#E9EDF1"/>
   <text x="24" y="34" class="h" font-size="18">DRAW on Canton</text>
-  <text x="24" y="54" class="m">Every read and action runs with the acting party's own ledger user. Each LP's participant receives only that LP's records.</text>
+  <text x="24" y="54" class="m">Every read and action runs with the acting party's own ledger user. Each party's ledger view holds only its own records.</text>
 
   <!-- browsers -->
   <rect x="24" y="80" width="190" height="400" rx="8" class="group"/>

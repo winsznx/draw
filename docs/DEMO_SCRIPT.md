@@ -46,7 +46,7 @@ Switch to **LP A** and open its notice. Now switch **Viewing as** to **LP B** wi
 
 Switch to **Unrelated party** and open **Home**: "The ledger returned nothing".
 
-> Same network, no access. Not hidden by the app. That party's ledger never receives these records.
+> Same network, no access. The app isn't hiding anything here: this party's own ledger login gets nothing back.
 
 ## 2:15 The investor who didn't pay
 
