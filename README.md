@@ -17,6 +17,10 @@ From `evidence/local/runs/20261001T162427Z` (Splice 0.8.4, Canton 3.5.19, real A
 
 Print it again with `node scripts/demo/summary.mjs`.
 
+## Demo app
+
+`node app/server.mjs` serves the clickable version of the same flow. The admin creates a demo fund, each LP accepts its invitation, the admin issues the call, each LP pays from its own notice, and the admin settles. "Viewing as" switches which ledger login runs every query, and the footer names that login. An LP can also pay a wrong amount to show the ledger refusing it, then withdraw it. Funded appears only after the read-only verifier writes a receipt to `evidence/<network>/app/<fundId>/`.
+
 ## Layout
 
 ```text
@@ -24,7 +28,7 @@ contracts/daml/      draw package: Fund, CommitmentInvitation, InvestorCommitmen
 contracts/tests/     Daml Script suites and a test-only token used by dpm test
 scripts/gates/       DAML_CORE gate and guard mutation check
 scripts/demo/        LocalNet client, independent verifier, canonical run, summary
-app/                 thin role view that queries the ledger as the selected party
+app/                 clickable demo. Each view and action uses the selected party's own ledger login
 docs/                environment, architecture and visibility matrix, sponsor findings, decisions, gates
 evidence/local/      results written by the scripts, never by hand
 claims.yaml          ceiling for anything said about DRAW
@@ -54,7 +58,7 @@ cd -
 node scripts/demo/run.mjs
 node scripts/demo/summary.mjs
 
-# Role view of the latest run
+# Clickable demo
 node app/server.mjs   # http://localhost:4173
 ```
 
@@ -69,4 +73,4 @@ Copy `.env.example` to `.env`, set `DRAW_NETWORK=devnet`, and fill in the partic
 - DevNet deployment: blocked on AppsFactory or NODERS credentials.
 - Empirical ablation against a database plus `paid = true` baseline.
 - Reading the DSO's view of allocations in the privacy campaign.
-- UI polish, business brief, pilot plan.
+- Business brief and demo video.

@@ -10,3 +10,4 @@ contracts/**/.daml/
 localnet/
 evidence/**/secrets*
 !evidence/**/*.log
+app/.session-*.json
