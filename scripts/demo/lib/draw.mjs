@@ -241,4 +241,19 @@ export class DrawSession {
       choice: 'Obligation_MarkOverdue', argument: {},
     });
   }
+
+  async resolve(obligationCid, choice, note) {
+    return this.client.admin.exercise({
+      actAs: [this.party.admin], templateId: TEMPLATES.CapitalCallObligation, contractId: obligationCid,
+      choice, argument: { note },
+    });
+  }
+
+  flagReview(obligationCid, note) { return this.resolve(obligationCid, 'Obligation_FlagManualReview', note); }
+
+  waive(obligationCid, note) { return this.resolve(obligationCid, 'Obligation_Waive', note); }
+
+  reopen(obligationCid, note) { return this.resolve(obligationCid, 'Obligation_Reopen', note); }
+
+  releasePending(obligationCid, note) { return this.resolve(obligationCid, 'Obligation_ReleasePending', note); }
 }

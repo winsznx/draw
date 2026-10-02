@@ -1,0 +1,50 @@
+{
+  "campaign": "draw-generalization",
+  "environment": "localnet",
+  "seed": 7,
+  "runId": "20261002T193647Z",
+  "commit": "79d0eaca720b05e647817fac5806c5691ccd80c6",
+  "packageId": "a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496",
+  "fundId": "EVAL-20261002T193647Z",
+  "parties": {
+    "admin": "draw-admin-eval20261002t193647z::122059ad13dba3535d59c1f7aa9bd4dffc93b36bb04e6f242a3ee05f3733da881806",
+    "lpA": "draw-lpA-eval20261002t193647z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+    "lpB": "draw-lpB-eval20261002t193647z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+    "lpC": "draw-lpC-eval20261002t193647z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+    "outsider": "draw-outsider-eval20261002t193647z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8"
+  },
+  "durationSeconds": 11,
+  "behaviours": {
+    "pay": "Funded",
+    "late-pay": "Funded",
+    "none-early": "Issued",
+    "none-late": "Overdue",
+    "waive": "Waived",
+    "wrong-amount": "Issued",
+    "wrong-payer": "ManualReview",
+    "unknown-ref": "Issued",
+    "pending": "PaymentPending",
+    "duplicate": "Funded",
+    "replay": "Issued",
+    "contradiction": "Funded"
+  },
+  "metrics": {
+    "cases": 6,
+    "obligations": 9,
+    "passed": 6,
+    "failed": 0,
+    "falseFunded": 0,
+    "missedFunded": 0,
+    "privacyViolations": 0,
+    "replayAcceptances": 0,
+    "aggregateMismatches": 0,
+    "classifierMismatches": 0,
+    "manualReview": 0,
+    "contradictions": 2,
+    "pendingNotFunded": 0,
+    "overdueRefusedEarly": 0,
+    "settleRefusals": 1,
+    "errors": 0
+  },
+  "verdict": "PASS"
+}
