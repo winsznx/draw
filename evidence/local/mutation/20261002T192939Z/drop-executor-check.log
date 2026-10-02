@@ -1,0 +1,805 @@
+Running multi-package build of all packages in /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.BgnMKQJIRJ.
+
+2026-10-02 19:31:07.14 [INFO]  [multi-package build] 
+Building /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.BgnMKQJIRJ/daml
+
+2026-10-02 19:31:12.51 [INFO]  [build] 
+Compiling draw to a DAR.
+
+2026-10-02 19:31:14.94 [INFO]  [build] 
+Created .daml/dist/draw-0.2.0.dar
+
+2026-10-02 19:31:15.00 [INFO]  [multi-package build] 
+Building /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.BgnMKQJIRJ/tests
+
+2026-10-02 19:31:22.07 [INFO]  [build] 
+Compiling draw-tests to a DAR.
+
+2026-10-02 19:31:25.05 [INFO]  [build] 
+Created .daml/dist/draw-tests-0.1.0.dar
+File:     daml/Draw/Test/CapitalCallTest.daml
+Hidden:   no
+Range:    249:1-249:26
+Source:   Script
+Severity: DsError
+Message: 
+[0;91mScript execution failed:
+  Failed with status: UNHANDLED_EXCEPTION/DA.Exception.GeneralError:GeneralError: expected failure 'allocation executor is not the fund admin' but got: Authorization failure: node NodeId(2) (-homePackageId-:Draw.Test.Token:TestAllocation) requires authorizers admin,lpB,outsider, but only admin,lpB were given
+  Using Canton Error Category InvalidGivenCurrentSystemStateOther
+
+Ledger time: 2026-10-01T09:00:00Z
+
+Committed transactions: 
+  pass 0 1790845200s
+  
+  TX 1 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:63:14)
+  #1:0
+  │   referenced by #2:0, #4:0, #6:0, #8:0
+  │   disclosed to (since): 'admin' (1)
+  └─> 'admin' creates Draw.CapitalCall:Fund@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+              with
+                admin = 'admin'; fundId = "FUND-1"; fundName = "Example Ventures I"
+  
+  TX 2 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:67:22)
+  #2:0
+  │   disclosed to (since): 'admin' (2)
+  └─> 'admin' exercises Fund_InviteInvestor on #1:0 (Draw.CapitalCall:Fund@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+              with
+                lp = 'lpA';
+                committedScenarioAmount = 1000000.0000000000;
+                instrumentId =
+                  (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                     admin = 'registrar'; id = "TestCoin")
+      children:
+      #2:1
+      │   consumed by: #3:0
+      │   referenced by #3:0
+      │   disclosed to (since): 'admin' (2), 'lpA' (2)
+      └─> 'admin' creates Draw.CapitalCall:CommitmentInvitation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                  with
+                    admin = 'admin';
+                    lp = 'lpA';
+                    fundId = "FUND-1";
+                    fundName = "Example Ventures I";
+                    committedScenarioAmount = 1000000.0000000000;
+                    instrumentId =
+                      (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                         admin = 'registrar'; id = "TestCoin")
+  
+  TX 3 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:70:5)
+  #3:0
+  │   disclosed to (since): 'admin' (3), 'lpA' (3)
+  └─> 'lpA' exercises Invitation_Accept on #2:1 (Draw.CapitalCall:CommitmentInvitation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+      children:
+      #3:1
+      │   consumed by: #8:1
+      │   referenced by #8:1
+      │   disclosed to (since): 'admin' (3), 'lpA' (3)
+      └─> 'admin' and 'lpA' create Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                            with
+                              admin = 'admin';
+                              lp = 'lpA';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              committedScenarioAmount = 1000000.0000000000;
+                              calledScenarioAmount = 0.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin")
+  
+  TX 4 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:67:22)
+  #4:0
+  │   disclosed to (since): 'admin' (4)
+  └─> 'admin' exercises Fund_InviteInvestor on #1:0 (Draw.CapitalCall:Fund@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+              with
+                lp = 'lpB';
+                committedScenarioAmount = 700000.0000000000;
+                instrumentId =
+                  (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                     admin = 'registrar'; id = "TestCoin")
+      children:
+      #4:1
+      │   consumed by: #5:0
+      │   referenced by #5:0
+      │   disclosed to (since): 'admin' (4), 'lpB' (4)
+      └─> 'admin' creates Draw.CapitalCall:CommitmentInvitation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                  with
+                    admin = 'admin';
+                    lp = 'lpB';
+                    fundId = "FUND-1";
+                    fundName = "Example Ventures I";
+                    committedScenarioAmount = 700000.0000000000;
+                    instrumentId =
+                      (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                         admin = 'registrar'; id = "TestCoin")
+  
+  TX 5 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:70:5)
+  #5:0
+  │   disclosed to (since): 'admin' (5), 'lpB' (5)
+  └─> 'lpB' exercises Invitation_Accept on #4:1 (Draw.CapitalCall:CommitmentInvitation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+      children:
+      #5:1
+      │   consumed by: #8:4
+      │   referenced by #8:4
+      │   disclosed to (since): 'admin' (5), 'lpB' (5)
+      └─> 'admin' and 'lpB' create Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                            with
+                              admin = 'admin';
+                              lp = 'lpB';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              committedScenarioAmount = 700000.0000000000;
+                              calledScenarioAmount = 0.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin")
+  
+  TX 6 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:67:22)
+  #6:0
+  │   disclosed to (since): 'admin' (6)
+  └─> 'admin' exercises Fund_InviteInvestor on #1:0 (Draw.CapitalCall:Fund@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+              with
+                lp = 'lpC';
+                committedScenarioAmount = 500000.0000000000;
+                instrumentId =
+                  (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                     admin = 'registrar'; id = "TestCoin")
+      children:
+      #6:1
+      │   consumed by: #7:0
+      │   referenced by #7:0
+      │   disclosed to (since): 'admin' (6), 'lpC' (6)
+      └─> 'admin' creates Draw.CapitalCall:CommitmentInvitation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                  with
+                    admin = 'admin';
+                    lp = 'lpC';
+                    fundId = "FUND-1";
+                    fundName = "Example Ventures I";
+                    committedScenarioAmount = 500000.0000000000;
+                    instrumentId =
+                      (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                         admin = 'registrar'; id = "TestCoin")
+  
+  TX 7 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:70:5)
+  #7:0
+  │   disclosed to (since): 'admin' (7), 'lpC' (7)
+  └─> 'lpC' exercises Invitation_Accept on #6:1 (Draw.CapitalCall:CommitmentInvitation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+      children:
+      #7:1
+      │   consumed by: #8:7
+      │   referenced by #8:7
+      │   disclosed to (since): 'admin' (7), 'lpC' (7)
+      └─> 'admin' and 'lpC' create Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                            with
+                              admin = 'admin';
+                              lp = 'lpC';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              committedScenarioAmount = 500000.0000000000;
+                              calledScenarioAmount = 0.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin")
+  
+  TX 8 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:76:29)
+  #8:0
+  │   disclosed to (since): 'admin' (8)
+  └─> 'admin' exercises Fund_IssueCall on #1:0 (Draw.CapitalCall:Fund@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+              with
+                callId = "CALL-1";
+                description = "Initial close drawdown";
+                dueAt = 2026-10-11T09:00:00Z;
+                requests =
+                  [(Draw.CapitalCall:ObligationRequest@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a with
+                      commitmentCid = #3:1;
+                      obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                      amountDue = 40.0000000000;
+                      scenarioAmount = 400000.0000000000),
+                   (Draw.CapitalCall:ObligationRequest@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a with
+                      commitmentCid = #5:1;
+                      obligationRef = "DRAW:FUND-1:CALL-1:LP-B";
+                      amountDue = 35.0000000000;
+                      scenarioAmount = 350000.0000000000),
+                   (Draw.CapitalCall:ObligationRequest@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a with
+                      commitmentCid = #7:1;
+                      obligationRef = "DRAW:FUND-1:CALL-1:LP-C";
+                      amountDue = 25.0000000000;
+                      scenarioAmount = 250000.0000000000)]
+      children:
+      #8:1
+      │   disclosed to (since): 'admin' (8), 'lpA' (8)
+      └─> 'admin' exercises Commitment_IssueObligation on #3:1 (Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+                  with
+                    expectedFundId = "FUND-1";
+                    callId = "CALL-1";
+                    obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                    amountDue = 40.0000000000;
+                    scenarioAmount = 400000.0000000000;
+                    dueAt = 2026-10-11T09:00:00Z
+          children:
+          #8:2
+          │   disclosed to (since): 'admin' (8), 'lpA' (8)
+          └─> 'admin' and 'lpA' create Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpA';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  committedScenarioAmount = 1000000.0000000000;
+                                  calledScenarioAmount = 400000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin")
+          
+          #8:3
+          │   consumed by: #10:0
+          │   referenced by #10:0
+          │   disclosed to (since): 'admin' (8), 'lpA' (8)
+          └─> 'admin' and 'lpA' create Draw.CapitalCall:CapitalCallObligation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpA';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  callId = "CALL-1";
+                                  obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                                  amountDue = 40.0000000000;
+                                  scenarioAmount = 400000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin");
+                                  dueAt = 2026-10-11T09:00:00Z;
+                                  state =
+                                    Draw.CapitalCall:ObligationState@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a:Issued;
+                                  pendingAllocationCid = none;
+                                  settlement = none;
+                                  reviewNote = none
+      
+      #8:4
+      │   disclosed to (since): 'admin' (8), 'lpB' (8)
+      └─> 'admin' exercises Commitment_IssueObligation on #5:1 (Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+                  with
+                    expectedFundId = "FUND-1";
+                    callId = "CALL-1";
+                    obligationRef = "DRAW:FUND-1:CALL-1:LP-B";
+                    amountDue = 35.0000000000;
+                    scenarioAmount = 350000.0000000000;
+                    dueAt = 2026-10-11T09:00:00Z
+          children:
+          #8:5
+          │   disclosed to (since): 'admin' (8), 'lpB' (8)
+          └─> 'admin' and 'lpB' create Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpB';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  committedScenarioAmount = 700000.0000000000;
+                                  calledScenarioAmount = 350000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin")
+          
+          #8:6
+          │   disclosed to (since): 'admin' (8), 'lpB' (8)
+          └─> 'admin' and 'lpB' create Draw.CapitalCall:CapitalCallObligation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpB';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  callId = "CALL-1";
+                                  obligationRef = "DRAW:FUND-1:CALL-1:LP-B";
+                                  amountDue = 35.0000000000;
+                                  scenarioAmount = 350000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin");
+                                  dueAt = 2026-10-11T09:00:00Z;
+                                  state =
+                                    Draw.CapitalCall:ObligationState@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a:Issued;
+                                  pendingAllocationCid = none;
+                                  settlement = none;
+                                  reviewNote = none
+      
+      #8:7
+      │   disclosed to (since): 'admin' (8), 'lpC' (8)
+      └─> 'admin' exercises Commitment_IssueObligation on #7:1 (Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+                  with
+                    expectedFundId = "FUND-1";
+                    callId = "CALL-1";
+                    obligationRef = "DRAW:FUND-1:CALL-1:LP-C";
+                    amountDue = 25.0000000000;
+                    scenarioAmount = 250000.0000000000;
+                    dueAt = 2026-10-11T09:00:00Z
+          children:
+          #8:8
+          │   disclosed to (since): 'admin' (8), 'lpC' (8)
+          └─> 'admin' and 'lpC' create Draw.CapitalCall:InvestorCommitment@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpC';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  committedScenarioAmount = 500000.0000000000;
+                                  calledScenarioAmount = 250000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin")
+          
+          #8:9
+          │   disclosed to (since): 'admin' (8), 'lpC' (8)
+          └─> 'admin' and 'lpC' create Draw.CapitalCall:CapitalCallObligation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpC';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  callId = "CALL-1";
+                                  obligationRef = "DRAW:FUND-1:CALL-1:LP-C";
+                                  amountDue = 25.0000000000;
+                                  scenarioAmount = 250000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin");
+                                  dueAt = 2026-10-11T09:00:00Z;
+                                  state =
+                                    Draw.CapitalCall:ObligationState@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a:Issued;
+                                  pendingAllocationCid = none;
+                                  settlement = none;
+                                  reviewNote = none
+      
+      #8:10
+      │   disclosed to (since): 'admin' (8)
+      └─> 'admin' creates Draw.CapitalCall:CapitalCall@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                  with
+                    admin = 'admin';
+                    fundId = "FUND-1";
+                    callId = "CALL-1";
+                    description = "Initial close drawdown";
+                    dueAt = 2026-10-11T09:00:00Z;
+                    obligationRefs =
+                      ["DRAW:FUND-1:CALL-1:LP-A", "DRAW:FUND-1:CALL-1:LP-B",
+                       "DRAW:FUND-1:CALL-1:LP-C"];
+                    totalScenarioAmount = 1000000.0000000000;
+                    totalAmountDue = 100.0000000000
+  
+  TX 9 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:92:10)
+  #9:0
+  │   consumed by: #11:2
+  │   referenced by #10:1, #11:1, #11:2
+  │   disclosed to (since): 'admin' (9), 'lpA' (9), 'registrar' (9)
+  └─> 'lpA' and 'registrar' create Draw.Test.Token:TestAllocation
+                            with
+                              registrar = 'registrar';
+                              spec =
+                                (Splice.Api.Token.AllocationV1:AllocationSpecification@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                   settlement =
+                                     (Splice.Api.Token.AllocationV1:SettlementInfo@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        executor = 'admin';
+                                        settlementRef =
+                                          (Splice.Api.Token.AllocationV1:Reference@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                             id = "DRAW:FUND-1:CALL-1:LP-A"; cid = none);
+                                        requestedAt = 2026-10-01T09:00:00Z;
+                                        allocateBefore = 2026-10-10T09:00:00Z;
+                                        settleBefore = 2026-10-31T09:00:00Z;
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[]));
+                                   transferLegId = "DRAW:FUND-1:CALL-1:LP-A";
+                                   transferLeg =
+                                     (Splice.Api.Token.AllocationV1:TransferLeg@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        sender = 'lpA';
+                                        receiver = 'admin';
+                                        amount = 40.0000000000;
+                                        instrumentId =
+                                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                             admin = 'registrar'; id = "TestCoin");
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[])));
+                              lockedHoldingCids = []
+  
+  TX 10 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:257:28)
+  #10:0
+  │   disclosed to (since): 'admin' (10), 'lpA' (10)
+  └─> 'admin' exercises Obligation_MarkPaymentPending on #8:3 (Draw.CapitalCall:CapitalCallObligation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+              with
+                allocationCid = #9:0
+      children:
+      #10:1
+      │   disclosed to (since): 'admin' (10), 'lpA' (10),
+                                'registrar' (10)
+      └─> 'admin' and 'lpA' fetch #9:0 (Draw.Test.Token:TestAllocation)
+      
+      #10:2
+      │   consumed by: #11:0
+      │   referenced by #11:0
+      │   disclosed to (since): 'admin' (10), 'lpA' (10)
+      └─> 'admin' and 'lpA' create Draw.CapitalCall:CapitalCallObligation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                            with
+                              admin = 'admin';
+                              lp = 'lpA';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              callId = "CALL-1";
+                              obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                              amountDue = 40.0000000000;
+                              scenarioAmount = 400000.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin");
+                              dueAt = 2026-10-11T09:00:00Z;
+                              state =
+                                Draw.CapitalCall:ObligationState@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a:PaymentPending;
+                              pendingAllocationCid = some #9:0;
+                              settlement = none;
+                              reviewNote = none
+  
+  TX 11 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:259:28)
+  #11:0
+  │   disclosed to (since): 'admin' (11), 'lpA' (11)
+  └─> 'admin' exercises Obligation_Settle on #10:2 (Draw.CapitalCall:CapitalCallObligation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a)
+              with
+                allocationCid = #9:0;
+                extraArgs =
+                  (Splice.Api.Token.MetadataV1:ExtraArgs@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                     context =
+                       (Splice.Api.Token.MetadataV1:ChoiceContext@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                          values = TextMap[]);
+                     meta =
+                       (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                          values = TextMap[]))
+      children:
+      #11:1
+      │   disclosed to (since): 'admin' (11), 'lpA' (11),
+                                'registrar' (11)
+      └─> 'admin' and 'lpA' fetch #9:0 (Draw.Test.Token:TestAllocation)
+      
+      #11:2
+      │   disclosed to (since): 'admin' (11), 'lpA' (11),
+                                'registrar' (11)
+      └─> 'admin' and 'lpA' exercise Allocation_ExecuteTransfer on #9:0 (Draw.Test.Token:TestAllocation)
+                            with
+                              extraArgs =
+                                (Splice.Api.Token.MetadataV1:ExtraArgs@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                   context =
+                                     (Splice.Api.Token.MetadataV1:ChoiceContext@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                        values = TextMap[]);
+                                   meta =
+                                     (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                        values = TextMap[]))
+          children:
+          #11:3
+          │   referenced by #11:4
+          │   disclosed to (since): 'lpA' (11), 'admin' (11),
+                                    'registrar' (11)
+          └─> 'registrar' creates Draw.Test.Token:TestHolding
+                          with
+                            registrar = 'registrar';
+                            owner = 'admin';
+                            instrumentId =
+                              (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                 admin = 'registrar'; id = "TestCoin");
+                            amount = 40.0000000000
+      
+      #11:4
+      │   disclosed to (since): 'admin' (11), 'lpA' (11),
+                                'registrar' (11)
+      └─> 'admin' fetches #11:3 (Draw.Test.Token:TestHolding)
+      
+      #11:5
+      │   disclosed to (since): 'admin' (11), 'lpA' (11)
+      └─> 'admin' and 'lpA' create Draw.CapitalCall:CapitalCallObligation@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a
+                            with
+                              admin = 'admin';
+                              lp = 'lpA';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              callId = "CALL-1";
+                              obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                              amountDue = 40.0000000000;
+                              scenarioAmount = 400000.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin");
+                              dueAt = 2026-10-11T09:00:00Z;
+                              state =
+                                Draw.CapitalCall:ObligationState@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a:Funded;
+                              pendingAllocationCid = none;
+                              settlement =
+                                some (Draw.CapitalCall:SettlementRecord@23bd29e0765d13b7378c44388217b6014b0b467ed59af70fa74c951f6cbc664a with
+                                        allocationCid = #9:0;
+                                        transferLegId = "DRAW:FUND-1:CALL-1:LP-A";
+                                        receiverHoldingCids = [#11:3];
+                                        settledAmount = 40.0000000000;
+                                        settledAfterDue = false);
+                              reviewNote = none
+  
+  TX 12 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 13 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 14 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:92:10)
+  #14:0
+  │   disclosed to (since): 'admin' (14), 'lpB' (14),
+                            'registrar' (14)
+  └─> 'lpB' and 'registrar' create Draw.Test.Token:TestAllocation
+                            with
+                              registrar = 'registrar';
+                              spec =
+                                (Splice.Api.Token.AllocationV1:AllocationSpecification@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                   settlement =
+                                     (Splice.Api.Token.AllocationV1:SettlementInfo@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        executor = 'admin';
+                                        settlementRef =
+                                          (Splice.Api.Token.AllocationV1:Reference@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                             id = "DRAW:FUND-1:CALL-1:LP-B"; cid = none);
+                                        requestedAt = 2026-10-01T09:00:00Z;
+                                        allocateBefore = 2026-10-10T09:00:00Z;
+                                        settleBefore = 2026-10-31T09:00:00Z;
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[]));
+                                   transferLegId = "DRAW:FUND-1:CALL-1:LP-B";
+                                   transferLeg =
+                                     (Splice.Api.Token.AllocationV1:TransferLeg@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        sender = 'lpB';
+                                        receiver = 'admin';
+                                        amount = 30.0000000000;
+                                        instrumentId =
+                                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                             admin = 'registrar'; id = "TestCoin");
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[])));
+                              lockedHoldingCids = []
+  
+  TX 15 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 16 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 17 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:92:10)
+  #17:0
+  │   disclosed to (since): 'admin' (17), 'lpB' (17),
+                            'registrar' (17)
+  └─> 'lpB' and 'registrar' create Draw.Test.Token:TestAllocation
+                            with
+                              registrar = 'registrar';
+                              spec =
+                                (Splice.Api.Token.AllocationV1:AllocationSpecification@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                   settlement =
+                                     (Splice.Api.Token.AllocationV1:SettlementInfo@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        executor = 'admin';
+                                        settlementRef =
+                                          (Splice.Api.Token.AllocationV1:Reference@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                             id = "DRAW:FUND-1:CALL-1:LP-B"; cid = none);
+                                        requestedAt = 2026-10-01T09:00:00Z;
+                                        allocateBefore = 2026-10-10T09:00:00Z;
+                                        settleBefore = 2026-10-31T09:00:00Z;
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[]));
+                                   transferLegId = "DRAW:FUND-1:CALL-1:LP-B";
+                                   transferLeg =
+                                     (Splice.Api.Token.AllocationV1:TransferLeg@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        sender = 'lpB';
+                                        receiver = 'admin';
+                                        amount = 36.0000000000;
+                                        instrumentId =
+                                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                             admin = 'registrar'; id = "TestCoin");
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[])));
+                              lockedHoldingCids = []
+  
+  TX 18 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 19 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:92:10)
+  #19:0
+  │   disclosed to (since): 'admin' (19), 'lpC' (19),
+                            'registrar' (19)
+  └─> 'lpC' and 'registrar' create Draw.Test.Token:TestAllocation
+                            with
+                              registrar = 'registrar';
+                              spec =
+                                (Splice.Api.Token.AllocationV1:AllocationSpecification@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                   settlement =
+                                     (Splice.Api.Token.AllocationV1:SettlementInfo@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        executor = 'admin';
+                                        settlementRef =
+                                          (Splice.Api.Token.AllocationV1:Reference@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                             id = "DRAW:FUND-1:CALL-1:LP-B"; cid = none);
+                                        requestedAt = 2026-10-01T09:00:00Z;
+                                        allocateBefore = 2026-10-10T09:00:00Z;
+                                        settleBefore = 2026-10-31T09:00:00Z;
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[]));
+                                   transferLegId = "DRAW:FUND-1:CALL-1:LP-B";
+                                   transferLeg =
+                                     (Splice.Api.Token.AllocationV1:TransferLeg@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        sender = 'lpC';
+                                        receiver = 'admin';
+                                        amount = 35.0000000000;
+                                        instrumentId =
+                                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                             admin = 'registrar'; id = "TestCoin");
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[])));
+                              lockedHoldingCids = []
+  
+  TX 20 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 21 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:92:10)
+  #21:0
+  │   disclosed to (since): 'admin' (21), 'lpB' (21),
+                            'registrar' (21)
+  └─> 'lpB' and 'registrar' create Draw.Test.Token:TestAllocation
+                            with
+                              registrar = 'registrar';
+                              spec =
+                                (Splice.Api.Token.AllocationV1:AllocationSpecification@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                   settlement =
+                                     (Splice.Api.Token.AllocationV1:SettlementInfo@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        executor = 'admin';
+                                        settlementRef =
+                                          (Splice.Api.Token.AllocationV1:Reference@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                             id = "DRAW:FUND-1:CALL-1:LP-A"; cid = none);
+                                        requestedAt = 2026-10-01T09:00:00Z;
+                                        allocateBefore = 2026-10-10T09:00:00Z;
+                                        settleBefore = 2026-10-31T09:00:00Z;
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[]));
+                                   transferLegId = "DRAW:FUND-1:CALL-1:LP-A";
+                                   transferLeg =
+                                     (Splice.Api.Token.AllocationV1:TransferLeg@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        sender = 'lpB';
+                                        receiver = 'admin';
+                                        amount = 35.0000000000;
+                                        instrumentId =
+                                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                             admin = 'registrar'; id = "TestCoin");
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[])));
+                              lockedHoldingCids = []
+  
+  TX 22 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 23 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:92:10)
+  #23:0
+  │   disclosed to (since): 'admin' (23), 'lpB' (23),
+                            'registrar' (23)
+  └─> 'lpB' and 'registrar' create Draw.Test.Token:TestAllocation
+                            with
+                              registrar = 'registrar';
+                              spec =
+                                (Splice.Api.Token.AllocationV1:AllocationSpecification@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                   settlement =
+                                     (Splice.Api.Token.AllocationV1:SettlementInfo@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        executor = 'admin';
+                                        settlementRef =
+                                          (Splice.Api.Token.AllocationV1:Reference@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                             id = "DRAW:FUND-1:CALL-9:LP-B"; cid = none);
+                                        requestedAt = 2026-10-01T09:00:00Z;
+                                        allocateBefore = 2026-10-10T09:00:00Z;
+                                        settleBefore = 2026-10-31T09:00:00Z;
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[]));
+                                   transferLegId = "DRAW:FUND-1:CALL-9:LP-B";
+                                   transferLeg =
+                                     (Splice.Api.Token.AllocationV1:TransferLeg@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        sender = 'lpB';
+                                        receiver = 'admin';
+                                        amount = 35.0000000000;
+                                        instrumentId =
+                                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                             admin = 'registrar'; id = "TestCoin");
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[])));
+                              lockedHoldingCids = []
+  
+  TX 24 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)
+  
+  TX 25 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:92:10)
+  #25:0
+  │   disclosed to (since): 'admin' (25), 'lpB' (25),
+                            'outsider' (25), 'registrar' (25)
+  └─> 'lpB' and 'registrar' create Draw.Test.Token:TestAllocation
+                            with
+                              registrar = 'registrar';
+                              spec =
+                                (Splice.Api.Token.AllocationV1:AllocationSpecification@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                   settlement =
+                                     (Splice.Api.Token.AllocationV1:SettlementInfo@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        executor = 'outsider';
+                                        settlementRef =
+                                          (Splice.Api.Token.AllocationV1:Reference@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                             id = "DRAW:FUND-1:CALL-1:LP-B"; cid = none);
+                                        requestedAt = 2026-10-01T09:00:00Z;
+                                        allocateBefore = 2026-10-10T09:00:00Z;
+                                        settleBefore = 2026-10-31T09:00:00Z;
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[]));
+                                   transferLegId = "DRAW:FUND-1:CALL-1:LP-B";
+                                   transferLeg =
+                                     (Splice.Api.Token.AllocationV1:TransferLeg@93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d with
+                                        sender = 'lpB';
+                                        receiver = 'admin';
+                                        amount = 35.0000000000;
+                                        instrumentId =
+                                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                             admin = 'registrar'; id = "TestCoin");
+                                        meta =
+                                          (Splice.Api.Token.MetadataV1:Metadata@4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f with
+                                             values = TextMap[])));
+                              lockedHoldingCids = []
+  
+  TX 26 2026-10-01T09:00:00Z
+     submissionFailed actAs: {'admin'} readAs:
+                                         {} (Draw.Test.CapitalCallTest:119:13)[0m
+[4;1m
+Test Summary[m
+
+daml/Draw/Test/CapitalCallTest.daml:setup: ok, 8 active contracts, 9 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_authority: ok, 9 active contracts, 22 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_resolution_paths: ok, 9 active contracts, 16 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_visibility: ok, 8 active contracts, 9 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_review_paths: ok, 12 active contracts, 30 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_settlement_lifecycle: failed
+Modules internal to this package:
+- Internal templates
+  2 defined
+  2 (100.0%) created
+- Internal template choices
+  2 defined
+  0 (  0.0%) exercised
+- Internal interface implementations
+  2 defined
+    2 internal interfaces
+    0 external interfaces
+- Internal interface choices
+  0 defined
+  0 (100.0%) exercised
+Modules external to this package:
+- External templates
+  0 defined
+  0 (100.0%) created in any tests
+  0 (100.0%) created in internal tests
+  0 (100.0%) created in external tests
+- External template choices
+  0 defined
+  0 (100.0%) exercised in any tests
+  0 (100.0%) exercised in internal tests
+  0 (100.0%) exercised in external tests
+- External interface implementations
+  0 defined
+- External interface choices
+  0 defined
+  0 (100.0%) exercised in any tests
+  0 (100.0%) exercised in internal tests
+  0 (100.0%) exercised in external tests
+

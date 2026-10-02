@@ -1,0 +1,48 @@
+{
+  "check": "MUTATION",
+  "runId": "20261002T192939Z",
+  "commit": "4043a9b46f21f53c6587203e35808da60d9a614c",
+  "verdict": "PASS",
+  "mutants": [
+    {
+      "mutant": "drop-amount-check",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "drop-sender-check",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "drop-reference-checks",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "drop-executor-check",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "drop-instrument-check",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "drop-deadline-check",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "settle-from-funded",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "lp-controls-flag",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "release-from-any-state",
+      "status": "KILLED"
+    },
+    {
+      "mutant": "reopen-from-any-state",
+      "status": "KILLED"
+    }
+  ]
+}

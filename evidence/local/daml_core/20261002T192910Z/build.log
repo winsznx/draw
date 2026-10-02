@@ -1,0 +1,13 @@
+Running multi-package build of all packages in /Users/mac/draw/contracts.
+
+2026-10-02 19:29:10.84 [INFO]  [multi-package build] 
+/Users/mac/draw/contracts/daml is unchanged.
+
+2026-10-02 19:29:10.85 [INFO]  [multi-package build] 
+Building /Users/mac/draw/contracts/tests
+
+2026-10-02 19:29:18.96 [INFO]  [build] 
+Compiling draw-tests to a DAR.
+
+2026-10-02 19:29:22.10 [INFO]  [build] 
+Created .daml/dist/draw-tests-0.1.0.dar

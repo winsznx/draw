@@ -1,0 +1,39 @@
+{
+  "gate": "DAML_CORE",
+  "verdict": "PASS",
+  "runId": "20261002T192910Z",
+  "commit": "4043a9b46f21f53c6587203e35808da60d9a614c",
+  "uncommittedFiles": 2,
+  "sdkVersion": "3.5.12",
+  "packageId": "a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496",
+  "darSha256": "86065b602114ac2fbbbea779f5a18396f9140a91c6ee5c632150e59851ddb0ad",
+  "buildExit": 0,
+  "testExit": 0,
+  "missingTests": [],
+  "tests": [
+    {
+      "name": "setup",
+      "result": "ok, 8 active contracts, 9 transactions."
+    },
+    {
+      "name": "test_authority",
+      "result": "ok, 9 active contracts, 22 transactions."
+    },
+    {
+      "name": "test_resolution_paths",
+      "result": "ok, 9 active contracts, 16 transactions."
+    },
+    {
+      "name": "test_visibility",
+      "result": "ok, 8 active contracts, 9 transactions."
+    },
+    {
+      "name": "test_review_paths",
+      "result": "ok, 12 active contracts, 30 transactions."
+    },
+    {
+      "name": "test_settlement_lifecycle",
+      "result": "ok, 17 active contracts, 37 transactions."
+    }
+  ]
+}
