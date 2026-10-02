@@ -1,0 +1,127 @@
+{
+  "environment": "localnet",
+  "fundId": "FUND-20261002t184851z",
+  "callId": "CALL-1",
+  "packageId": "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62",
+  "payer": "prov194848-lpB::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+  "expected": {
+    "amount": "35.0",
+    "instrument": {
+      "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+      "id": "Amulet"
+    },
+    "scenarioAmountUsd": "350000.0"
+  },
+  "allocationRequestUpdateId": "1220c4efb09d04ff5d9b84f0ff1fceb28f36caf37bddea490566a802b9c8655930df",
+  "stateBefore": "PaymentPending",
+  "stateAfter": "Funded",
+  "verdict": "VERIFIED_FUNDED",
+  "verifierUser": "prov194848-verifier",
+  "obligationRef": "DRAW-b833efe5e5050c8a",
+  "claimedUpdateId": "122082a677407ffa0fcbdcc7005687d67754b24cc2c2bf1474650ed00684d4dfe8b5",
+  "obligationContractId": "007ee158cb406d9295133c974f49999c5b498e0915e2c4b3b8352634a2a58daa82ca12122086e50be6401d1dcfe55be1941ee93e6aba3b833162bafebd715bf1dda8b170ab",
+  "lp": "prov194848-lpB::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+  "amountDue": "35.0000000000",
+  "scenarioAmount": "350000.0000000000",
+  "allocationCid": "00f70a27bfce805ac74f55dda5a057c5335daba0563c62ca80c72398bc43f74982ca1212205fc1c9c561be2b9786636ecbf1ad8770f96453eecb79fd0416d1eaba3b68e944",
+  "receiverHoldingCids": [
+    "00f6a92123a4653fcb4a6ca399a7beb236fa06f8c58bf6757cdf573791430bc885ca121220b0039a47c393e8940c39d1c279fbd016a712a03772d1e15d3ee96487136b3e4e"
+  ],
+  "receivedAmount": 35,
+  "instrument": {
+    "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+    "id": "Amulet"
+  },
+  "recordTime": "2026-10-02T18:49:05.235570Z",
+  "effectiveAt": "2026-10-02T18:49:05.191878Z",
+  "checks": [
+    {
+      "name": "update id not already used as evidence",
+      "ok": true,
+      "detail": "unused"
+    },
+    {
+      "name": "obligation found in admin ACS by reference",
+      "ok": true,
+      "detail": "007ee158cb406d9295133c974f49999c5b498e0915e2c4b3b8352634a2a58daa82ca12122086e50be6401d1dcfe55be1941ee93e6aba3b833162bafebd715bf1dda8b170ab"
+    },
+    {
+      "name": "claimed update is a transaction",
+      "ok": true,
+      "detail": "122082a677407ffa0fcbdcc7005687d67754b24cc2c2bf1474650ed00684d4dfe8b5"
+    },
+    {
+      "name": "update exercises Obligation_Settle",
+      "ok": true,
+      "detail": "001c37a4c6f060086956af442ce55247a695dd650732dbcda67a83bbc47a29e18bca12122027d1f0098af783f8746ce0e911837615cb45f4cf0d8223ca40d0028f154b967c"
+    },
+    {
+      "name": "same update executes the referenced allocation",
+      "ok": true,
+      "detail": "00f70a27bfce805ac74f55dda5a057c5335daba0563c62ca80c72398bc43f74982ca1212205fc1c9c561be2b9786636ecbf1ad8770f96453eecb79fd0416d1eaba3b68e944"
+    },
+    {
+      "name": "allocation execution consumed the allocation",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "update creates the funded obligation for this reference",
+      "ok": true,
+      "detail": {
+        "obligationRef": "DRAW-b833efe5e5050c8a",
+        "state": "Funded"
+      }
+    },
+    {
+      "name": "settlement record names receiver holdings",
+      "ok": true,
+      "detail": [
+        "00f6a92123a4653fcb4a6ca399a7beb236fa06f8c58bf6757cdf573791430bc885ca121220b0039a47c393e8940c39d1c279fbd016a712a03772d1e15d3ee96487136b3e4e"
+      ]
+    },
+    {
+      "name": "current admin ACS obligation is the funded one",
+      "ok": true,
+      "detail": {
+        "acs": "007ee158cb406d9295133c974f49999c5b498e0915e2c4b3b8352634a2a58daa82ca12122086e50be6401d1dcfe55be1941ee93e6aba3b833162bafebd715bf1dda8b170ab",
+        "update": "007ee158cb406d9295133c974f49999c5b498e0915e2c4b3b8352634a2a58daa82ca12122086e50be6401d1dcfe55be1941ee93e6aba3b833162bafebd715bf1dda8b170ab",
+        "state": "Funded"
+      }
+    },
+    {
+      "name": "receiver holdings are active in admin ACS",
+      "ok": true,
+      "detail": [
+        "00f6a92123a4653fcb4a6ca399a7beb236fa06f8c58bf6757cdf573791430bc885ca121220b0039a47c393e8940c39d1c279fbd016a712a03772d1e15d3ee96487136b3e4e"
+      ]
+    },
+    {
+      "name": "receiver holdings owned by fund admin",
+      "ok": true
+    },
+    {
+      "name": "receiver holdings are the expected instrument",
+      "ok": true,
+      "detail": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      }
+    },
+    {
+      "name": "received amount equals amount due",
+      "ok": true,
+      "detail": {
+        "received": 35,
+        "due": "35.0000000000"
+      }
+    },
+    {
+      "name": "payer is the obligated LP",
+      "ok": true,
+      "detail": "prov194848-lpB::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8"
+    }
+  ],
+  "verifiedAt": "2026-10-02T18:49:05.682Z",
+  "commit": "c501be8dcd2919dd002260673021f57e55301ad3"
+}

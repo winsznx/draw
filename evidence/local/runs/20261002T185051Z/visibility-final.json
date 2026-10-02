@@ -1,0 +1,75 @@
+{
+  "matrix": {
+    "admin": {
+      "Fund": [
+        "Fund"
+      ],
+      "CommitmentInvitation": [],
+      "InvestorCommitment": [
+        "commitment:lpA",
+        "commitment:lpB",
+        "commitment:lpC"
+      ],
+      "CapitalCall": [
+        "CapitalCall"
+      ],
+      "CapitalCallObligation": [
+        "obligation:lpA",
+        "obligation:lpB",
+        "obligation:lpC"
+      ],
+      "Allocation": []
+    },
+    "lpA": {
+      "Fund": [],
+      "CommitmentInvitation": [],
+      "InvestorCommitment": [
+        "commitment:lpA"
+      ],
+      "CapitalCall": [],
+      "CapitalCallObligation": [
+        "obligation:lpA"
+      ],
+      "Allocation": []
+    },
+    "lpB": {
+      "Fund": [],
+      "CommitmentInvitation": [],
+      "InvestorCommitment": [
+        "commitment:lpB"
+      ],
+      "CapitalCall": [],
+      "CapitalCallObligation": [
+        "obligation:lpB"
+      ],
+      "Allocation": []
+    },
+    "lpC": {
+      "Fund": [],
+      "CommitmentInvitation": [],
+      "InvestorCommitment": [
+        "commitment:lpC"
+      ],
+      "CapitalCall": [],
+      "CapitalCallObligation": [
+        "obligation:lpC"
+      ],
+      "Allocation": []
+    },
+    "outsider": {
+      "Fund": [],
+      "CommitmentInvitation": [],
+      "InvestorCommitment": [],
+      "CapitalCall": [],
+      "CapitalCallObligation": [],
+      "Allocation": []
+    }
+  },
+  "leaks": {
+    "admin": [],
+    "lpA": [],
+    "lpB": [],
+    "lpC": [],
+    "outsider": []
+  }
+}

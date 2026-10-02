@@ -1,28 +1,25 @@
-// Canonical LocalNet run: one fund, one call, three private obligations, real
-// Amulet allocations, independent verification, one unpaid LP, admin totals.
-// Every check result is computed here from ledger reads and written to
-// evidence/local/runs/<runId>/. Nothing in that directory is edited by hand.
+// Canonical run: one fund, one call, three private obligations, real Amulet
+// allocations, independent verification, one unpaid LP, admin totals. Every
+// check result is computed here from ledger reads and written to
+// evidence/<network>/runs/<runId>/. Nothing there is edited by hand.
+// The network comes from DRAW_NETWORK and `.env` (see lib/network.mjs).
 import { execFileSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 import { LedgerClient, TEMPLATES, INTERFACES, transactionEvents, templateName } from './lib/ledger.mjs';
 import { allocationFactory, amuletInstrument, executeTransferContext, tapContext, withdrawContext } from './lib/registry.mjs';
 import { SettlementVerifier } from './lib/verifier.mjs';
+import { ROLES, ROOT, network } from './lib/network.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const DAR = join(ROOT, 'contracts/daml/.daml/dist/draw-0.1.0.dar');
-const PROVIDER_API = process.env.APP_PROVIDER_JSON_API ?? 'http://localhost:3975';
-const USER_API = process.env.APP_USER_JSON_API ?? 'http://localhost:2975';
-const OPERATOR_USER = 'ledger-api-user';
 const DUE_SECONDS = Number(process.env.DRAW_DUE_SECONDS ?? 90);
-const TAP_AMOUNT = '100.0';
+const TAP_AMOUNT = network.tapAmount;
 
 const runId = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
 const runTag = runId.toLowerCase().replace(/[^a-z0-9]/g, '');
-const OUT = join(ROOT, 'evidence/local/runs', runId);
+const OUT = join(network.evidenceDir, runId);
 mkdirSync(OUT, { recursive: true });
 
 const checks = [];
@@ -64,40 +61,53 @@ async function expectRejection(id, action, expectedFragment) {
 }
 
 // ---------------------------------------------------------------- setup
-const operatorProvider = new LedgerClient({ baseUrl: PROVIDER_API, userId: OPERATOR_USER, label: 'operator@app-provider' });
-const operatorUser = new LedgerClient({ baseUrl: USER_API, userId: OPERATOR_USER, label: 'operator@app-user' });
-
 const packageId = JSON.parse(execFileSync(join(process.env.HOME, '.dpm/bin/dpm'), ['damlc', 'inspect-dar', '--json', DAR], {
   env: { ...process.env, JAVA_HOME: process.env.JAVA_HOME ?? '/opt/homebrew/opt/openjdk@21' },
   stdio: ['ignore', 'pipe', 'ignore'],
 }).toString()).main_package_id;
 const darSha256 = createHash('sha256').update(readFileSync(DAR)).digest('hex');
 
-await operatorProvider.uploadDar(DAR);
-await operatorUser.uploadDar(DAR);
-step('dar uploaded to app-provider and app-user participants', { packageId, darSha256 });
-
-const roles = [
-  { role: 'admin', api: PROVIDER_API, operator: operatorProvider },
-  { role: 'lpA', api: USER_API, operator: operatorUser },
-  { role: 'lpB', api: USER_API, operator: operatorUser },
-  { role: 'lpC', api: USER_API, operator: operatorUser },
-  { role: 'outsider', api: USER_API, operator: operatorUser },
-];
 const party = {};
 const client = {};
-for (const { role, api, operator } of roles) {
-  party[role] = await operator.allocateParty(`draw-${role}-${runTag}`);
-  const userId = `draw-${role}-${runTag}`;
-  await operator.createUser(userId, { actAs: [party[role]], readAs: [party[role]] });
-  client[role] = new LedgerClient({ baseUrl: api, userId, label: role });
+const users = {};
+const participantApis = [...new Set(ROLES.map((role) => network.apiFor(role)))];
+
+if (network.partyMode === 'allocate') {
+  // LocalNet: the participant operator creates fresh parties and one user per party.
+  const operators = Object.fromEntries(participantApis.map((api) => [api, new LedgerClient({ baseUrl: api, userId: network.operators.provider })]));
+  for (const operator of Object.values(operators)) await operator.uploadDar(DAR);
+  step('dar uploaded', { participants: participantApis, packageId, darSha256 });
+  for (const role of ROLES) {
+    const operator = operators[network.apiFor(role)];
+    party[role] = await operator.allocateParty(`draw-${role}-${runTag}`);
+    users[role] = `draw-${role}-${runTag}`;
+    await operator.createUser(users[role], { actAs: [party[role]], readAs: [party[role]] });
+  }
+  users.verifier = `draw-verifier-${runTag}`;
+  await operators[network.apiFor('admin')].createUser(users.verifier, { readAs: [party.admin] });
+} else {
+  // DevNet: parties and users were provisioned for us. Each role still uses its own credential.
+  for (const role of ROLES) {
+    party[role] = network.provisioned[role].party;
+    users[role] = network.provisioned[role].userId;
+  }
+  users.verifier = network.provisioned.verifier.userId;
+  if (network.operators.provider) {
+    await new LedgerClient({ baseUrl: network.apiFor('admin'), userId: network.operators.provider }).uploadDar(DAR);
+    step('dar uploaded', { participant: network.apiFor('admin'), packageId, darSha256 });
+  }
+  for (const api of participantApis) {
+    const role = ROLES.find((r) => network.apiFor(r) === api);
+    const known = await new LedgerClient({ baseUrl: api, userId: users[role] }).knownPackageNames();
+    if (!known.includes(packageId)) throw new Error(`package ${packageId} is not on ${api}. Upload contracts/daml/.daml/dist/draw-0.1.0.dar first.`);
+  }
 }
-const verifierUserId = `draw-verifier-${runTag}`;
-await operatorProvider.createUser(verifierUserId, { readAs: [party.admin] });
-step('parties and party-scoped users created', { party, verifierUser: verifierUserId, verifierRights: 'readAs admin only' });
+for (const role of ROLES) client[role] = new LedgerClient({ baseUrl: network.apiFor(role), userId: users[role], label: role });
+const verifierUserId = users.verifier;
+step('party-scoped users ready', { network: network.name, partyMode: network.partyMode, party, users, verifierRights: 'readAs admin only' });
 
 const instrument = await amuletInstrument();
-const verifier = new SettlementVerifier({ baseUrl: PROVIDER_API, userId: verifierUserId, adminParty: party.admin, instrument });
+const verifier = new SettlementVerifier({ baseUrl: network.apiFor('admin'), userId: verifierUserId, adminParty: party.admin, instrument });
 
 // Credentials are scoped: LP A's token cannot read or act as LP B.
 await expectRejection('credential: lpA token cannot read as lpB',
@@ -132,6 +142,8 @@ step('unlocked Amulet balances before', balancesBefore);
 
 // ---------------------------------------------------------------- fund and call
 const fundId = `FUND-${runTag}`;
+// Provisioned parties keep contracts from earlier runs, so reads are scoped to this fund.
+const inFund = (contract) => contract.payload.fundId === fundId;
 const fundName = 'Example Ventures I (demo)';
 const fundCreate = await client.admin.create({ actAs: [party.admin], templateId: TEMPLATES.Fund, argument: { admin: party.admin, fundId, fundName } });
 const fundCid = transactionEvents(fundCreate.transaction).find((e) => e.kind === 'created').contractId;
@@ -142,17 +154,20 @@ for (const [role, committed] of Object.entries(commitments)) {
     actAs: [party.admin], templateId: TEMPLATES.Fund, contractId: fundCid, choice: 'Fund_InviteInvestor',
     argument: { lp: party[role], committedScenarioAmount: committed, instrumentId: instrument },
   });
-  const [invitation] = await eventually(() => client[role].activeContracts(party[role], { templateId: TEMPLATES.CommitmentInvitation }), (l) => l.length === 1);
+  const [invitation] = await eventually(async () => (await client[role].activeContracts(party[role], { templateId: TEMPLATES.CommitmentInvitation })).filter(inFund), (l) => l.length === 1);
   await client[role].exercise({
     actAs: [party[role]], templateId: TEMPLATES.CommitmentInvitation, contractId: invitation.contractId, choice: 'Invitation_Accept', argument: {},
   });
 }
-const adminCommitments = await eventually(() => client.admin.activeContracts(party.admin, { templateId: TEMPLATES.InvestorCommitment }), (l) => l.length === 3);
+const adminCommitments = await eventually(async () => (await client.admin.activeContracts(party.admin, { templateId: TEMPLATES.InvestorCommitment })).filter(inFund),
+  (l) => l.length === 3);
 const commitmentOf = (role) => adminCommitments.find((c) => c.payload.lp === party[role]).contractId;
 step('fund created, three commitments accepted by each LP with its own credential', { fundId, commitments });
 
 // References are opaque so the token registry's view of an allocation does not name the LP.
-const ref = Object.fromEntries(['lpA', 'lpB', 'lpC'].map((role) => [role, `DRAW-${randomBytes(8).toString('hex')}`]));
+const newRef = () => `DRAW-${randomBytes(8).toString('hex')}`;
+const ref = Object.fromEntries(['lpA', 'lpB', 'lpC'].map((role) => [role, newRef()]));
+const runRefs = new Set(Object.values(ref));
 const plan = {
   lpA: { amountDue: '40.0', scenarioAmount: '400000.0' },
   lpB: { amountDue: '35.0', scenarioAmount: '350000.0' },
@@ -180,29 +195,45 @@ async function obligationFor(role, reader = 'admin', expectedState) {
 }
 
 // ---------------------------------------------------------------- visibility
+// The matrix shows this run's contracts. The leak check looks at everything the
+// reader can see, from any run, and requires every DRAW contract to involve it.
 async function visibilityMatrix(label) {
   const matrix = {};
-  for (const reader of ['admin', 'lpA', 'lpB', 'lpC', 'outsider']) {
+  const leaks = {};
+  for (const reader of ROLES) {
     const row = {};
+    leaks[reader] = [];
     for (const [name, templateId] of Object.entries(TEMPLATES)) {
-      const contracts = await client[reader].activeContracts(party[reader], { templateId });
+      const everything = await client[reader].activeContracts(party[reader], { templateId });
+      leaks[reader].push(...everything
+        .filter((c) => c.payload.admin !== party[reader] && c.payload.lp !== party[reader])
+        .map((c) => `${name}:${c.contractId}`));
+      const contracts = everything.filter(inFund);
       row[name] = contracts.map((c) => {
         const lpRole = Object.keys(party).find((r) => party[r] === c.payload.lp);
         return name === 'CapitalCallObligation' ? `obligation:${lpRole}` : name === 'InvestorCommitment' ? `commitment:${lpRole}` : name;
       }).sort();
     }
-    const allocations = await client[reader].activeContracts(party[reader], { interfaceId: INTERFACES.Allocation });
+    const allocations = (await client[reader].activeContracts(party[reader], { interfaceId: INTERFACES.Allocation }))
+      .filter((a) => {
+        const { settlement, transferLeg } = a.interfaceView.allocation;
+        if (![settlement.executor, transferLeg.sender, transferLeg.receiver].includes(party[reader])) leaks[reader].push(`Allocation:${a.contractId}`);
+        return runRefs.has(settlement.settlementRef.id);
+      });
     row.Allocation = allocations.map((a) => {
       const sender = a.interfaceView.allocation.transferLeg.sender;
       return `allocation:${Object.keys(party).find((r) => party[r] === sender) ?? 'other'}`;
     }).sort();
     matrix[reader] = row;
   }
-  writeJson(`visibility-${label}.json`, matrix);
-  return matrix;
+  writeJson(`visibility-${label}.json`, { matrix, leaks });
+  return { matrix, leaks };
 }
 
-function assertMatrix(label, matrix) {
+function assertMatrix(label, { matrix, leaks }) {
+  for (const reader of ROLES) {
+    check(`privacy[${label}]: ${reader} sees no DRAW or allocation contract it is not party to, from any run`, leaks[reader].length === 0, leaks[reader]);
+  }
   const obligations = (reader) => matrix[reader].CapitalCallObligation;
   check(`privacy[${label}]: admin sees all three obligations`,
     JSON.stringify(obligations('admin')) === JSON.stringify(['obligation:lpA', 'obligation:lpB', 'obligation:lpC']), obligations('admin'));
@@ -313,7 +344,7 @@ async function settleAndVerify(role) {
 
   const receipt = await verifier.verify({ obligationRef: ref[role], claimedUpdateId: settled.transaction.updateId });
   receipts[role] = {
-    environment: 'LocalNet (Splice 0.8.4, Canton 3.5.19)',
+    environment: network.name,
     fundId, callId: 'CALL-1', packageId,
     payer: party[role],
     expected: { amount: plan[role].amountDue, instrument, scenarioAmountUsd: plan[role].scenarioAmount },
@@ -343,7 +374,9 @@ const wrongParty = await allocate('lpC', { obligationRef: ref.lpB, amount: plan.
 await expectRejection('negative: wrong payer does not fund', () => settle('lpB', wrongParty.allocationCid),
   'allocation sender is not the obligated LP');
 
-const wrongRef = await allocate('lpB', { obligationRef: `DRAW-${randomBytes(8).toString('hex')}`, amount: plan.lpB.amountDue });
+const strayRef = newRef();
+runRefs.add(strayRef);
+const wrongRef = await allocate('lpB', { obligationRef: strayRef, amount: plan.lpB.amountDue });
 await expectRejection('negative: wrong reference does not fund', () => settle('lpB', wrongRef.allocationCid),
   'allocation settlement reference does not match obligation');
 
@@ -377,7 +410,8 @@ for (const [role, rejected] of [['lpB', wrongAmount], ['lpC', wrongParty], ['lpB
   const result = await withdraw(role, rejected.allocationCid);
   step(`${role} withdrew rejected allocation`, { allocationCid: rejected.allocationCid, updateId: result.transaction.updateId });
 }
-const lockedAfterWithdraw = await client.admin.activeContracts(party.admin, { interfaceId: INTERFACES.Allocation });
+const lockedAfterWithdraw = (await client.admin.activeContracts(party.admin, { interfaceId: INTERFACES.Allocation }))
+  .filter((a) => runRefs.has(a.interfaceView.allocation.settlement.settlementRef.id));
 check('negative: rejected allocations withdrawn, none left for admin to execute', lockedAfterWithdraw.length === 0,
   lockedAfterWithdraw.map((a) => a.contractId));
 
@@ -400,11 +434,11 @@ const stateC = (await obligationFor('lpC', 'lpC', 'Overdue'))?.payload?.state;
 check('unpaid: lpC obligation is Overdue after the due time, not Funded', stateC === 'Overdue', { state: stateC, updateId: overdue.transaction.updateId });
 
 // ---------------------------------------------------------------- admin totals
-const adminObligations = await client.admin.activeContracts(party.admin, { templateId: TEMPLATES.CapitalCallObligation });
+const adminObligations = (await client.admin.activeContracts(party.admin, { templateId: TEMPLATES.CapitalCallObligation })).filter(inFund);
 const verifiedRefs = new Set(Object.values(receipts).filter((r) => r.verdict === 'VERIFIED_FUNDED').map((r) => r.obligationRef));
 const fundedDisplay = adminObligations.filter((o) => o.payload.state === 'Funded' && verifiedRefs.has(o.payload.obligationRef));
 const unresolved = adminObligations.filter((o) => !fundedDisplay.includes(o) && o.payload.state !== 'Waived');
-const [call] = await client.admin.activeContracts(party.admin, { templateId: TEMPLATES.CapitalCall });
+const [call] = (await client.admin.activeContracts(party.admin, { templateId: TEMPLATES.CapitalCall })).filter(inFund);
 const balancesAfter = Object.fromEntries(await Promise.all(['admin', 'lpA', 'lpB', 'lpC'].map(async (r) => [r, await amuletBalance(r)])));
 const totals = {
   fundedScenarioUsd: sum(fundedDisplay.map((o) => o.payload.scenarioAmount)),
@@ -443,19 +477,22 @@ const group = (prefix) => checks.filter((c) => prefix.some((p) => c.id.startsWit
 const verdict = (list) => (list.length > 0 && list.every((c) => c.ok) ? 'PASS' : 'FAIL');
 const result = {
   runId,
-  environment: 'LocalNet',
-  splice: '0.8.4',
-  canton: (await operatorProvider.request('GET', '/v2/version')).version,
+  environment: network.name,
+  authMode: network.authMode,
+  partyMode: network.partyMode,
+  canton: (await client.admin.request('GET', '/v2/version')).version,
   commit: execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD']).toString().trim(),
   uncommittedFiles: execFileSync('git', ['-C', ROOT, 'status', '--porcelain', '--', '.', ':!evidence']).toString().split('\n').filter(Boolean).length,
   packageId,
   darSha256,
   instrument,
   parties: party,
-  participants: { admin: 'app-provider', lpA: 'app-user', lpB: 'app-user', lpC: 'app-user', outsider: 'app-user' },
+  fundId,
+  users,
+  participants: Object.fromEntries(ROLES.map((role) => [role, network.participantLabel(role)])),
   verifierUser: verifierUserId,
   gates: {
-    LOCAL_SETTLEMENT: verdict(group(['settlement', 'negative', 'unpaid', 'deadline', 'totals'])),
+    [network.name === 'localnet' ? 'LOCAL_SETTLEMENT' : 'DEVNET_E2E']: verdict(group(['settlement', 'negative', 'unpaid', 'deadline', 'totals'])),
     PRIVACY_CAMPAIGN: verdict(group(['privacy', 'authority', 'credential'])),
   },
   passed: checks.filter((c) => c.ok).length,

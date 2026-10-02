@@ -1,11 +1,10 @@
 // Party-scoped JSON Ledger API v2 client. One instance per ledger user, so
 // every read and write is authorized by that user's own rights on the
 // participant, never by a shared admin credential.
-import { createHmac, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-const AUTH_SECRET = process.env.LEDGER_AUTH_SECRET ?? 'unsafe';
-const AUTH_AUDIENCE = process.env.LEDGER_AUTH_AUDIENCE ?? 'https://canton.network.global';
+import { tokenFor } from './auth.mjs';
 
 export const TEMPLATES = {
   Fund: '#draw:Draw.CapitalCall:Fund',
@@ -20,19 +19,6 @@ export const INTERFACES = {
   Allocation: '#splice-api-token-allocation-v1:Splice.Api.Token.AllocationV1:Allocation',
   AllocationFactory: '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationFactory',
 };
-
-const base64url = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
-
-export function mintToken(userId) {
-  const header = base64url({ alg: 'HS256', typ: 'JWT' });
-  const payload = base64url({
-    sub: userId,
-    aud: AUTH_AUDIENCE,
-    exp: Math.floor(Date.now() / 1000) + 3600,
-  });
-  const signature = createHmac('sha256', AUTH_SECRET).update(`${header}.${payload}`).digest('base64url');
-  return `${header}.${payload}.${signature}`;
-}
 
 export class LedgerError extends Error {
   constructor(status, path, body) {
@@ -51,7 +37,7 @@ export class LedgerClient {
   }
 
   async request(method, path, { json, body, contentType } = {}) {
-    const headers = { Authorization: `Bearer ${mintToken(this.userId)}` };
+    const headers = { Authorization: `Bearer ${await tokenFor(this.userId)}` };
     let payload = body;
     if (json !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -98,6 +84,11 @@ export class LedgerClient {
         rights,
       },
     });
+  }
+
+  async knownPackageNames() {
+    const { packageIds } = await this.request('GET', '/v2/packages');
+    return packageIds;
   }
 
   async userRights(userId) {

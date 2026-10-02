@@ -60,6 +60,10 @@ node app/server.mjs   # http://localhost:4173
 
 LocalNet uses its documented `unsafe` HS256 secret. Each party gets its own ledger user with rights on that party only.
 
+### DevNet
+
+Copy `.env.example` to `.env`, set `DRAW_NETWORK=devnet`, and fill in the participant URL, OAuth token URL, Scan and registry URLs, and one user, party, and OAuth client per role. If you were given a participant_admin user instead of ready-made parties, set `DRAW_OPERATOR_*` and run `node scripts/demo/provision.mjs`, then paste its output into `.env`. Then run `node scripts/demo/run.mjs`. Evidence goes to `evidence/devnet/runs/`.
+
 ## Not done yet
 
 - DevNet deployment: blocked on AppsFactory or NODERS credentials.

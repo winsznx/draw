@@ -1,26 +1,29 @@
 // Prints the judge view of one evidence run. Reads only files the run wrote.
 // Usage: node scripts/demo/summary.mjs [runId]   (defaults to the latest run)
 import { readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
-const RUNS = join(dirname(fileURLToPath(import.meta.url)), '../../evidence/local/runs');
+import { network } from './lib/network.mjs';
+
+const RUNS = network.evidenceDir;
 const runId = process.argv[2] ?? readdirSync(RUNS).sort().at(-1);
 const read = (file) => JSON.parse(readFileSync(join(RUNS, runId, file), 'utf8'));
 
 const result = read('result.json');
 const totals = read('totals.json');
-const visibility = read('visibility-final.json');
+const finalView = read('visibility-final.json');
+const visibility = finalView.matrix ?? finalView;
 const usd = (n) => `$${Number(n).toLocaleString('en-US')}`;
 const short = (id) => (id ? `${id.slice(0, 12)}…` : '-');
 
-console.log(`DRAW capital call, LocalNet run ${runId}`);
-console.log(`commit ${result.commit.slice(0, 7)}, package ${short(result.packageId)}, Canton ${result.canton}, Splice ${result.splice}`);
+console.log(`DRAW capital call, ${result.environment} run ${runId}`);
+console.log(`commit ${result.commit.slice(0, 7)}, package ${short(result.packageId)}, Canton ${result.canton}`);
 console.log(`instrument ${result.instrument.id} (registry admin ${short(result.instrument.admin)})\n`);
 
 console.log('What each party can read through its own ledger credential');
 for (const [reader, row] of Object.entries(visibility)) {
-  console.log(`  ${reader.padEnd(9)} obligations: ${(row.CapitalCallObligation.join(', ') || 'none').padEnd(52)} fund/call: ${row.Fund.length + row.CapitalCall.length > 0 ? 'yes' : 'no'}`);
+  const leaked = finalView.leaks?.[reader]?.length ?? 0;
+  console.log(`  ${reader.padEnd(9)} leaks: ${leaked}  obligations: ${(row.CapitalCallObligation.join(', ') || 'none').padEnd(52)} fund/call: ${row.Fund.length + row.CapitalCall.length > 0 ? 'yes' : 'no'}`);
 }
 
 console.log('\nObligations, admin view, recomputed from the ledger');
@@ -45,6 +48,6 @@ console.log(`  funded     ${usd(totals.fundedScenarioUsd)}`);
 console.log(`  unresolved ${usd(totals.unresolvedScenarioUsd)}`);
 console.log(`  call total ${usd(totals.callTotalScenarioUsd)}`);
 console.log(`  admin received ${totals.adminAmuletReceived} Amulet, verified receipts ${totals.verifiedReceiptUnits}`);
-console.log('  (USD figures are the business scenario. Amulet figures are what actually moved on LocalNet.)');
+console.log(`  (USD figures are the business scenario. Amulet figures are what actually moved on ${result.environment}.)`);
 
 console.log(`\nGates: ${Object.entries(result.gates).map(([g, v]) => `${g} ${v}`).join(', ')}. ${result.passed} checks passed, ${result.failed.length} failed.`);

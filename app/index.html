@@ -36,7 +36,7 @@
 <main>
   <header>
     <h1>DRAW capital call</h1>
-    <span class="env">LocalNet demo environment · run __RUN_ID__</span>
+    <span class="env">__NETWORK__ demo environment · run __RUN_ID__</span>
   </header>
   <nav aria-label="Party">
     <button data-role="admin">Fund admin</button>
@@ -79,7 +79,7 @@ async function show(role) {
   html += '</section>';
   html += '<details><summary>Ledger query details</summary><p>Read with ledger user <code>' + esc(data.queriedAs.userId)
     + '</code> as party <code>' + esc(data.queriedAs.party) + '</code> on participant <code>' + esc(data.queriedAs.participant)
-    + '</code>. USD amounts are the business scenario. Amulet amounts are what moved on LocalNet. Funded means an independent verifier read the settlement back.</p></details>';
+    + '</code>. USD amounts are the business scenario. Amulet amounts are what moved on __NETWORK__. Funded means an independent verifier read the settlement back.</p></details>';
   view.innerHTML = html;
 }
 document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => show(b.dataset.role)));

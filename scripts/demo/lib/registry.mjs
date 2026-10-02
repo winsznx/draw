@@ -1,13 +1,20 @@
-// Token Standard registry and Scan reads for Amulet on LocalNet. These are
-// public endpoints. They supply factories, choice contexts, and disclosed
+// Token Standard registry and Scan reads for Amulet. Public on LocalNet. On
+// DevNet they may sit behind a validator's scan proxy, which takes a token. They supply factories, choice contexts, and disclosed
 // contracts. They never decide whether an obligation is funded.
-const REGISTRY_URL = process.env.REGISTRY_URL ?? 'http://scan.localhost:4000/registry';
-const SCAN_URL = process.env.SCAN_URL ?? 'http://scan.localhost:4000/api/scan';
+import { tokenFor } from './auth.mjs';
+import { network } from './network.mjs';
+
+const REGISTRY_URL = network.registryUrl;
+const SCAN_URL = network.scanUrl;
+
+async function authHeaders() {
+  return network.scanAuthUser ? { Authorization: `Bearer ${await tokenFor(network.scanAuthUser)}` } : {};
+}
 
 async function postJson(url, json) {
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify(json),
   });
   const text = await response.text();
@@ -16,7 +23,7 @@ async function postJson(url, json) {
 }
 
 async function getJson(url) {
-  const response = await fetch(url);
+  const response = await fetch(url, { headers: await authHeaders() });
   const text = await response.text();
   if (!response.ok) throw new Error(`${url} -> HTTP ${response.status}: ${text}`);
   return JSON.parse(text);
