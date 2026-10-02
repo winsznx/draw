@@ -1,0 +1,135 @@
+{
+  "runId": "20261002T193830Z",
+  "environment": "localnet",
+  "commit": "f5f92adfdf67d765a15c78f88692c704420f59d0",
+  "systems": [
+    {
+      "system": "COUNTERFACTUAL_A",
+      "attacks": [
+        {
+          "id": "mark-unpaid-funded",
+          "landed": true,
+          "how": "UPDATE obligations SET paid = 1 WHERE lp = 'lpC' succeeded with no payment row"
+        },
+        {
+          "id": "read-without-role-filter",
+          "landed": true,
+          "how": "query without \"where lp = ?\" returned 2 other investors' obligations",
+          "correctlyFilteredView": 1
+        },
+        {
+          "id": "replay-payment-evidence",
+          "landed": true,
+          "how": "an existing payment row was enough evidence to flip another obligation"
+        },
+        {
+          "id": "funded-without-asset-movement",
+          "landed": true,
+          "how": "a payment row was inserted. No asset moved anywhere the database can check"
+        },
+        {
+          "id": "lp-mutates-own-obligation",
+          "landed": false,
+          "how": "LPs have no write path in this design"
+        }
+      ],
+      "honestTotals": {
+        "fundedUsd": 750000,
+        "unresolvedUsd": 250000
+      }
+    },
+    {
+      "system": "COUNTERFACTUAL_B",
+      "exposedToEveryParticipant": [
+        "lp (investor identity)",
+        "amountDue",
+        "scenarioAmount (commitment share)",
+        "dueAt",
+        "state (who paid, who is overdue)",
+        "settlement holdings"
+      ],
+      "attacks": [
+        {
+          "id": "read-without-role-filter",
+          "landed": true,
+          "how": "every obligation is replicated to every participant, including other LPs and unrelated parties"
+        }
+      ]
+    },
+    {
+      "system": "TREATMENT",
+      "attacks": [
+        {
+          "id": "mark-unpaid-funded",
+          "landed": false,
+          "how": "create Funded obligation as admin: refused (Interpretation error: Error: node NodeId(0) (a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496:Draw.CapitalCall:CapitalCallObligation) requires authorizers draw-admin-abl20261002t193830). Settle with no matching payment: refused"
+        },
+        {
+          "id": "read-without-role-filter",
+          "landed": false,
+          "how": "LP A's unfiltered ledger read returned 0 other obligations. Fetch of LP B's obligation by id: refused"
+        },
+        {
+          "id": "replay-payment-evidence",
+          "landed": false,
+          "how": "settle LP C with LP A's consumed allocation: refused (Contract could not be found with id 009c94ec90ef368fe7446225a21c9f621031848d13a119543860e2c462deb0f795ca121220d988b220498ad156464b70acfc65112e50a2b7951c8db2161abe6348f26256e4)"
+        },
+        {
+          "id": "funded-without-asset-movement",
+          "landed": false,
+          "how": "1 place(s) in the model set Funded, inside Obligation_Settle after Allocation_ExecuteTransfer: true. Verifier on an unbacked claim: CONTRADICTED"
+        },
+        {
+          "id": "lp-mutates-own-obligation",
+          "landed": false,
+          "how": "LP C waiving its own obligation: refused"
+        }
+      ],
+      "honestTotals": {
+        "fundedUsd": 750000,
+        "unresolvedUsd": 250000
+      },
+      "fundId": "ABL-20261002T193830Z",
+      "parties": {
+        "admin": "draw-admin-abl20261002t193830z::122059ad13dba3535d59c1f7aa9bd4dffc93b36bb04e6f242a3ee05f3733da881806",
+        "lpA": "draw-lpA-abl20261002t193830z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+        "lpB": "draw-lpB-abl20261002t193830z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+        "lpC": "draw-lpC-abl20261002t193830z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8",
+        "outsider": "draw-outsider-abl20261002t193830z::1220b3c4e47e71acfe2c0a0aa070a60b3365479b7048608499a7fca20390b98349a8"
+      },
+      "packageId": "a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496"
+    }
+  ],
+  "comparison": [
+    {
+      "attack": "mark-unpaid-funded",
+      "counterfactualA": "LANDED",
+      "treatment": "stopped"
+    },
+    {
+      "attack": "read-without-role-filter",
+      "counterfactualA": "LANDED",
+      "treatment": "stopped"
+    },
+    {
+      "attack": "replay-payment-evidence",
+      "counterfactualA": "LANDED",
+      "treatment": "stopped"
+    },
+    {
+      "attack": "funded-without-asset-movement",
+      "counterfactualA": "LANDED",
+      "treatment": "stopped"
+    },
+    {
+      "attack": "lp-mutates-own-obligation",
+      "counterfactualA": "stopped",
+      "treatment": "stopped"
+    }
+  ],
+  "sameInBoth": [
+    "admin sees every obligation",
+    "honest-path funded and unresolved totals"
+  ],
+  "verdict": "TREATMENT_STOPS_ALL"
+}
