@@ -16,7 +16,7 @@ Compared with the builder's most recent products, read from their repositories o
 | Axis | DRAW | Overlap |
 |---|---|---|
 | Product object | A capital call and each LP's obligation | None of the six models a fund call or per-LP obligations |
-| Privacy model | Per-party ledger visibility: each LP's ledger view never contains other LPs' contracts. With one participant per LP, those contracts never reach its node | Others use ZK shielded notes (Limen), confidential compute (Kyrve), encrypted vaults (Hatch), or are public (Sluize) |
+| Privacy model | Per-party ledger visibility: each LP's ledger view never contains other LPs' contracts. With one participant per LP, those contracts never reach its node (Canton's documented model, not tested here) | Others use ZK shielded notes (Limen), confidential compute (Kyrve), encrypted vaults (Hatch), or are public (Sluize) |
 | Chain | Canton, Daml, CIP-0056 | None of the six uses Canton |
 | Mechanism | Settlement-coupled state: the obligation flips in the transaction that moves the asset | Afterstate also gates state on what actually happened, for agents |
 | Judge surface | `/proof` page, 100-case campaign, ablation, independent verifier | Same pattern as Limen, Afterstate, and Kyrve |
