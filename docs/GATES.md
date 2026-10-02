@@ -6,12 +6,13 @@ Verdicts come from `result.json` files written by scripts. This page only points
 
 | Gate | Verdict | Latest evidence | Notes |
 |---|---|---|---|
-| DAML_CORE | PASS | `evidence/local/daml_core/20261002T192910Z/result.json` | Package 0.2.0 `a006197e…7496`, 6 Daml Script suites. Earlier PASS on 0.1.0: `20261001T160054Z` |
+| DAML_CORE | PASS | `evidence/local/daml_core/20261002T192910Z/result.json` | Package 0.2.0 `a006197e…7496`, 5 Daml Script test suites. Earlier PASS on 0.1.0: `20261001T160054Z` |
 | Mutation (supports DAML_CORE) | PASS, 10 of 10 killed | `evidence/local/mutation/20261002T192939Z/result.json` | Adds release and reopen guards. Earlier 8 of 8: `20261001T160135Z` |
 | LOCAL_SETTLEMENT | PASS | `evidence/local/runs/20261002T185353Z/result.json` | 69 of 69 checks, package 0.1.0. First canonical PASS `20261001T162427Z`. Not yet rerun on 0.2.0 |
 | PRIVACY_CAMPAIGN | PASS (ACS) | same run | Matrix plus cross-run leak check. The transaction-stream check was added after this run and has not run yet |
 | Generalization (100 cases) | PASS | `evidence/local/campaign/20261002T193724Z/result.json` | Seed 20261002, 191 obligations, 0 false funded, 0 privacy violations, 0 replays, 0 aggregate mismatches. Ran on 0.2.0 |
 | Ablation | DRAW stops 5 of 5, database stops 1 of 5 | `evidence/local/ablation/20261002T193830Z/result.json` | `docs/CANTON_ABLATION.md` |
+| Clean room | PASS_OFFLINE_ONLY | `evidence/local/clean_room/20261002T200553Z/result.json` | Fresh clone builds, tests, and builds the app. Ledger steps need LocalNet |
 | Browser journey | FAIL (infrastructure) | `evidence/local/browser/20261002T195013Z` | LocalNet was down. No ledger action ran. Rerun needed |
 | DEVNET_E2E | BLOCKED_ON_HUMAN | | No organizer endpoint or credentials yet |
 

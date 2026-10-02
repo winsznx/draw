@@ -1,0 +1,40 @@
+{
+  "check": "CLEAN_ROOM",
+  "runId": "20261002T200553Z",
+  "commit": "56a79f908bf4e9621520347ee122aa96fac8dfa8",
+  "ledgerSteps": "skipped",
+  "damlSuitesOk": 5,
+  "steps": [
+    {
+      "name": "clone",
+      "exit": 0,
+      "seconds": 0
+    },
+    {
+      "name": "prerequisites",
+      "exit": 0,
+      "seconds": 0
+    },
+    {
+      "name": "contracts-build",
+      "exit": 0,
+      "seconds": 18
+    },
+    {
+      "name": "contracts-test",
+      "exit": 0,
+      "seconds": 12
+    },
+    {
+      "name": "web-install",
+      "exit": 0,
+      "seconds": 1
+    },
+    {
+      "name": "web-build",
+      "exit": 0,
+      "seconds": 2
+    }
+  ],
+  "verdict": "PASS_OFFLINE_ONLY"
+}

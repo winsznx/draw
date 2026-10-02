@@ -6,7 +6,7 @@ All results here are produced by scripts. Each section names the script and the 
 
 | Layer | Script | Runs on | Latest evidence |
 |---|---|---|---|
-| Daml Script suites (6) | `scripts/gates/daml_core.sh` | Daml Script, test token | `evidence/local/daml_core/20261002T192910Z` PASS |
+| Daml Script test suites (5) | `scripts/gates/daml_core.sh` | Daml Script, test token | `evidence/local/daml_core/20261002T192910Z` PASS |
 | Guard mutations (10) | `scripts/gates/mutation_check.sh` | Daml Script | `evidence/local/mutation/20261002T192939Z` 10 of 10 killed |
 | Canonical run (69 checks plus stream checks) | `node scripts/demo/run.mjs` | LocalNet, Amulet | `evidence/local/runs/` latest |
 | Generalization (100 seeded cases) | `node scripts/eval/campaign.mjs` | LocalNet, Amulet | `evidence/local/campaign/20261002T193724Z` PASS |
