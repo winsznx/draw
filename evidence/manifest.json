@@ -1,0 +1,1071 @@
+{
+  "generatedAt": "2026-10-02T20:03:41.123Z",
+  "generatedAtCommit": "f38bbaa7afac681c08d84310400b34aacd0bb9d0",
+  "generator": "node scripts/evidence/manifest.mjs",
+  "tokenStandardPackages": [
+    {
+      "file": "splice-api-token-allocation-v1-1.0.0.dar",
+      "sha256": "c3f3b447142577ea4fa7d912ca11cd6821de7588e324e8877425932a02fccaa1"
+    },
+    {
+      "file": "splice-api-token-holding-v1-1.0.0.dar",
+      "sha256": "ef75f8eb41a65810221784fdb78bb9dfac7cb22245aba14fa7cb7f69c34e0175"
+    },
+    {
+      "file": "splice-api-token-metadata-v1-1.0.0.dar",
+      "sha256": "455eb160cb5abd4ae9918a6fbb9dad471f721adda39f0e5c76feef08d05637fc"
+    }
+  ],
+  "runs": [
+    {
+      "kind": "ablation",
+      "environment": "localnet",
+      "runId": "20261002T193830Z",
+      "path": "evidence/local/ablation/20261002T193830Z",
+      "commit": "f5f92adfdf67d765a15c78f88692c704420f59d0",
+      "verdict": "TREATMENT_STOPS_ALL",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node scripts/eval/ablation.mjs",
+      "verifierCommand": "same attacks against node:sqlite and against the ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "result.json",
+          "sha256": "ed81d4351e4dbf383c3e4e88f4e2a1d091b3d7d6a54a85290ab6890249755a65"
+        }
+      ],
+      "claims": [
+        "canton-load-bearing"
+      ]
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "FUND-20261002185854",
+      "path": "evidence/local/app/FUND-20261002185854",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [
+        {
+          "file": "receipt-DRAW-0834b6327d55506c.json",
+          "updateId": "12203c75c7fbd3bcf1ce35d0c8610c9e119604c9e8a05c66c82a890cde62d0dc52c8",
+          "allocationCid": "00b046fd3be8e85ac3abcb86142fbd094e1fc145661886715aff2055b758757711ca121220d32573eeb66954d26819a03c900606fb85e90e364076704565edaa26bf5ff4da",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-DRAW-c7d3fd47d36441e2.json",
+          "updateId": "1220ba1adbdbfd4c8ed4418e492435f2f0e878cf15e0cecc16cf6b85736021e81c74",
+          "allocationCid": "00173d69e0b7af0c9b9efd9cd697b40153c5aff9c9da12d528b429dc2649a84209ca121220f726a5720dca16bb44badb09f681e75f900b940871fd9160d8f598cb1123fd83",
+          "verdict": "VERIFIED_FUNDED"
+        }
+      ],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "c69895250477055b5dc5751e5c4a38cb554486f0964d3d72bfe512ce3581f8b9"
+        },
+        {
+          "path": "receipt-DRAW-0834b6327d55506c.json",
+          "sha256": "445f11e33f2367f748bf53065f241806402af10b3e51bdfc892eff044d6daac8"
+        },
+        {
+          "path": "receipt-DRAW-c7d3fd47d36441e2.json",
+          "sha256": "5b7130a1c0f51a1064f3b24c30587bcb73de81812d86265d825583c2e98fe696"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "20261002T195013Z",
+      "path": "evidence/local/browser/20261002T195013Z",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in app/web",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "NOTE.md",
+          "sha256": "88df7bea183510cafb23125b95ed59a6af40d2a78773e713fa43553216e83766"
+        },
+        {
+          "path": "artifacts/.last-run.json",
+          "sha256": "b3b1f9555adf2fe6df5461a62c8069cf58f46e74bcb7327f69431ef0c5ca79e6"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/error-context.md",
+          "sha256": "fe56b2e133600ab868f0344a106821e8519f78b5c6c5b29e8c846857b34e31b1"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/test-failed-1.png",
+          "sha256": "5c9bab4d2295c1e9c39f7d87f8a3b79d2747e457207678d099557c501b804a29"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/trace.zip",
+          "sha256": "67678518fbce04511a3b76dfd13d7e3cb3aaba762e16a76f548920a3050edc00"
+        },
+        {
+          "path": "report.json",
+          "sha256": "fb90d60cd810f161a60af49f4ba972883696d5c9435353127c386a671ee5c2b7"
+        }
+      ],
+      "claims": [
+        "browser-journey"
+      ]
+    },
+    {
+      "kind": "campaign",
+      "environment": "localnet",
+      "runId": "20261002T193647Z",
+      "path": "evidence/local/campaign/20261002T193647Z",
+      "commit": "79d0eaca720b05e647817fac5806c5691ccd80c6",
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [
+        "a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496"
+      ],
+      "instrument": null,
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": 7,
+      "testCommand": "node scripts/eval/campaign.mjs",
+      "verifierCommand": "reference model in scripts/eval/campaign.mjs plus the read-only verifier",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "cases.jsonl",
+          "sha256": "dc39c43b7f14bd23cc429a4e14b06d730dd98e6606de6c20097b0db819835d27"
+        },
+        {
+          "path": "result.json",
+          "sha256": "5b09f3a429c01771d329c9f195e69a728765bf0f3e6a4d9b8bf627dfeb66cb9d"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "campaign",
+      "environment": "localnet",
+      "runId": "20261002T193724Z",
+      "path": "evidence/local/campaign/20261002T193724Z",
+      "commit": "6fa77743e0d1f6f06b03b4ec3ca90dd1e2c4f0af",
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [
+        "a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496"
+      ],
+      "instrument": null,
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": 20261002,
+      "testCommand": "node scripts/eval/campaign.mjs",
+      "verifierCommand": "reference model in scripts/eval/campaign.mjs plus the read-only verifier",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "cases.jsonl",
+          "sha256": "32d3d3d19f20c41907355bc432768c2516f8aabe6ef0af894a6dfde4397c2061"
+        },
+        {
+          "path": "result.json",
+          "sha256": "8e21b1abd29deb2f4d5b649e31f98114e28c7535a951827fd795ea1dc03864c8"
+        }
+      ],
+      "claims": [
+        "generalization",
+        "negative-settlement",
+        "private-obligations"
+      ]
+    },
+    {
+      "kind": "daml_core",
+      "environment": "local",
+      "runId": "20261001T160054Z",
+      "path": "evidence/local/daml_core/20261001T160054Z",
+      "commit": "36069bcb52f1e2392e70300343e5bbfc378fcd4b",
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "scripts/gates/daml_core.sh",
+      "verifierCommand": "dpm test (Daml Script) in contracts/tests",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "build.log",
+          "sha256": "eb0daa2d8510f833bac1cc6604a2a4fe168d4cf49b933acd1c89b09c5af3fd9f"
+        },
+        {
+          "path": "result.json",
+          "sha256": "08a72f63cea0b21d4371c4e881fe7746825d094d1c8e5c3eb9d560dc36b009e9"
+        },
+        {
+          "path": "test.log",
+          "sha256": "b2663bd9e85699eb9aa4adc42a833d6b8becf5cb33de1afee79fbef646d5e1dd"
+        }
+      ],
+      "claims": [
+        "admin-totals",
+        "negative-settlement",
+        "private-obligations",
+        "settlement-gates-funded",
+        "unpaid-unresolved"
+      ]
+    },
+    {
+      "kind": "daml_core",
+      "environment": "local",
+      "runId": "20261002T192910Z",
+      "path": "evidence/local/daml_core/20261002T192910Z",
+      "commit": "4043a9b46f21f53c6587203e35808da60d9a614c",
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [
+        "a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496"
+      ],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "scripts/gates/daml_core.sh",
+      "verifierCommand": "dpm test (Daml Script) in contracts/tests",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "build.log",
+          "sha256": "292b697a45021a89d02a2069899d3ab947de995eb8766be0b4724c9b035589a9"
+        },
+        {
+          "path": "result.json",
+          "sha256": "380f0292212100dcf99fc2aa2c69d91a1bd31d6734e66aec9f679642a4141485"
+        },
+        {
+          "path": "test.log",
+          "sha256": "72a9385b01ac0ec6298950b6e8ce6601661727583edc55beb81cb22a97493679"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "mutation",
+      "environment": "local",
+      "runId": "20261001T155614Z",
+      "path": "evidence/local/mutation/20261001T155614Z",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "scripts/gates/mutation_check.sh",
+      "verifierCommand": "dpm test against each mutated copy",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "drop-amount-check.log",
+          "sha256": "8695de9781a66f887754282f02eaddbc95e33ea261738d8fb2de59c47a0aef79"
+        },
+        {
+          "path": "drop-deadline-check.log",
+          "sha256": "750628a664accac22d484b9378bfca51df2162ae585b093aca64e107d9ab887f"
+        },
+        {
+          "path": "drop-executor-check.log",
+          "sha256": "021e58987c0dbab393a70fc35b48066eca94505bc5e5dae84432bcfbe1fa23d4"
+        },
+        {
+          "path": "drop-instrument-check.log",
+          "sha256": "829bc1d00aed0cdba93294f3eb742b1c4a07dfbd851955154d805855e634e007"
+        },
+        {
+          "path": "drop-reference-checks.log",
+          "sha256": "a5859bb68d874cdfe7ff98e8f75aae32f90478ffc0252cff93cdbd67a80ac0d9"
+        },
+        {
+          "path": "drop-sender-check.log",
+          "sha256": "182d1d30c44695bd99c96cfefa9ae2fb1d213b4e7ffb546988726b5be87c396b"
+        },
+        {
+          "path": "lp-controls-flag.log",
+          "sha256": "53916d7164a5c258392243431b74e5ccd8839c139b385c6c6af831f496a3e430"
+        },
+        {
+          "path": "result.json",
+          "sha256": "4c466cdca0f246100e26d1e7c4c8214e68863b70f10f4f34abcc70ea04407854"
+        },
+        {
+          "path": "settle-from-funded.log",
+          "sha256": "2bd7b44d0dbac29dfb3f12b6e195b6f3cf0f57794488aeb2f0b285e08e16c3d5"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "mutation",
+      "environment": "local",
+      "runId": "20261001T160135Z",
+      "path": "evidence/local/mutation/20261001T160135Z",
+      "commit": "36069bcb52f1e2392e70300343e5bbfc378fcd4b",
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "scripts/gates/mutation_check.sh",
+      "verifierCommand": "dpm test against each mutated copy",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "drop-amount-check.log",
+          "sha256": "ae6595410b5c764a46bb30b85921578708055a010613a4f4df96d14c8463c8f9"
+        },
+        {
+          "path": "drop-deadline-check.log",
+          "sha256": "29dafe00f5c6026fce8d8daba4bd0e8548e75cfb67cad5af31a82e73c5fcf63c"
+        },
+        {
+          "path": "drop-executor-check.log",
+          "sha256": "2969314c9f468080533389e5c3611e611af8f0160c333724812bde6363345ec2"
+        },
+        {
+          "path": "drop-instrument-check.log",
+          "sha256": "20ca3efffc271606b8d6f64628691fdfce7150113026d782fba9197685766cc0"
+        },
+        {
+          "path": "drop-reference-checks.log",
+          "sha256": "72beb60b261095670d7b0d8de2dbb48dec70d860189b1a09a6a2ee36bdb99b3d"
+        },
+        {
+          "path": "drop-sender-check.log",
+          "sha256": "ec8dff9fc73a6050c5a122eab4eac38d8eb226c0ff8bd7d659c6b740e5b71bc8"
+        },
+        {
+          "path": "lp-controls-flag.log",
+          "sha256": "691d6127960252c9287c87b6e0321398c9ce75d30ba82b857f59108f28b45d3a"
+        },
+        {
+          "path": "result.json",
+          "sha256": "f7b069aab0c9a7f13284eae4c0610cbc5a8ace96864d9927770b4cd49b358a20"
+        },
+        {
+          "path": "settle-from-funded.log",
+          "sha256": "36debfc295065c95f9edade80cda1a7fb8c885c7701ffa7d15f00153818c6420"
+        }
+      ],
+      "claims": [
+        "settlement-gates-funded"
+      ]
+    },
+    {
+      "kind": "mutation",
+      "environment": "local",
+      "runId": "20261002T192939Z",
+      "path": "evidence/local/mutation/20261002T192939Z",
+      "commit": "4043a9b46f21f53c6587203e35808da60d9a614c",
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "scripts/gates/mutation_check.sh",
+      "verifierCommand": "dpm test against each mutated copy",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "drop-amount-check.log",
+          "sha256": "6500bcdf4676b5d4ec4ba1228fd0041c256db7742aeed4d4ba40fc35bbff27e6"
+        },
+        {
+          "path": "drop-deadline-check.log",
+          "sha256": "3f734c2af477cf7ed38170eff16fa2d341ff945fa1e79a037ea782343c5440f4"
+        },
+        {
+          "path": "drop-executor-check.log",
+          "sha256": "47719bb1b9993f7faf4d90dc02f9244c85351203769b62229b72a08b60134943"
+        },
+        {
+          "path": "drop-instrument-check.log",
+          "sha256": "29b96bef332ae6bc0425c61e825a331602f9712a46cea310663ab37b86a22d72"
+        },
+        {
+          "path": "drop-reference-checks.log",
+          "sha256": "8cfe1758bcd2e77c7ad53e554e3ec6c9751d5dfb208815539f5f473d51547730"
+        },
+        {
+          "path": "drop-sender-check.log",
+          "sha256": "a0cee31ffa16c0268e636216afca2eefec0aa89a0d05d243f497dd067e80234d"
+        },
+        {
+          "path": "lp-controls-flag.log",
+          "sha256": "ccdbc0e3d84690420f8ddd49787df48f858bea9667a6f41fd6396928789ae238"
+        },
+        {
+          "path": "release-from-any-state.log",
+          "sha256": "13b3da849348bc781b028e2f50978c7c74559bee942506dae3cc31899d27b9de"
+        },
+        {
+          "path": "reopen-from-any-state.log",
+          "sha256": "535591e94803be31add88728b5d44a2c2af3d0fc4b82ffcd2b1b742fbc7e912e"
+        },
+        {
+          "path": "result.json",
+          "sha256": "e222e316a384964f9b397d4ed3a9701faa8a19174157700b7211f186198cfcc2"
+        },
+        {
+          "path": "settle-from-funded.log",
+          "sha256": "822c2787924ef1277a8bb2b5ef29b5ca59cac98d090fbfd4424d46ad2b976862"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "LocalNet",
+      "runId": "20261001T162153Z",
+      "path": "evidence/local/runs/20261001T162153Z",
+      "commit": "bf70eb3242a650243f632b9e20e4931215e0dbeb",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "1220ee3020ce093926439b0786c46a96e49e1802955431abeded208344cf61a5b9f1",
+          "allocationCid": "00646bfffd210357f5489198c16de3c91c72769e6488a6710b0cb12baac9baaaf5ca1212201e2da431929f9d05d9f3418b938e5f5ea9b3e552fd8b8033cfe40a1827a60210",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "12209174a3ea547feb864763166663bdacfd0f7c8ee43fee9f7b14fd8584e88e4a18",
+          "allocationCid": "00c257668c7bd87d6e0e5b8fb5cd4a48679232a20768b14d73a864ee43d2b16687ca121220e8e9ccfc32046ae795f6ae81fbc45ca10a81d0b809c5db2de398bf41e8cab836",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "1220ee3020ce093926439b0786c46a96e49e1802955431abeded208344cf61a5b9f1",
+          "allocationCid": "00646bfffd210357f5489198c16de3c91c72769e6488a6710b0cb12baac9baaaf5ca1212201e2da431929f9d05d9f3418b938e5f5ea9b3e552fd8b8033cfe40a1827a60210",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "d11c51d87e4050060a36cff328089dadc45016ab80a69487584cc2eb8e104a2a"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "f6f2733c7a641d876b08cb63a4ab272371254d91182d7ec739a8826b4cb6c616"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "e9b9c31984d07f0c851a48d85d2457ef26fedfafc1d842f0a5ca22888cb9bc2b"
+        },
+        {
+          "path": "result.json",
+          "sha256": "c7c4cee179122d7bf922ec771140e2e1e5e44e29ff8307b6bc5d1b304133e8fc"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "dff0ce1f821aa9f6f0f5fba7d5567f0b9687a313e469311499392881cd0f159c"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "8029c864741ba17c60aded171a0f2c478306043f3ae5be8be45d05df6b5c4a44"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "34b3adbfac71457e808a18513758f011abbe52808adb048c6735aeb5be01d1d9"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "215d95bd18a179f3ea4cbfd5acbdf468a2218dcd59ff14aa761cd8a81ee0e78b"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "LocalNet",
+      "runId": "20261001T162427Z",
+      "path": "evidence/local/runs/20261001T162427Z",
+      "commit": "4a31676fba36662bcd466389f82857b5a076a657",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "12201c93696b9944bb36598f0b2ab5ad15604c4da0281e59670714336f705da8d202",
+          "allocationCid": "0059a841bd8a57887b46ac44ba08af9e6a98d419adcf83ea67aca0b9fe899f5e48ca12122024812ad66133047e7b9e6462633134d8402cfaa354c0b532a1cf9aa676abcbd1",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "1220280bcdfb66ba1323afbfe3b4353b4e49f96a99f2d0d1833b112b45fb080977b1",
+          "allocationCid": "00f9229b0ce0fb673dfa7c7f0922c397a6e2ab0f5646854510de167f17c4e78509ca12122063a46d8662fafbe7babca08086e6ee32f124e3f526181b96d1021aa4619c6653",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "12201c93696b9944bb36598f0b2ab5ad15604c4da0281e59670714336f705da8d202",
+          "allocationCid": "0059a841bd8a57887b46ac44ba08af9e6a98d419adcf83ea67aca0b9fe899f5e48ca12122024812ad66133047e7b9e6462633134d8402cfaa354c0b532a1cf9aa676abcbd1",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "42ce6eb75b5b252eded29afbbf653d243c33b309d980fb824e090d47c0fb7732"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "3964215eebc1505abe5bc9e88e0686b37994772f8e52e8bb03f34d84e7d61604"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "f0333d045c8526e4c65469964918f9128a747a4eb0e40c4822e6303e5e66e4bf"
+        },
+        {
+          "path": "result.json",
+          "sha256": "7413710af119316e9867a971fe13aec6f4b56e8b0a09ebcc910ba555c65a0487"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "1f3dbd48deea2f863700ef7ab5bed3f30dbed65e7b654e90ad6ad00d89505834"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "8aa5287b19a9e0d992551c76f906eb7e41b18570673a32deee13816a2da42fd2"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "34b3adbfac71457e808a18513758f011abbe52808adb048c6735aeb5be01d1d9"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "34b3adbfac71457e808a18513758f011abbe52808adb048c6735aeb5be01d1d9"
+        }
+      ],
+      "claims": [
+        "admin-totals",
+        "negative-settlement",
+        "private-obligations",
+        "real-token-settlement",
+        "settlement-gates-funded",
+        "unpaid-unresolved"
+      ]
+    },
+    {
+      "kind": "runs",
+      "environment": "localnet",
+      "runId": "20261002T184727Z",
+      "path": "evidence/local/runs/20261002T184727Z",
+      "commit": "c501be8dcd2919dd002260673021f57e55301ad3",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "12208602ab281286bef202129dcbbbffb3dffd8f4aa8f9ee609ea0f0c9feb4a5b058",
+          "allocationCid": "0028c38c72474c8067b3df4250ca1046e7a39bb0faf246a8a5ea2de01f3104af0fca121220d100dd65a4cb9957bc6ab3fc8757156058c97aa79ed92e3678a92f8a0a8f4416",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "122030f1d004cbb13340230d0a57650421d6c93f6754ccc92b79a620f3152a4ee590",
+          "allocationCid": "003f489bcabcda985bacc46440b27d8b81d3baf1880181eb5ec6c190141b3e0098ca1212200a5ba82b34150a70a000df63d30f82141dbf9e679428cd1fb9a24d1636e1becb",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "12208602ab281286bef202129dcbbbffb3dffd8f4aa8f9ee609ea0f0c9feb4a5b058",
+          "allocationCid": "0028c38c72474c8067b3df4250ca1046e7a39bb0faf246a8a5ea2de01f3104af0fca121220d100dd65a4cb9957bc6ab3fc8757156058c97aa79ed92e3678a92f8a0a8f4416",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "fd8d606b5368264c2a039b880ace40e862bc99cce000e658cdab5056a2fd2d9a"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "dad25da21943e329d9921f4b96a2fbcccf02d2d97c4624d99ad891458750b01d"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "2370060a9eb9b887dea3e7faa209197adadbe0c67ecd3c899cb7271c1845557a"
+        },
+        {
+          "path": "result.json",
+          "sha256": "527a4ecf05ccfd3412d2e7d1a01e7c482a4074b3ae61d61ec28844aae4390c49"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "a85eb6d1542a69234dd36854e0299a9e15540b5431d9749fc32fd896d25bf233"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "8aa5287b19a9e0d992551c76f906eb7e41b18570673a32deee13816a2da42fd2"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "localnet",
+      "runId": "20261002T184851Z",
+      "path": "evidence/local/runs/20261002T184851Z",
+      "commit": "c501be8dcd2919dd002260673021f57e55301ad3",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "1220568b59fb679eb22a7d222ce82fece6ace5e2470feee03ce7464c805d4bc9a2de",
+          "allocationCid": "00d3e996d99e90246022ea7e9610dc5a5cf56ea9bbd8609bfeb0f3ad6d0f465fa1ca1212203f21c97467a6730c871c2460ce674ebe46a6313fdb5fb2a0bfb592a2f61943cc",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "122082a677407ffa0fcbdcc7005687d67754b24cc2c2bf1474650ed00684d4dfe8b5",
+          "allocationCid": "00f70a27bfce805ac74f55dda5a057c5335daba0563c62ca80c72398bc43f74982ca1212205fc1c9c561be2b9786636ecbf1ad8770f96453eecb79fd0416d1eaba3b68e944",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "1220568b59fb679eb22a7d222ce82fece6ace5e2470feee03ce7464c805d4bc9a2de",
+          "allocationCid": "00d3e996d99e90246022ea7e9610dc5a5cf56ea9bbd8609bfeb0f3ad6d0f465fa1ca1212203f21c97467a6730c871c2460ce674ebe46a6313fdb5fb2a0bfb592a2f61943cc",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "5370cc0f4bded873cb97675a6cc186f053ffc852af9c65ae0b767926528d4c5c"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "b094c149adb6bc218b0cdebfd1100ba633e2efae80e20fe0962bca35a4d25182"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "b2c8a19803341f59eb909ab1973300cf96945d10c55b64ee5f6904d9ac088e4f"
+        },
+        {
+          "path": "result.json",
+          "sha256": "4fbbde3cbcbcd116be3aad594af56dcbfa4826f7a0d1093916050861c787c008"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "67e7fe2072f75251ab3a57e57aaf98d4e49e7d146506001c4af57866abdfce1a"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "8aa5287b19a9e0d992551c76f906eb7e41b18570673a32deee13816a2da42fd2"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "localnet",
+      "runId": "20261002T184944Z",
+      "path": "evidence/local/runs/20261002T184944Z",
+      "commit": "c501be8dcd2919dd002260673021f57e55301ad3",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "12201876f7e9c8de3ba5b9740953c4598862dd3d1c4c75e47451329b7cb666e6eaa0",
+          "allocationCid": "00bf222463a9ef93519ee4353e0f76474edc5621a791102a11fac122d9918c0cceca1212200247c5c0f53a734fafdb56016320f4c060eccd1e7f0a7d722a7a42bda770f08f",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "12207e7d3bcb3c2f3fb6611b4eb0ef52011ba8adc43db892dbf969a100f3381a5d1e",
+          "allocationCid": "00307fe872c98b31ee24403d5904c2dd8b2eb6ac55ab8b10b1c2b892977baa39f2ca121220ada27037efee47c16831c5fce1e8ffc0729b1fcd82fbad935476c6bf97b549bd",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "12201876f7e9c8de3ba5b9740953c4598862dd3d1c4c75e47451329b7cb666e6eaa0",
+          "allocationCid": "00bf222463a9ef93519ee4353e0f76474edc5621a791102a11fac122d9918c0cceca1212200247c5c0f53a734fafdb56016320f4c060eccd1e7f0a7d722a7a42bda770f08f",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "f22d5e2a480b64c5e097213cfc656570c13ec884836b067cf8527fb2b1dbc508"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "6467f8eebe382c5e46136daff4044cdbaf3f31b92f0fd2b22f0f64ee08c6001d"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "7d59ab5edfa274e8af1c69492f1685c98b36e9fc549b915559c1a3e3dbd91f62"
+        },
+        {
+          "path": "result.json",
+          "sha256": "05dfa79b3d4c77b814d8d9981e303f981238203b60257aba902aeba9722ffe6b"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "047a2a1be52342eecf6fac7d222ffd8987d5c2842063ec31c7abf41ecfb2db90"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "08a8931c981e69990345143c323e0be5a7ec9ed347ced8abc436fb168da0ca21"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "localnet",
+      "runId": "20261002T185051Z",
+      "path": "evidence/local/runs/20261002T185051Z",
+      "commit": "c501be8dcd2919dd002260673021f57e55301ad3",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "122078a3c72383ad7f2847540ca39b2f5359df6df80ab6facc813b99eec6ee9ff394",
+          "allocationCid": "003b2e8308d87ca793211148aaf14f51cead2f17dbc6e21577cb494dd71108d6a7ca1212205d85a519e22913508713243f05c537550c8e92bad81f15a028734148bf836e2a",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "122089fa3b47aac486af5902e554fc73bf55d08bf31ce1466015b3bac86e92b51512",
+          "allocationCid": "0053140f94a9a03cf105920fc5d3503a12972a4d701b4022b240219bd1aa975d91ca121220ecbb7944b9dbd926a1411adbd1cbe7a830effe571206d66a2105dcd65f9a6808",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "122078a3c72383ad7f2847540ca39b2f5359df6df80ab6facc813b99eec6ee9ff394",
+          "allocationCid": "003b2e8308d87ca793211148aaf14f51cead2f17dbc6e21577cb494dd71108d6a7ca1212205d85a519e22913508713243f05c537550c8e92bad81f15a028734148bf836e2a",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "fa3bad553640e97d6cc0e8e7218eff2f70f3d09df26264402131a958e6f961a0"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "5594f28c137e37cf3b7a7a3f205a7cf320ef17be26aafef631b30f6cbff71d4c"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "004e5191575c80c20fa7e25c1af5ebc7029530ec31814f50e272c53a459ff555"
+        },
+        {
+          "path": "result.json",
+          "sha256": "1853e65dae01853724997ccd6d031215aab474efc2f39e5a7c7ddf6d76dfcb83"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "9ba7bdf557b0a54586161c4e667c192b2a5a55aab3b7445095aee8434a5992e2"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "ca8a398b059416cb17a05ec50ae6d440b3d52d925f0e084182401e0cac1998d2"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "localnet",
+      "runId": "20261002T185353Z",
+      "path": "evidence/local/runs/20261002T185353Z",
+      "commit": "adaa6ab5230244bb07ea68b59933394885542ae7",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "df834a0fb91f6b0e0071ca22ba6055c37511471f13956135f7b724e7ae339d62"
+      ],
+      "instrument": {
+        "admin": "DSO::12200f473683b61b6796b707e1a01c529798d6df732c5fca13bf60c67fe265851105",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "12205cbfcadddf54565367ece8fc4a9e9b8b3d11f803b8d060ecc8a16892126ee912",
+          "allocationCid": "00d3854fd94e7a725a2ef9831d58ab87d4f608f416b5d7428005752042a7bf2c4aca12122022109fb5b3d3a70a07e97cc252e90534a9119fec03ddc4019bf47a920ce6542a",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "1220514b2cfed70790a47c9e313044decbe2545e228bdb7d40ddb5e8bccb3a324867",
+          "allocationCid": "00b952bca30b9ddfc9e3d07f92329b3096ffc979615a7490bf7438ce5419d6b6c3ca121220f3f5e0acb1b989161444482a8d20ca75954f9626c79159d26db25143a40d63cc",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "12205cbfcadddf54565367ece8fc4a9e9b8b3d11f803b8d060ecc8a16892126ee912",
+          "allocationCid": "00d3854fd94e7a725a2ef9831d58ab87d4f608f416b5d7428005752042a7bf2c4aca12122022109fb5b3d3a70a07e97cc252e90534a9119fec03ddc4019bf47a920ce6542a",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "459dae2acda9f164e686b53abf1f8b3ec3f68433a90c50709b53dee1ac834fb8"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "3508ac24446df4313120264e856e08a68827367ecee7bef60a5775d6f43aed9c"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "c72a05f84ed87e8a64fa047f617c8c5d7809ad2f5b08555e11e29175a89868b0"
+        },
+        {
+          "path": "result.json",
+          "sha256": "cfb0248b08d868411d5fd71a36366576029a9ac058417cb4139eb08e4b558dec"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "a21b7e6a505090b92b63fbb58011e435a2cf9d2d0ed900761d0bcd9d1cecd32a"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "8aa5287b19a9e0d992551c76f906eb7e41b18570673a32deee13816a2da42fd2"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "workload",
+      "environment": "localnet",
+      "runId": "20261002T185353Z",
+      "path": "evidence/local/workload/20261002T185353Z",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": null,
+      "verifierCommand": null,
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "result.json",
+          "sha256": "c67e87a1a9aeec4379ce239c97bf55c81f91a254a44b49f4064af9c195ea7a3e"
+        }
+      ],
+      "claims": []
+    }
+  ]
+}

@@ -8,6 +8,7 @@ claims:
       - evidence/local/daml_core/20261001T160054Z/result.json
       - evidence/local/runs/20261001T162427Z/visibility-after-issue.json
       - evidence/local/runs/20261001T162427Z/visibility-final.json
+      - evidence/local/campaign/20261002T193724Z/result.json
     limits: "All LPs share one participant on LocalNet. The participant operator can see all hosted parties. In production each LP would use its own validator." 
 
   - id: settlement-gates-funded
@@ -27,6 +28,7 @@ claims:
     evidence:
       - evidence/local/daml_core/20261001T160054Z/result.json
       - evidence/local/runs/20261001T162427Z/result.json
+      - evidence/local/campaign/20261002T193724Z/result.json
     limits: "LocalNet covers wrong amount, wrong payer, wrong reference, and replay. Wrong executor, wrong call, and wrong instrument are Daml Script only." 
 
   - id: unpaid-unresolved
@@ -68,3 +70,24 @@ claims:
     environments: []
     evidence: []
     blocker: out of scope this pass, see docs/DECISIONS.md D-001
+
+  - id: generalization
+    text: "Across 100 seeded capital calls on LocalNet (191 obligations), nothing was falsely funded, no party saw another's records, no replay was accepted, and every admin total matched an independent reference model."
+    status: local_verified
+    environments: [localnet]
+    evidence: [evidence/local/campaign/20261002T193724Z/result.json]
+    limits: "One to three LPs per call. Expired allocations and mid-payment network failures not generated."
+
+  - id: canton-load-bearing
+    text: "The same call on an operator database with a paid flag lets four of five attacks through. On DRAW the ledger refuses all five."
+    status: local_verified
+    environments: [localnet]
+    evidence: [evidence/local/ablation/20261002T193830Z/result.json]
+    limits: "The database attacker has write access, as an operator or a compromised app server would. The transparent-ledger comparison is field exposure only, not a run."
+
+  - id: browser-journey
+    text: "The full journey runs in a browser against the real app and ledger: issue, two LPs pay, a wrong amount is refused, the unpaid LP goes overdue, other parties see nothing."
+    status: unverified
+    environments: []
+    evidence: [evidence/local/browser/20261002T195013Z/NOTE.md]
+    blocker: "First run failed before any ledger action because LocalNet was down. Rerun after LocalNet is restored."

@@ -188,6 +188,28 @@ export class LedgerClient {
     });
   }
 
+  // Every transaction this party saw between two offsets, with ledger effects,
+  // so events it only witnessed are included too.
+  async transactions(party, beginExclusive, endInclusive) {
+    const updates = await this.request('POST', '/v2/updates', {
+      json: {
+        beginExclusive,
+        endInclusive,
+        verbose: true,
+        updateFormat: {
+          includeTransactions: {
+            eventFormat: {
+              verbose: true,
+              filtersByParty: { [party]: { cumulative: [{ identifierFilter: { WildcardFilter: { value: { includeCreatedEventBlob: false } } } }] } },
+            },
+            transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+          },
+        },
+      },
+    });
+    return updates.map((entry) => entry.update?.Transaction?.value).filter(Boolean);
+  }
+
   async eventsByContractId(party, contractId) {
     return this.request('POST', '/v2/events/events-by-contract-id', {
       json: {

@@ -1,0 +1,56 @@
+{
+  "runId": "20261002T185353Z",
+  "environment": "localnet",
+  "source": "evidence/local/runs/20261002T185353Z/steps.jsonl",
+  "caveat": "Single-machine LocalNet, scripted admin acting immediately. Not a production latency or cost figure.",
+  "ledgerActions": {
+    "oneTimePerFund": {
+      "createFund": 1,
+      "invitePerInvestor": 1,
+      "acceptPerInvestor": 1
+    },
+    "perCall": {
+      "issueCall": 1
+    },
+    "perFundedInvestor": {
+      "allocateByInvestor": 1,
+      "markPaymentPendingByAdmin": 1,
+      "settleByAdmin": 1
+    },
+    "perUnpaidInvestor": {
+      "markOverdueByAdmin": 1
+    },
+    "perRejectedPayment": {
+      "allocateByInvestor": 1,
+      "withdrawByInvestor": 1
+    }
+  },
+  "canonicalCallTransactions": {
+    "setupForThreeInvestors": 7,
+    "issueCall": 1,
+    "twoFundedInvestors": 6,
+    "oneUnpaidInvestor": 1
+  },
+  "settlementLatency": {
+    "lpA": {
+      "paymentLockedToAdminObservedMs": 28,
+      "observedToPendingMs": 454,
+      "pendingToTransferExecutedMs": 481,
+      "transferExecutedToVerifiedMs": 84,
+      "paymentLockedToVerifiedFundedMs": 1047
+    },
+    "lpB": {
+      "paymentLockedToAdminObservedMs": 29,
+      "observedToPendingMs": 447,
+      "pendingToTransferExecutedMs": 472,
+      "transferExecutedToVerifiedMs": 89,
+      "paymentLockedToVerifiedFundedMs": 1037
+    }
+  },
+  "issueCallMs": 461,
+  "manualInterventions": [
+    "admin clicks settle for each matching payment",
+    "admin marks overdue after the due time",
+    "investor withdraws a refused payment"
+  ]
+}

@@ -78,12 +78,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [role, version]);
 
+  // Switching role keeps the page, so the same URL is read with a different
+  // party's ledger login. That is how LP B opening LP A's notice is shown.
   const setRole = useCallback((next: Role) => {
     const url = new URL(window.location.href);
     url.searchParams.set('as', next);
-    url.hash = '#/';
     window.history.replaceState(null, '', url);
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
     setView(null);
     setRoleState(next);
   }, []);

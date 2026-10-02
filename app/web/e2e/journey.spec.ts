@@ -11,8 +11,12 @@ async function snap(page: Page, name: string): Promise<void> {
   await page.screenshot({ path: `${shots}/${String(step).padStart(2, '0')}-${name}.png`, fullPage: true });
 }
 
+const HOME_TAB: Record<string, string> = { 'Fund admin': 'Calls', 'Unrelated party': 'Home' };
+
+// Switch the ledger login with the switcher, then go to that party's home tab.
 async function viewAs(page: Page, name: string): Promise<void> {
   await page.getByRole('group', { name: 'Viewing as' }).getByRole('button', { name, exact: true }).click();
+  await page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: HOME_TAB[name] ?? 'My notices' }).click();
   await expect(page.getByText(`with ${name}'s own login`)).toBeVisible();
 }
 
@@ -68,11 +72,13 @@ test('capital call from issue to verified funding, with privacy and an unpaid in
   await expect(page.locator('.terms')).toContainText('Payment locked, waiting for the fund');
   await snap(page, 'lp-a-payment-locked');
 
-  // LP B cannot open LP A's notice, even with the exact link.
-  await page.goto(`/?as=lpB${noticeA}`);
+  // Same page, LP B's login: the notice is not visible. Then the same with a fresh load of the link.
+  await page.getByRole('group', { name: 'Viewing as' }).getByRole('button', { name: 'LP B', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Not visible to you' })).toBeVisible();
   await expect(page.getByText('$400,000')).toHaveCount(0);
   await snap(page, 'lp-b-cannot-open-lp-a');
+  await page.goto(`/?as=lpB${noticeA}`);
+  await expect(page.getByRole('heading', { name: 'Not visible to you' })).toBeVisible();
 
   // Admin settles LP A. Funded appears only after the verifier's receipt.
   await page.goto('/?as=admin');

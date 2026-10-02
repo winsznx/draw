@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { TEMPLATES } from './lib/ledger.mjs';
+import { TEMPLATES, transactionEvents } from './lib/ledger.mjs';
 import { DrawSession, LPS, eventually, newRef, packageInfo, sleep, sum } from './lib/draw.mjs';
 import { ROLES, ROOT, network } from './lib/network.mjs';
 
@@ -46,6 +46,8 @@ async function expectRejection(id, action, expectedFragment) {
 const { packageId, darSha256 } = packageInfo();
 const draw = await DrawSession.open({ tag: runTag, packageId, onStep: step });
 const { party, client, users, instrument, verifier } = draw;
+// Each participant numbers its own offsets, so each reader remembers where it started.
+const streamStart = Object.fromEntries(await Promise.all(ROLES.map(async (role) => [role, await client[role].ledgerEnd()])));
 step('party-scoped users ready', { network: network.name, partyMode: network.partyMode, party, users, verifierRights: 'readAs admin only' });
 
 await expectRejection('credential: lpA token cannot read as lpB',
@@ -303,6 +305,35 @@ check('totals: admin Amulet balance grew by exactly the funded units', Math.abs(
   { received: totals.adminAmuletReceived, funded: totals.fundedUnits });
 
 assertMatrix('final', await visibilityMatrix('final'));
+
+// ---------------------------------------------------------------- transaction streams
+// The ACS shows only contracts a party is a stakeholder on. This reads every
+// transaction each party received during the run, including events it only
+// witnessed, and flags any DRAW or payment event that does not involve it.
+const DRAW_TEMPLATES = new Set(Object.values(TEMPLATES).map((t) => t.split(':').slice(-2).join(':')));
+const streams = {};
+for (const reader of ROLES) {
+  const transactions = await client[reader].transactions(party[reader], streamStart[reader], await client[reader].ledgerEnd());
+  const created = new Map();
+  const foreign = [];
+  let events = 0;
+  for (const event of transactions.flatMap((t) => transactionEvents(t))) {
+    events += 1;
+    const name = event.templateId.split(':').slice(-2).join(':');
+    if (event.kind === 'created') created.set(event.contractId, event.createArgument);
+    const args = event.createArgument ?? created.get(event.contractId);
+    if (DRAW_TEMPLATES.has(name)) {
+      const involved = args ? [args.admin, args.lp].includes(party[reader]) : false;
+      if (!involved) foreign.push(`${event.kind} ${name} ${event.contractId}`);
+    }
+    const leg = args?.allocation?.transferLeg ?? args?.transferLeg;
+    if (leg && ![leg.sender, leg.receiver, args.allocation?.settlement?.executor].includes(party[reader])) foreign.push(`${event.kind} ${name} ${event.contractId}`);
+  }
+  streams[reader] = { transactions: transactions.length, events, foreign };
+  check(`privacy[stream]: ${reader} received no transaction event about another party's fund records or payments`, foreign.length === 0,
+    { transactions: transactions.length, events, foreign: foreign.slice(0, 10) });
+}
+writeJson('streams.json', streams);
 
 // ---------------------------------------------------------------- verdicts
 const group = (prefix) => checks.filter((c) => prefix.some((p) => c.id.startsWith(p)));
