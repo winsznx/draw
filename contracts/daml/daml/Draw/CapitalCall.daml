@@ -252,6 +252,26 @@ template CapitalCallObligation
         assertMsg "only an open obligation can be flagged" (state `elem` [Issued, PaymentPending, Overdue])
         create this with state = ManualReview; reviewNote = Some note
 
+    -- The payment this obligation was waiting on was withdrawn, expired, or
+    -- refused. Back to Issued so a fresh payment can be matched. Never funds.
+    choice Obligation_ReleasePending : ContractId CapitalCallObligation
+      with
+        note : Text
+      controller admin
+      do
+        assertMsg "only a payment-pending obligation can be released" (state == PaymentPending)
+        create this with state = Issued; pendingAllocationCid = None; reviewNote = Some note
+
+    -- Review found nothing to settle or waive. Back to Issued. If the due time
+    -- has passed, the admin can mark it overdue again.
+    choice Obligation_Reopen : ContractId CapitalCallObligation
+      with
+        note : Text
+      controller admin
+      do
+        assertMsg "only an obligation in manual review can be reopened" (state == ManualReview)
+        create this with state = Issued; pendingAllocationCid = None; reviewNote = Some note
+
     choice Obligation_Waive : ContractId CapitalCallObligation
       with
         note : Text

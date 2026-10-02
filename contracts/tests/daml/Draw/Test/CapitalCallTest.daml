@@ -124,6 +124,16 @@ expectFailure expected party cmds = do
       unless (expected `isInfixOf` actual) $
         abort ("expected failure '" <> expected <> "' but got: " <> actual)
 
+expectFailureAs : Text -> SubmitOptions -> Commands a -> Script ()
+expectFailureAs expected options cmds = do
+  result <- trySubmit options cmds
+  case result of
+    Right _ -> abort ("expected failure but succeeded: " <> expected)
+    Left err -> do
+      let actual = show err
+      unless (expected `isInfixOf` actual) $
+        abort ("expected failure '" <> expected <> "' but got: " <> actual)
+
 obligationState : Party -> ContractId CapitalCallObligation -> Script ObligationState
 obligationState reader cid = do
   Some o <- queryContractId reader cid
@@ -351,3 +361,61 @@ test_resolution_paths = script do
 
   -- An issued obligation cannot be waived without first being overdue or reviewed.
   expectFailure "only an overdue or reviewed obligation can be waived" p.admin do exerciseCmd w.obligationC (Obligation_Waive "skip")
+
+-- | Stale pending payments, review round trips, and outsider authority.
+test_review_paths : Script ()
+test_review_paths = script do
+  w <- setup
+  let p = w.parties
+
+  -- A payment is matched, then the LP withdraws it. The admin releases the
+  -- obligation back to Issued, and the withdrawn allocation cannot settle it.
+  allocationA <- allocateFor w p.lpA refA 40.0
+  pendingA <- submit p.admin do exerciseCmd w.obligationA (Obligation_MarkPaymentPending allocationA)
+  submit (actAs [p.lpA, p.registrar]) do
+    exerciseCmd allocationA Allocation_Withdraw with extraArgs = noExtraArgs
+  expectFailure "Could not find contract" p.admin do
+    exerciseCmd pendingA Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs
+  releasedA <- submit p.admin do exerciseCmd pendingA (Obligation_ReleasePending "LP withdrew the payment")
+  obligationState p.lpA releasedA >>= (=== Issued)
+  expectFailure "only a payment-pending obligation can be released" p.admin do
+    exerciseCmd releasedA (Obligation_ReleasePending "again")
+
+  -- A fresh correct payment still settles after the release.
+  allocationA2 <- allocateFor w p.lpA refA 40.0
+  fundedA <- submit p.admin do
+    exerciseCmd releasedA Obligation_Settle with allocationCid = allocationA2; extraArgs = noExtraArgs
+  obligationState p.lpA fundedA >>= (=== Funded)
+
+  -- Review round trip: flagged, reopened, then settled.
+  reviewB <- submit p.admin do exerciseCmd w.obligationB (Obligation_FlagManualReview "payment from an unknown account")
+  expectFailure "Authorization failure" p.lpB do exerciseCmd reviewB (Obligation_Reopen "self")
+  reopenedB <- submit p.admin do exerciseCmd reviewB (Obligation_Reopen "matched to LP B")
+  obligationState p.lpB reopenedB >>= (=== Issued)
+  expectFailure "only an obligation in manual review can be reopened" p.admin do
+    exerciseCmd reopenedB (Obligation_Reopen "again")
+
+  -- A reviewed obligation can still be settled by a matching payment.
+  reviewB2 <- submit p.admin do exerciseCmd reopenedB (Obligation_FlagManualReview "second look")
+  allocationB <- allocateFor w p.lpB refB 35.0
+  fundedB <- submit p.admin do
+    exerciseCmd reviewB2 Obligation_Settle with allocationCid = allocationB; extraArgs = noExtraArgs
+  obligationState p.lpB fundedB >>= (=== Funded)
+
+  -- An unrelated party cannot issue a call, waive, or release.
+  [(commitC, _)] <- query @InvestorCommitment p.lpC
+  expectFailure "Could not find contract" p.outsider do
+    exerciseCmd w.fundCid Fund_IssueCall with
+      callId = "CALL-X"; description = "rogue"; dueAt = w.dueAt
+      requests = [ObligationRequest with commitmentCid = commitC; obligationRef = "X"; amountDue = 1.0; scenarioAmount = 1.0]
+  expectFailure "Could not find contract" p.outsider do exerciseCmd w.obligationC (Obligation_Waive "rogue")
+  -- Even with visibility through readAs on the admin, acting needs admin authority.
+  expectFailureAs "Authorization failure" (actAs p.outsider <> readAs p.admin) do exerciseCmd w.obligationC (Obligation_Waive "rogue")
+
+  -- A duplicate payment after funding is refused, and the LP can take it back.
+  duplicateA <- allocateFor w p.lpA refA 40.0
+  expectFailure "obligation is not open for settlement" p.admin do
+    exerciseCmd fundedA Obligation_Settle with allocationCid = duplicateA; extraArgs = noExtraArgs
+  submit (actAs [p.lpA, p.registrar]) do
+    exerciseCmd duplicateA Allocation_Withdraw with extraArgs = noExtraArgs
+  pure ()

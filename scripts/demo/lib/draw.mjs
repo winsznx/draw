@@ -10,7 +10,8 @@ import { allocationFactory, amuletInstrument, executeTransferContext, tapContext
 import { SettlementVerifier } from './verifier.mjs';
 import { ROLES, ROOT, network } from './network.mjs';
 
-export const DAR = join(ROOT, 'contracts/daml/.daml/dist/draw-0.1.0.dar');
+const darVersion = readFileSync(join(ROOT, 'contracts/daml/daml.yaml'), 'utf8').match(/^version:\s*(\S+)/m)[1];
+export const DAR = join(ROOT, `contracts/daml/.daml/dist/draw-${darVersion}.dar`);
 export const LPS = ['lpA', 'lpB', 'lpC'];
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

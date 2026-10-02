@@ -11,14 +11,14 @@ RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="$ROOT/evidence/local/daml_core/$RUN_ID"
 mkdir -p "$OUT"
 
-REQUIRED_TESTS=(test_visibility test_authority test_settlement_lifecycle test_resolution_paths)
+REQUIRED_TESTS=(test_visibility test_authority test_settlement_lifecycle test_resolution_paths test_review_paths)
 
 (cd "$ROOT/contracts" && dpm build --all) >"$OUT/build.log" 2>&1
 BUILD_EXIT=$?
 (cd "$ROOT/contracts/tests" && dpm test) >"$OUT/test.log" 2>&1
 TEST_EXIT=$?
 
-DAR="$ROOT/contracts/daml/.daml/dist/draw-0.1.0.dar"
+DAR="$ROOT/contracts/daml/.daml/dist/draw-$(awk '/^version:/{print $2}' "$ROOT/contracts/daml/daml.yaml").dar"
 PACKAGE_ID="$(dpm damlc inspect-dar --json "$DAR" 2>/dev/null | jq -r .main_package_id)"
 
 missing=()

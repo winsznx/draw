@@ -22,6 +22,8 @@ MUTANTS=(
   "drop-deadline-check|s/assertMsg \"obligation is not yet due\" pastDue/pure ()/"
   "settle-from-funded|s/\[Issued, PaymentPending, Overdue, ManualReview\]/[Issued, PaymentPending, Overdue, ManualReview, Funded]/"
   "lp-controls-flag|s/(choice Obligation_FlagManualReview : ContractId CapitalCallObligation\n      with\n        note : Text\n      controller) admin/\$1 lp/"
+  "release-from-any-state|s/assertMsg "only a payment-pending obligation can be released" \(state == PaymentPending\)/pure ()/"
+  "reopen-from-any-state|s/assertMsg "only an obligation in manual review can be reopened" \(state == ManualReview\)/pure ()/"
 )
 
 results=()
