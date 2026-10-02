@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 640" font-family="Public Sans, Helvetica, Arial, sans-serif" font-size="13">
+  <title>DRAW architecture</title>
+  <desc>Browsers talk to the DRAW app server, which uses one ledger user per party against two Canton participants. Per-LP contracts live on the synchronizer. Payments use the Token Standard registry.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5A6775"/>
+    </marker>
+    <style>
+      .box { fill: #FFFFFF; stroke: #CDD5DD; stroke-width: 1.2; }
+      .group { fill: #F3F6F9; stroke: #CDD5DD; stroke-width: 1; }
+      .navy { fill: #E3E9F1; stroke: #1D3557; stroke-width: 1.2; }
+      .lp { fill: #E2EFE8; stroke: #2F6B4E; stroke-width: 1.2; }
+      .token { fill: #F6ECDA; stroke: #8A5A0C; stroke-width: 1.2; }
+      .h { font-weight: 700; fill: #17212B; font-size: 14px; }
+      .t { fill: #17212B; }
+      .m { fill: #5A6775; font-size: 12px; }
+      .line { stroke: #5A6775; stroke-width: 1.3; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #5A6775; stroke-width: 1.2; fill: none; stroke-dasharray: 4 4; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1040" height="640" fill="#E9EDF1"/>
+  <text x="24" y="34" class="h" font-size="18">DRAW on Canton</text>
+  <text x="24" y="54" class="m">Every read and action runs with the acting party's own ledger user. Each LP's participant receives only that LP's records.</text>
+
+  <!-- browsers -->
+  <rect x="24" y="80" width="190" height="400" rx="8" class="group"/>
+  <text x="40" y="104" class="h">Browser</text>
+  <text x="40" y="120" class="m">React + TypeScript</text>
+  <rect x="40" y="136" width="158" height="52" rx="6" class="navy"/>
+  <text x="54" y="158" class="t">Fund admin</text>
+  <text x="54" y="175" class="m">calls, payments, totals</text>
+  <rect x="40" y="200" width="158" height="52" rx="6" class="lp"/>
+  <text x="54" y="222" class="t">LP A</text>
+  <text x="54" y="239" class="m">own notice, pay, receipt</text>
+  <rect x="40" y="264" width="158" height="40" rx="6" class="lp"/>
+  <text x="54" y="289" class="t">LP B</text>
+  <rect x="40" y="316" width="158" height="40" rx="6" class="lp"/>
+  <text x="54" y="341" class="t">LP C</text>
+  <rect x="40" y="368" width="158" height="40" rx="6" class="box"/>
+  <text x="54" y="393" class="t">Unrelated party</text>
+  <text x="40" y="432" class="m">"Viewing as" switches the</text>
+  <text x="40" y="448" class="m">ledger login, not a filter.</text>
+
+  <!-- app server -->
+  <rect x="262" y="80" width="230" height="400" rx="8" class="group"/>
+  <text x="278" y="104" class="h">DRAW app server</text>
+  <text x="278" y="120" class="m">Node, JSON Ledger API v2</text>
+  <rect x="278" y="136" width="198" height="64" rx="6" class="box"/>
+  <text x="292" y="158" class="t">One ledger user per party</text>
+  <text x="292" y="175" class="m">actAs and readAs on that</text>
+  <text x="292" y="190" class="m">party only</text>
+  <rect x="278" y="212" width="198" height="64" rx="6" class="box"/>
+  <text x="292" y="234" class="t">Reconciliation</text>
+  <text x="292" y="251" class="m">classifies each payment the</text>
+  <text x="292" y="266" class="m">admin's ledger shows</text>
+  <rect x="278" y="288" width="198" height="78" rx="6" class="box"/>
+  <text x="292" y="310" class="t">Independent verifier</text>
+  <text x="292" y="327" class="m">separate user, readAs admin,</text>
+  <text x="292" y="342" class="m">no actAs. Re-reads update</text>
+  <text x="292" y="357" class="m">and holdings before FUNDED</text>
+  <rect x="278" y="378" width="198" height="52" rx="6" class="box"/>
+  <text x="292" y="400" class="t">Evidence and /proof</text>
+  <text x="292" y="417" class="m">receipts, actions, results</text>
+
+  <!-- participants -->
+  <rect x="540" y="80" width="200" height="400" rx="8" class="group"/>
+  <text x="556" y="104" class="h">Participants</text>
+  <text x="556" y="120" class="m">LocalNet today</text>
+  <rect x="556" y="136" width="168" height="110" rx="6" class="navy"/>
+  <text x="570" y="158" class="t">app-provider</text>
+  <text x="570" y="178" class="m">hosts the fund admin</text>
+  <text x="570" y="196" class="m">sees: fund, call header,</text>
+  <text x="570" y="212" class="m">every commitment and</text>
+  <text x="570" y="228" class="m">obligation</text>
+  <rect x="556" y="262" width="168" height="168" rx="6" class="lp"/>
+  <text x="570" y="284" class="t">app-user</text>
+  <text x="570" y="304" class="m">hosts LP A, B, C and the</text>
+  <text x="570" y="320" class="m">unrelated party</text>
+  <text x="570" y="344" class="m">each party sees only its</text>
+  <text x="570" y="360" class="m">own commitment, obligation,</text>
+  <text x="570" y="376" class="m">and allocations</text>
+  <text x="570" y="404" class="m">Production: one validator</text>
+  <text x="570" y="420" class="m">per LP or a trusted host</text>
+
+  <!-- ledger -->
+  <rect x="788" y="80" width="228" height="400" rx="8" class="group"/>
+  <text x="804" y="104" class="h">Synchronizer</text>
+  <text x="804" y="120" class="m">Daml contracts, package draw</text>
+  <rect x="804" y="136" width="196" height="52" rx="6" class="navy"/>
+  <text x="818" y="158" class="t">Fund, CapitalCall</text>
+  <text x="818" y="175" class="m">signatory: admin only</text>
+  <rect x="804" y="200" width="196" height="52" rx="6" class="lp"/>
+  <text x="818" y="222" class="t">InvestorCommitment x3</text>
+  <text x="818" y="239" class="m">signatories: admin + one LP</text>
+  <rect x="804" y="264" width="196" height="88" rx="6" class="lp"/>
+  <text x="818" y="286" class="t">CapitalCallObligation x3</text>
+  <text x="818" y="303" class="m">signatories: admin + one LP</text>
+  <text x="818" y="320" class="m">Funded only inside</text>
+  <text x="818" y="336" class="m">Obligation_Settle</text>
+  <rect x="804" y="364" width="196" height="88" rx="6" class="token"/>
+  <text x="818" y="386" class="t">Amulet allocation</text>
+  <text x="818" y="403" class="m">CIP-0056 Allocation V1,</text>
+  <text x="818" y="419" class="m">carries the obligation</text>
+  <text x="818" y="435" class="m">reference. LP, fund, DSO</text>
+
+  <!-- registry -->
+  <rect x="540" y="520" width="476" height="96" rx="8" class="token"/>
+  <text x="556" y="546" class="h">Token Standard registry and Scan (DSO)</text>
+  <text x="556" y="566" class="m">Allocation factory, execute and withdraw choice contexts, disclosed AmuletRules and</text>
+  <text x="556" y="584" class="m">mining rounds, DevNet tap. Sees every allocation and its random reference.</text>
+  <text x="556" y="602" class="m">Never decides whether an obligation is funded.</text>
+
+  <!-- settle flow note -->
+  <rect x="24" y="520" width="468" height="96" rx="8" class="box"/>
+  <text x="40" y="546" class="h">Settlement, one transaction</text>
+  <text x="40" y="566" class="m">LP allocates exactly the amount due with the obligation reference. The admin's</text>
+  <text x="40" y="584" class="m">Obligation_Settle checks reference, payer, receiver, instrument, amount, executes the</text>
+  <text x="40" y="602" class="m">transfer, checks the received holdings, and flips the obligation to Funded.</text>
+
+  <!-- arrows -->
+  <path d="M214 270 L262 270" class="line"/>
+  <text x="218" y="262" class="m">HTTP</text>
+  <path d="M492 190 L556 190" class="line"/>
+  <path d="M492 330 L556 330" class="line"/>
+  <text x="500" y="182" class="m">JWT</text>
+  <text x="500" y="322" class="m">JWT</text>
+  <path d="M724 190 L804 190" class="line"/>
+  <path d="M724 330 L804 300" class="line"/>
+  <path d="M400 480 L560 520" class="dash"/>
+  <path d="M900 452 L900 520" class="dash"/>
+</svg>
