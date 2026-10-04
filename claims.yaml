@@ -91,11 +91,11 @@ claims:
     limits: "The database attacker has write access, as an operator or a compromised app server would. The transparent-ledger comparison is field exposure only, not a run."
 
   - id: browser-journey
-    text: "The full journey runs in a browser against the real app and ledger: issue, two LPs pay, a wrong amount is refused, the unpaid LP goes overdue, other parties see nothing."
-    status: unverified
-    environments: []
-    evidence: [evidence/local/browser/20261002T195013Z/NOTE.md]
-    blocker: "First run failed before any ledger action because LocalNet was down. Rerun after LocalNet is restored."
+    text: "The full journey runs in a browser against the real app and ledger: issue, two LPs pay, a wrong amount is refused, the unpaid LP goes overdue, other parties see nothing. In non-custodial mode every person creates an account with a key in the browser and approves every action in a Sign dialog."
+    status: local_verified
+    environments: [localnet]
+    evidence: [evidence/local/browser/20261004T183631Z, evidence/local/browser/20261004T184730Z]
+    limits: "LocalNet. In the browser demo all roles' keys sit in the same browser so one person can play every role."
 
   - id: non-custodial
     text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused."

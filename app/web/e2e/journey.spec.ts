@@ -31,6 +31,8 @@ function localInput(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+test.skip(process.env.DRAW_PARTY_MODE === 'external', 'covered by browser-keys.spec.ts in external mode');
+
 test('capital call from issue to verified funding, with privacy and an unpaid investor', async ({ page, request }) => {
   await request.post('/api/actions/reset', { data: {} });
 
@@ -126,7 +128,7 @@ test('capital call from issue to verified funding, with privacy and an unpaid in
   await expect(page.getByText('Funded', { exact: true })).toHaveCount(2);
   await expect(page.getByText('Overdue', { exact: true })).toHaveCount(1);
   await page.getByRole('button', { name: 'Details' }).first().click();
-  await expect(page.getByText('An independent read-only verifier confirmed')).toBeVisible();
+  await expect(page.locator('.receipt').first()).toContainText('An independent read-only verifier confirmed');
   await snap(page, 'admin-call-detail-receipt');
 
   // LP C sees its own overdue notice and nothing else.

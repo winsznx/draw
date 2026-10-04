@@ -22,7 +22,11 @@ export default defineConfig({
   outputDir: `${out}/artifacts`,
   webServer: {
     command: 'node ../server.mjs',
-    env: { DRAW_AUTO_SETTLE: process.env.DRAW_AUTO_SETTLE ?? 'false' },
+    env: {
+      DRAW_AUTO_SETTLE: process.env.DRAW_AUTO_SETTLE ?? 'false',
+      ...(process.env.DRAW_PARTY_MODE ? { DRAW_PARTY_MODE: process.env.DRAW_PARTY_MODE } : {}),
+      ...(process.env.DRAW_ENV_FILE ? { DRAW_ENV_FILE: process.env.DRAW_ENV_FILE } : {}),
+    },
     url: 'http://localhost:4173/api/proof',
     reuseExistingServer: true,
     timeout: 60_000,

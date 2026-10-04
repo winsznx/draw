@@ -54,7 +54,7 @@ Updated 2026-10-02 evening.
 | § | Requirement | Status | Where / what is left |
 |---|---|---|---|
 | 32 | Test layers | DONE | Daml, mutation, integration, role reads, Token Standard, campaign |
-| 33 | Browser E2E | BLOCKED_ON_LOCALNET | `app/web/e2e/journey.spec.ts`. First run failed because LocalNet was down |
+| 33 | Browser E2E | DONE | standard and browser-key journeys pass on LocalNet |
 | 32A | SECURITY.md | DONE | |
 | 32B | Clean room | PARTIAL | Offline steps PASS from a fresh clone. Ledger steps BLOCKED_ON_LOCALNET |
 | 32C | WORKLOAD_ECONOMICS.md | DONE | from `scripts/eval/workload.mjs` |

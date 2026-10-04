@@ -14,7 +14,7 @@ Verdicts come from `result.json` files written by scripts. This page only points
 | Generalization (100 cases) | PASS | `evidence/local/campaign/20261002T193724Z/result.json` | Seed 20261002, 191 obligations, 0 false funded, 0 privacy violations, 0 replays, 0 aggregate mismatches. Ran on 0.2.0 |
 | Ablation | DRAW stops 5 of 5, database stops 1 of 5 | `evidence/local/ablation/20261002T193830Z/result.json` | `docs/CANTON_ABLATION.md` |
 | Clean room | PASS_OFFLINE_ONLY | `evidence/local/clean_room/20261002T200553Z/result.json` | Fresh clone builds, tests, and builds the app. Ledger steps need LocalNet |
-| Browser journey | FAIL (infrastructure) | `evidence/local/browser/20261002T195013Z` | LocalNet was down. No ledger action ran. Rerun needed |
+| Browser journey | PASS | `evidence/local/browser/20261004T184730Z` (standard) and `evidence/local/browser/20261004T183631Z` (every role signs with its own browser key) | LocalNet. Three failed runs kept with notes: the 2026-10-02 outage and two test-selector failures after every product step had passed |
 | DEVNET_E2E | PASS | `evidence/devnet/runs/20261004T120110Z/result.json` | 72 of 72 checks on the NODERS shared node, Canton 3.5.19, real Canton Coin. Transaction-stream privacy check passed for all parties. Single credential: the two credential checks were skipped with the reason recorded. Two earlier aborted runs kept with notes |
 
 Earlier LocalNet runs are kept: `20261001T162153Z` (55 checks, superseded because three refusals did not pin the reason), `20261002T184727Z` (allocate mode), `20261002T184851Z` and `20261002T184944Z` (provisioned parties reused across runs), `20261002T185051Z` (OAuth client credentials against a scratchpad token endpoint).

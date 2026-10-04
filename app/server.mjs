@@ -24,6 +24,7 @@ const PORT = Number(process.env.PORT ?? 4173);
 const SESSION_FILE = join(process.env.DRAW_STATE_DIR ?? HERE, `.session-${network.name}.json`);
 const NETWORK_LABEL = { localnet: 'LocalNet', devnet: 'DevNet' }[network.name] ?? network.name;
 const COMMITMENTS = { lpA: '1000000.0', lpB: '700000.0', lpC: '500000.0' };
+const ROLE_LABEL = { admin: 'the fund admin', lpA: 'LP A', lpB: 'LP B', lpC: 'LP C', outsider: 'the unrelated party' };
 // Off by default. When on, the server settles matching payments as the fund
 // admin through the same path as the Settle button.
 // With DRAW_PARTY_MODE=external each party's key lives in the user's browser,
@@ -325,14 +326,14 @@ const actions = {
 
   async invite({ role, committedUsd }) {
     if (!session.party[role]) throw new Error(`${role} has not created an account yet.`);
-    relay.describe(`Invite ${role} to commit $${Number(committedUsd).toLocaleString('en-US')} to ${session.fundName}, as the fund admin`);
+    relay.describe(`Invite ${ROLE_LABEL[role]} to commit $${Number(committedUsd).toLocaleString('en-US')} to ${session.fundName}, as the fund admin`);
     const result = await draw.invite(session.fundCid, role, String(committedUsd));
     record('invite', { role, committedUsd, updateId: result.transaction.updateId });
     return { message: `Invitation sent to ${role}.` };
   },
 
   async accept({ role }) {
-    relay.describe(`Accept the commitment to ${session.fundName} as ${role}`);
+    relay.describe(`Accept the commitment to ${session.fundName} as ${ROLE_LABEL[role]}`);
     const [invitation] = await draw.contracts(role, TEMPLATES.CommitmentInvitation, session.fundId);
     if (!invitation) throw new Error('There is no invitation for this investor.');
     const result = await draw.acceptInvitation(role, invitation.contractId);
@@ -364,7 +365,7 @@ const actions = {
     const { payload } = await ownObligation(role, ref);
     const value = String(amount ?? payload.amountDue);
     record('pay', { role, ref, amount: value });
-    relay.describe(`Lock ${Number(value)} Amulet for the fund against notice ${ref}, as ${role}`);
+    relay.describe(`Lock ${Number(value)} Amulet for the fund against notice ${ref}, as ${ROLE_LABEL[role]}`);
     try {
       const allocation = await draw.allocate(role, { obligationRef: ref, amount: value });
       record('pay-locked', { role, ref, amount: value, ...allocation });
@@ -376,14 +377,14 @@ const actions = {
   },
 
   async withdraw({ role, allocationCid }) {
-    relay.describe(`Withdraw your locked payment back to your balance, as ${role}`);
+    relay.describe(`Withdraw your locked payment back to your balance, as ${ROLE_LABEL[role]}`);
     const result = await draw.withdraw(role, allocationCid);
     record('withdraw', { role, allocationCid, updateId: result.transaction.updateId });
     return { message: 'Payment withdrawn. The Amulet is back in your balance.' };
   },
 
   async faucet({ role }) {
-    relay.describe(`Receive ${Number(network.tapAmount)} test Amulet from the DevNet faucet, as ${role}`);
+    relay.describe(`Receive ${Number(network.tapAmount)} test Amulet from the faucet, as ${ROLE_LABEL[role]}`);
     const updateId = await draw.tap(role, network.tapAmount);
     record('faucet', { role, updateId });
     return { message: `Added ${Number(network.tapAmount)} test Amulet.` };

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 // Runs only with DRAW_AUTO_SETTLE=true on the server: an exact payment becomes
 // funded with no admin click, and a wrong amount is left alone.
-test.skip(process.env.DRAW_AUTO_SETTLE !== 'true', 'automatic settlement is off');
+test.skip(process.env.DRAW_AUTO_SETTLE !== 'true' || process.env.DRAW_PARTY_MODE === 'external', 'automatic settlement is off');
 
 test('an exact payment settles without an admin click, a wrong one does not', async ({ page, request }) => {
   await request.post('/api/actions/reset', { data: {} });

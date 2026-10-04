@@ -1,0 +1,169 @@
+{
+  "config": {
+    "argv": [
+      "/Users/mac/.nvm/versions/node/v24.19.0/bin/node",
+      "/Users/mac/draw/app/web/node_modules/.bin/playwright",
+      "test",
+      "e2e/journey.spec.ts"
+    ],
+    "configFile": "/Users/mac/draw/app/web/playwright.config.ts",
+    "rootDir": "/Users/mac/draw/app/web/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/mac/draw/evidence/local/browser/20261004T184114Z/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/mac/draw/app/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 600000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../../evidence/local/browser/20261004T184114Z/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node ../server.mjs",
+      "env": {
+        "DRAW_AUTO_SETTLE": "false",
+        "DRAW_ENV_FILE": "none"
+      },
+      "url": "http://localhost:4173/api/proof",
+      "reuseExistingServer": true,
+      "timeout": 60000
+    }
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "capital call from issue to verified funding, with privacy and an unpaid investor",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 166256,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('An independent read-only verifier confirmed')\nExpected: visible\nError: strict mode violation: getByText('An independent read-only verifier confirmed') resolved to 2 elements:\n    1) <div class=\"receipt \">…</div> aka getByText('An independent read-only verifier confirmed 40 Amulet reached the fund, 14 of')\n    2) <p>…</p> aka getByText('Everything above was read')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('An independent read-only verifier confirmed') with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByText('An independent read-only verifier confirmed')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('An independent read-only verifier confirmed')\nExpected: visible\nError: strict mode violation: getByText('An independent read-only verifier confirmed') resolved to 2 elements:\n    1) <div class=\"receipt \">…</div> aka getByText('An independent read-only verifier confirmed 40 Amulet reached the fund, 14 of')\n    2) <p>…</p> aka getByText('Everything above was read')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('An independent read-only verifier confirmed') with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByText('An independent read-only verifier confirmed')\u001b[22m\n\n    at /Users/mac/draw/app/web/e2e/journey.spec.ts:131:79",
+                    "location": {
+                      "file": "/Users/mac/draw/app/web/e2e/journey.spec.ts",
+                      "column": 79,
+                      "line": 131
+                    },
+                    "snippet": "  129 |   await expect(page.getByText('Overdue', { exact: true })).toHaveCount(1);\n  130 |   await page.getByRole('button', { name: 'Details' }).first().click();\n> 131 |   await expect(page.getByText('An independent read-only verifier confirmed')).toBeVisible();\n      |                                                                               ^\n  132 |   await snap(page, 'admin-call-detail-receipt');\n  133 |\n  134 |   // LP C sees its own overdue notice and nothing else."
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/mac/draw/app/web/e2e/journey.spec.ts",
+                        "column": 79,
+                        "line": 131
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('An independent read-only verifier confirmed')\nExpected: visible\nError: strict mode violation: getByText('An independent read-only verifier confirmed') resolved to 2 elements:\n    1) <div class=\"receipt \">…</div> aka getByText('An independent read-only verifier confirmed 40 Amulet reached the fund, 14 of')\n    2) <p>…</p> aka getByText('Everything above was read')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('An independent read-only verifier confirmed') with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByText('An independent read-only verifier confirmed')\u001b[22m\n\n\n  129 |   await expect(page.getByText('Overdue', { exact: true })).toHaveCount(1);\n  130 |   await page.getByRole('button', { name: 'Details' }).first().click();\n> 131 |   await expect(page.getByText('An independent read-only verifier confirmed')).toBeVisible();\n      |                                                                               ^\n  132 |   await snap(page, 'admin-call-detail-receipt');\n  133 |\n  134 |   // LP C sees its own overdue notice and nothing else.\n    at /Users/mac/draw/app/web/e2e/journey.spec.ts:131:79"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T18:41:15.628Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/mac/draw/evidence/local/browser/20261004T184114Z/artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/mac/draw/evidence/local/browser/20261004T184114Z/artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/mac/draw/evidence/local/browser/20261004T184114Z/artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/mac/draw/app/web/e2e/journey.spec.ts",
+                    "column": 79,
+                    "line": 131
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-b31396274486448b6288",
+          "file": "journey.spec.ts",
+          "line": 36,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T18:41:14.810Z",
+    "duration": 168173.584,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

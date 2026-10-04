@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-04T18:35:27.808Z",
-  "generatedAtCommit": "f7614231cfd2bb057e38080bdd2ee67a0a5c7db6",
+  "generatedAt": "2026-10-04T18:51:17.787Z",
+  "generatedAtCommit": "c86f52c2f2da4127fe229e020b80b9e00a7cbaa1",
   "generator": "node scripts/evidence/manifest.mjs",
   "tokenStandardPackages": [
     {
@@ -311,6 +311,210 @@
       "claims": []
     },
     {
+      "kind": "app",
+      "environment": "local",
+      "runId": "FUND-20261004183634",
+      "path": "evidence/local/app/FUND-20261004183634",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [
+        {
+          "file": "receipt-DRAW-7fffd2861d93618e.json",
+          "updateId": "1220a04c965f9b0954eb093dff3f2eeee5a6e93bdc13bd70cb8412e08d266b1775b4",
+          "allocationCid": "00e0b21288bdbec17955ed24763a28765ffa212051d9c54f68027138e2221341f4ca121220d431c067bd26bc21e18f9cd71178145065f9e3ae060805090fdf385b510d2074",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-DRAW-b762e72ac1504845.json",
+          "updateId": "1220349d08fa6fe49cc4c05ed03959adc4eb19be8950d90ae98cd9d43b0058d80832",
+          "allocationCid": "005c12560cd2e0b7e476876daeebd7d65fdf70ac2807c9e4244d07dc7c87ac83abca12122045a2c790e9d8876d831e679ce1db296ce10b536e9d377004c5036cc2e05c92cf",
+          "verdict": "VERIFIED_FUNDED"
+        }
+      ],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "5d9655fd927c1e60674ce2c8b76bdc77454ffb9aaece0818d81348883adc3e0d"
+        },
+        {
+          "path": "receipt-DRAW-7fffd2861d93618e.json",
+          "sha256": "2098b47f795d38b90669cbdabc0a20a9782c4a9406213bb29595d3a92a981799"
+        },
+        {
+          "path": "receipt-DRAW-b762e72ac1504845.json",
+          "sha256": "bc4bce6c9cab96b297196936b3b33b6b228403fa4a5d217089a37fc12876d93f"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "FUND-20261004184117",
+      "path": "evidence/local/app/FUND-20261004184117",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [
+        {
+          "file": "receipt-DRAW-55924e02ee8c4538.json",
+          "updateId": "1220df87808e24927553929f10ba69cb75f1c8c6211072677792e2102c15c62382ee",
+          "allocationCid": "00717165fd5c8e9f374d612075636912a03a43faf8bf547eecf65c25877028253cca1212207c11bf752daf658f5e760c3da5977a8c0d37409724f4f3f7a4b7be8e8ca7d63f",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-DRAW-ac0101aa1d005c83.json",
+          "updateId": "12204b3211ef50a08641157adac66a045f08f9c67e009288f692768228cff3904ac7",
+          "allocationCid": "00bda0f3e12892f3872abd31cf387b2f9d6b0d5c23621c3bf1f450f32325219521ca12122006e794fd0af2cc1890117ea44dcc344c508df120ee382e6d709b6a20ac9460fb",
+          "verdict": "VERIFIED_FUNDED"
+        }
+      ],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "aa028cbd7fd96df4d669422034eefb70d4a8eb0ce929babb4023afc217165026"
+        },
+        {
+          "path": "receipt-DRAW-55924e02ee8c4538.json",
+          "sha256": "a51eddf8adcf4d7fe47dc6421c1a5b7ef1bd81eff646332780a0fd0d016898e5"
+        },
+        {
+          "path": "receipt-DRAW-ac0101aa1d005c83.json",
+          "sha256": "c40609f1597130de7c9be7a0315ad51d0e7066df803cf9dddeb5534a093ffab6"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "FUND-20261004184432",
+      "path": "evidence/local/app/FUND-20261004184432",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [
+        {
+          "file": "receipt-DRAW-31f2df3b86ef6a52.json",
+          "updateId": "1220bdb81687f03f4147b79867f96390376039555c4d72428c5c17a71a30afa9e06b",
+          "allocationCid": "0051710bf7fb1a99ad0d615b515736d9e8db77226c914a2daf2759b6ca29e7aa44ca121220564fb3c119951f8fb4895d114f7b1e55140c8476a2893dd4ccbaf4aca1d8f19f",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-DRAW-bfc836e0540d21b8.json",
+          "updateId": "1220959e7b18ddf978c2d65acd2c8242c604858edee3654bd8ac5e56a4989c81434b",
+          "allocationCid": "00d659bb3e00fa2fa53f87e36b47b9a9cb0bcb3adb3a904d7dc7c8e7c0bae297a6ca1212200d78ee35d4a4cddc70ceb6165feee2627da2e2568582fcac9974640918743b42",
+          "verdict": "VERIFIED_FUNDED"
+        }
+      ],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "2179a43c46bb2a0b611b7645bb7fbed930b8b8ac945af9a380fef872dd8134c7"
+        },
+        {
+          "path": "receipt-DRAW-31f2df3b86ef6a52.json",
+          "sha256": "818da7ae057b0a25110fed5799709f956ab5bf1eeace2186113a5dc03d87f705"
+        },
+        {
+          "path": "receipt-DRAW-bfc836e0540d21b8.json",
+          "sha256": "07b20f2c9026704a215f47f21b71b8df3b2fbf6b2cc6a1bcf6fb3708dbcfb572"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "FUND-20261004184733",
+      "path": "evidence/local/app/FUND-20261004184733",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [
+        {
+          "file": "receipt-DRAW-988b74fffa8138e9.json",
+          "updateId": "1220e2649b492960d681406abdbbb17fcfd1126e0eb0ba3cebe5cbd92ac808a9c55c",
+          "allocationCid": "007a444cddf4a6ec1a8aede47e09d558dd6da6294dc18c22297c61aed12a54020fca121220acfe76e91ee55784e9cde17497d0576259c161f617dc7f37af8c07d4e01fe3ff",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-DRAW-bd0a1ebea235ff34.json",
+          "updateId": "1220cc34247c3b3694c01c8da9ffa9013674fe9404b10b7c21f4f0817530360a8798",
+          "allocationCid": "00d3eb1059589340a9875328ac397fcb5ef389cf7f63a4e28e4f0dec229554fd7fca121220555f407ed649f615e2b20e329081b8a8d36dc60881c188bcaf1f6288a3910a9e",
+          "verdict": "VERIFIED_FUNDED"
+        }
+      ],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "68c77a1233ff8299ebe08c02ed3e2aff0969e0355c3c1a12a8a2aff01dd29974"
+        },
+        {
+          "path": "receipt-DRAW-988b74fffa8138e9.json",
+          "sha256": "48e2e220b93b5e40ff5a2701c6aafa461973b68141eb365c88038c3bfec46cf3"
+        },
+        {
+          "path": "receipt-DRAW-bd0a1ebea235ff34.json",
+          "sha256": "1a049bdf5606d0463e6c5249bfe99111070b02120bc51795107f17e26ed4dda8"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "session-20261004183634",
+      "path": "evidence/local/app/session-20261004183634",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "1554fcf0d0cdba4e410c00a7fd78ca2faf14b652bedf635d848f546dc3755b3a"
+        }
+      ],
+      "claims": []
+    },
+    {
       "kind": "browser",
       "environment": "local",
       "runId": "20261002T195013Z",
@@ -350,6 +554,276 @@
         {
           "path": "report.json",
           "sha256": "fb90d60cd810f161a60af49f4ba972883696d5c9435353127c386a671ee5c2b7"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "20261004T183631Z",
+      "path": "evidence/local/browser/20261004T183631Z",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in app/web",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "artifacts/.last-run.json",
+          "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+        },
+        {
+          "path": "report.json",
+          "sha256": "26decf5b6b35aa89e4beba838d3f6358d114972a85045afe51dbb302ae24c266"
+        },
+        {
+          "path": "screens/01-keys-admin-sign-fund.png",
+          "sha256": "73690f1f07c4c72aa32ce1befc31a0bd860151307ae99fa55789c9dfc9d35735"
+        },
+        {
+          "path": "screens/02-keys-admin-investors-invited.png",
+          "sha256": "e8fc88cedd577a097ad54322b058bd653c4681150c50c4eac0c04aa687e64a08"
+        },
+        {
+          "path": "screens/03-keys-lp-c-sign-dialog.png",
+          "sha256": "187763a41caea7d40393b06a446d99964b2486be22e3b40a46429cfaf438fa8f"
+        },
+        {
+          "path": "screens/04-keys-admin-final-totals.png",
+          "sha256": "a0fca63c66189b5473a1af42245687b0ab8f3f14a7d55b6808d27bebf7761c8f"
+        }
+      ],
+      "claims": [
+        "browser-journey"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "20261004T184114Z",
+      "path": "evidence/local/browser/20261004T184114Z",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in app/web",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "NOTE.md",
+          "sha256": "4ee99b3aca5ef637cbe78bd51872d57c39fbd32d40faabb763afacc3939d5071"
+        },
+        {
+          "path": "artifacts/.last-run.json",
+          "sha256": "b3b1f9555adf2fe6df5461a62c8069cf58f46e74bcb7327f69431ef0c5ca79e6"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/error-context.md",
+          "sha256": "512149a49e8cd496d7233ff19a99c4d9f796b89e9a8e9284343285d844e22501"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/test-failed-1.png",
+          "sha256": "44a15f783584132fb0667af3a51be1aa83ac28ab298e36986b85e96679cb6dab"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/trace.zip",
+          "sha256": "3e41c806b8092ea6c2799f0cca2b42a2593a5a805dd5ba2f067cdb2b2c01f0d3"
+        },
+        {
+          "path": "report.json",
+          "sha256": "a66f85b19da4dc59946c7e8904f1b254f7b625ef1a9f55542f08585e6be689bd"
+        },
+        {
+          "path": "screens/01-lp-a-invitation.png",
+          "sha256": "3016f5856958059c93dd3586cad0336b231a905140b3295b2185694fa28b8133"
+        },
+        {
+          "path": "screens/02-admin-create-call.png",
+          "sha256": "6667745293b888919fad59ddb687a8dacf346652ef04bf6ee3099104f144c9b4"
+        },
+        {
+          "path": "screens/03-admin-call-issued.png",
+          "sha256": "20db34cf5f2500ab755ced49c1eaa28d9162df6d30b042db1fb1b97dd0668e31"
+        },
+        {
+          "path": "screens/04-lp-a-payment-locked.png",
+          "sha256": "4aa3c3566e7fa58cdf9a8fd99824b5147df4210056d6262c0de6b3ab35e166dc"
+        },
+        {
+          "path": "screens/05-lp-b-cannot-open-lp-a.png",
+          "sha256": "3bc240da84788c59c13aa933ecf8e61c6310cd5408cb37c448a6fcc84cb21efa"
+        },
+        {
+          "path": "screens/06-lp-b-wrong-amount.png",
+          "sha256": "3a6e25618fc5a430f4010426c56fd00935d98f3f8df1d1a67852626b2663121f"
+        },
+        {
+          "path": "screens/07-admin-payments-wrong-amount.png",
+          "sha256": "90f58f62a14d16c5d2c7a2ea7b81a26bbda905d26bc9325802b97f3c703bf260"
+        },
+        {
+          "path": "screens/08-admin-final-totals.png",
+          "sha256": "422ded8b9bb019260b674eb6d563ca83e94a2a17ae639e5dbb665976df44d8b9"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "20261004T184424Z",
+      "path": "evidence/local/browser/20261004T184424Z",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in app/web",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "NOTE.md",
+          "sha256": "4ee99b3aca5ef637cbe78bd51872d57c39fbd32d40faabb763afacc3939d5071"
+        },
+        {
+          "path": "artifacts/.last-run.json",
+          "sha256": "b3b1f9555adf2fe6df5461a62c8069cf58f46e74bcb7327f69431ef0c5ca79e6"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/error-context.md",
+          "sha256": "f189502359b24acb1ddeaa8d0d8afe7d1c311df1958f7d41e506fa166b10167d"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/test-failed-1.png",
+          "sha256": "a7a5bd37e3d6804c27ef8e4769f2b678eba716ca05f9b7372fe7756eb7635063"
+        },
+        {
+          "path": "artifacts/journey-capital-call-from--b60b8-vacy-and-an-unpaid-investor/trace.zip",
+          "sha256": "a8a93506f31c4876573cb96c8a6efeb6086d331a6b4b6bda4fcb682f521c55ba"
+        },
+        {
+          "path": "report.json",
+          "sha256": "dd2736f3406f85e86d8298f499788f09f6ff9448c0bf1109a8fb531a7cd622d8"
+        },
+        {
+          "path": "screens/01-lp-a-invitation.png",
+          "sha256": "4e83fc1bdc963f063405275e3e399d3555237e2541f73e59d349d5175045e453"
+        },
+        {
+          "path": "screens/02-admin-create-call.png",
+          "sha256": "2612042f7c948009981116b02d1b628f1c01a545a13950220762ea370130d9c7"
+        },
+        {
+          "path": "screens/03-admin-call-issued.png",
+          "sha256": "f737efd74f41b5c1c3a1b6e32d34f3ce63cd01e2fdb01aedcde45656f288b2c8"
+        },
+        {
+          "path": "screens/04-lp-a-payment-locked.png",
+          "sha256": "769a0384d9c16c695b2b337189665fd2d07a747ac4cb3fdcc22f73fcc9cab71f"
+        },
+        {
+          "path": "screens/05-lp-b-cannot-open-lp-a.png",
+          "sha256": "4f48e644ab7f3a25fb5f36f291cb0c3ea6d764f5a1b72a1ff95c17cf20bdf269"
+        },
+        {
+          "path": "screens/06-lp-b-wrong-amount.png",
+          "sha256": "6ab527445a699f4a4c1868eaf91e628f8dc681934d78bfaf00fb9390746e842a"
+        },
+        {
+          "path": "screens/07-admin-payments-wrong-amount.png",
+          "sha256": "a5d63c8f03825007dc8129bbe79a64e0cf16e3104010758a6dd99dd3cc374dbe"
+        },
+        {
+          "path": "screens/08-admin-final-totals.png",
+          "sha256": "38589c3227995c77d59f18e7f32a6d71790c298c3c2b8c74b0a7f7a8f64c22c2"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "20261004T184730Z",
+      "path": "evidence/local/browser/20261004T184730Z",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in app/web",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "artifacts/.last-run.json",
+          "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+        },
+        {
+          "path": "report.json",
+          "sha256": "c31c9a8bc68b93e401f54e6642431d0919303a76172d4fd379b116833fdcfe5e"
+        },
+        {
+          "path": "screens/01-lp-a-invitation.png",
+          "sha256": "f574da316b0ea6291243487df3e588c0ac2a2250b48f0f57d6497fdc61f44634"
+        },
+        {
+          "path": "screens/02-admin-create-call.png",
+          "sha256": "0e39a344604661ea37e76b569445223b4f3f249e6c4d6b5e1e3fd37fd54177e7"
+        },
+        {
+          "path": "screens/03-admin-call-issued.png",
+          "sha256": "58ce77cbf1b8ae9738dffe1bf796b89527a8c4a2816d60c128fdaacd4e6ebff5"
+        },
+        {
+          "path": "screens/04-lp-a-payment-locked.png",
+          "sha256": "e4a6d983626029b1ddd5db94dc6a917085ac37406f7ab09c1a74bf08a3930b5c"
+        },
+        {
+          "path": "screens/05-lp-b-cannot-open-lp-a.png",
+          "sha256": "276c7c67a71fae6a9e3c727873b6cf1c36fd371cf430bcef17e027388a0fd458"
+        },
+        {
+          "path": "screens/06-lp-b-wrong-amount.png",
+          "sha256": "bd0b49af5f8d17b2e14b9904c44dda3e29796892e66e5bb3e40e3b5631fe3928"
+        },
+        {
+          "path": "screens/07-admin-payments-wrong-amount.png",
+          "sha256": "fcb2ad3911c5ea3713613891a14d6699c02dd5ad0b7d5e0e675da9ebfc2dccd0"
+        },
+        {
+          "path": "screens/08-admin-final-totals.png",
+          "sha256": "521cd82474a8b6d40ced0654c0578ffd8d6a500b375d42a956ff04cc12355254"
+        },
+        {
+          "path": "screens/09-admin-call-detail-receipt.png",
+          "sha256": "4a989f20ea30913a3b9388e3031879e04047328ff874d15d2a461dad1abb8fa2"
+        },
+        {
+          "path": "screens/10-outsider-empty.png",
+          "sha256": "54ce0b553768ffae13bf95e46c7b4a86bff8ac5577055f7859d91c326c3f377a"
+        },
+        {
+          "path": "screens/11-proof.png",
+          "sha256": "57143f0665dff70f309d9c939c8b7212493e30eb609df765f78e1428635f4005"
         }
       ],
       "claims": [
