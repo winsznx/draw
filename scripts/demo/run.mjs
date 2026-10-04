@@ -79,12 +79,14 @@ if (network.singleCredential) {
 if (network.partyMode === 'external') {
   const relayOnly = new LedgerClient({ baseUrl: network.apiFor('lpA'), userId: users.lpA, label: 'relay without key' });
   await expectRejection('custody: server cannot act for lpA without lpA\'s key',
-    () => relayOnly.create({ actAs: [party.lpA], templateId: TEMPLATES.Fund, argument: { admin: party.lpA, fundId: 'FORGED', fundName: 'forged' } }));
+    () => relayOnly.create({ actAs: [party.lpA], templateId: TEMPLATES.Fund, argument: { admin: party.lpA, fundId: 'FORGED', fundName: 'forged' } }),
+    'cannot submit as the given submitter');
   const wrongKey = PartyKey.named(draw.external.lpB.keyName);
   const forged = new LedgerClient({ baseUrl: network.apiFor('lpA'), userId: users.lpA, label: 'lpA with lpB key',
     signer: { party: party.lpA, sign: async (hash) => wrongKey.signature(hash, draw.external.lpA.fingerprint) } });
   await expectRejection('custody: lpB\'s key cannot sign for lpA',
-    () => forged.create({ actAs: [party.lpA], templateId: TEMPLATES.Fund, argument: { admin: party.lpA, fundId: 'FORGED', fundName: 'forged' } }));
+    () => forged.create({ actAs: [party.lpA], templateId: TEMPLATES.Fund, argument: { admin: party.lpA, fundId: 'FORGED', fundName: 'forged' } }),
+    'valid signatures');
 }
 
 // ---------------------------------------------------------------- faucet

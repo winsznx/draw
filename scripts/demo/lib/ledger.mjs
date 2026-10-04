@@ -156,6 +156,7 @@ export class LedgerClient {
         readAs,
         commands,
         disclosedContracts,
+        packageIdSelectionPreference: [],
         ...(synchronizerId ? { synchronizerId } : {}),
       },
     });
@@ -207,7 +208,9 @@ export class LedgerClient {
 
   async submit({ actAs, readAs = [], commands, disclosedContracts = [], synchronizerId }) {
     if (this.signer && actAs.includes(this.signer.party)) {
-      const prepared = await this.prepare({ actAs, readAs, commands, disclosedContracts, synchronizerId });
+      // Interactive submission needs the synchronizer explicitly.
+      this.synchronizerCache ??= await this.synchronizerFor(this.signer.party);
+      const prepared = await this.prepare({ actAs, readAs, commands, disclosedContracts, synchronizerId: synchronizerId ?? this.synchronizerCache });
       const signature = await this.signer.sign(prepared.preparedTransactionHash);
       return this.executeSigned({ prepared, party: this.signer.party, signature });
     }
