@@ -7,7 +7,8 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { TEMPLATES, transactionEvents } from './lib/ledger.mjs';
+import { LedgerClient, TEMPLATES, transactionEvents } from './lib/ledger.mjs';
+import { PartyKey } from './lib/keys.mjs';
 import { DrawSession, LPS, eventually, newRef, packageInfo, sleep, sum } from './lib/draw.mjs';
 import { ROLES, ROOT, network } from './lib/network.mjs';
 
@@ -70,6 +71,20 @@ if (network.singleCredential) {
   await expectRejection('credential: verifier token cannot submit as admin',
     () => verifier.client.create({ actAs: [party.admin], templateId: TEMPLATES.Fund, argument: { admin: party.admin, fundId: 'X', fundName: 'X' } }),
     'HTTP 403');
+}
+
+// ---------------------------------------------------------------- custody
+// With external parties the server's ledger users only relay. They must not be
+// able to act for a party without that party's own signature.
+if (network.partyMode === 'external') {
+  const relayOnly = new LedgerClient({ baseUrl: network.apiFor('lpA'), userId: users.lpA, label: 'relay without key' });
+  await expectRejection('custody: server cannot act for lpA without lpA\'s key',
+    () => relayOnly.create({ actAs: [party.lpA], templateId: TEMPLATES.Fund, argument: { admin: party.lpA, fundId: 'FORGED', fundName: 'forged' } }));
+  const wrongKey = PartyKey.named(draw.external.lpB.keyName);
+  const forged = new LedgerClient({ baseUrl: network.apiFor('lpA'), userId: users.lpA, label: 'lpA with lpB key',
+    signer: { party: party.lpA, sign: async (hash) => wrongKey.signature(hash, draw.external.lpA.fingerprint) } });
+  await expectRejection('custody: lpB\'s key cannot sign for lpA',
+    () => forged.create({ actAs: [party.lpA], templateId: TEMPLATES.Fund, argument: { admin: party.lpA, fundId: 'FORGED', fundName: 'forged' } }));
 }
 
 // ---------------------------------------------------------------- faucet
@@ -362,6 +377,8 @@ const result = {
   authMode: network.authMode,
   partyMode: network.partyMode,
   credentialSeparation: network.singleCredential ? 'NOT_TESTED_SINGLE_CREDENTIAL' : 'TESTED',
+  custody: network.partyMode === 'external' ? 'EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY' : 'SERVER_SUBMITS_FOR_PARTIES',
+  externalParties: Object.entries(draw.external).map(([role, { fingerprint }]) => ({ role, fingerprint })),
   reasonsHidden: checks.filter((c) => c.detail?.reasonHidden).map((c) => c.id),
   skipped,
   canton: (await client.admin.request('GET', '/v2/version')).version,
@@ -378,6 +395,7 @@ const result = {
   gates: {
     [network.name === 'localnet' ? 'LOCAL_SETTLEMENT' : 'DEVNET_E2E']: verdict(group(['settlement', 'negative', 'unpaid', 'deadline', 'totals'])),
     PRIVACY_CAMPAIGN: verdict(group(['privacy', 'authority', 'credential'])),
+    ...(network.partyMode === 'external' ? { CUSTODY: verdict(group(['custody'])) } : {}),
   },
   passed: checks.filter((c) => c.ok).length,
   failed: checks.filter((c) => !c.ok).map((c) => c.id),

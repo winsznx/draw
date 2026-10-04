@@ -10,6 +10,7 @@ import { allocationFactory, amuletInstrument, executeTransferContext, tapContext
 import { SettlementVerifier } from './verifier.mjs';
 import { ROLES, ROOT, network } from './network.mjs';
 import { sharedUserId } from './auth.mjs';
+import { PartyKey } from './keys.mjs';
 
 const darVersion = readFileSync(join(ROOT, 'contracts/daml/daml.yaml'), 'utf8').match(/^version:\s*(\S+)/m)[1];
 export const DAR = join(ROOT, `contracts/daml/.daml/dist/draw-${darVersion}.dar`);
@@ -46,16 +47,24 @@ export function packageInfo() {
 const firstCreated = (transaction) => transactionEvents(transaction).find((e) => e.kind === 'created');
 
 export class DrawSession {
-  constructor({ party, users, instrument }) {
+  // `external` maps a role to { keyName, fingerprint } when that party holds
+  // its own key. Its client then signs every submission with that key.
+  // `signers` overrides that per role, for keys held somewhere else (a browser).
+  constructor({ party, users, instrument, external = {}, signers = {} }) {
     this.party = party;
     this.users = users;
     this.instrument = instrument;
-    this.client = Object.fromEntries(ROLES.map((role) => [role, new LedgerClient({ baseUrl: network.apiFor(role), userId: users[role], label: role })]));
+    this.external = external;
+    this.client = Object.fromEntries(ROLES.map((role) => {
+      const ext = external[role];
+      const signer = signers[role] ?? (ext?.keyName ? PartyKey.named(ext.keyName).signerFor(party[role], ext.fingerprint) : undefined);
+      return [role, new LedgerClient({ baseUrl: network.apiFor(role), userId: users[role], label: role, signer })];
+    }));
     this.verifier = new SettlementVerifier({ baseUrl: network.apiFor('admin'), userId: users.verifier, adminParty: party.admin, instrument });
   }
 
   get state() {
-    return { network: network.name, party: this.party, users: this.users };
+    return { network: network.name, party: this.party, users: this.users, external: this.external };
   }
 
   roleOf(partyId) {
@@ -63,13 +72,39 @@ export class DrawSession {
   }
 
   // Allocate mode creates fresh parties and users named after `tag`.
+  // External mode does the same, but each party is onboarded with its own key
+  // and its ledger user can only relay transactions that key has signed.
   // Provisioned mode uses the ones in `.env` and checks the package is there.
   static async open({ tag, packageId, onStep = () => {} }) {
     const party = {};
     const users = {};
     const apis = [...new Set(ROLES.map((role) => network.apiFor(role)))];
 
-    if (network.partyMode === 'allocate') {
+    const external = {};
+    if (network.partyMode === 'external') {
+      const operators = Object.fromEntries(apis.map((api) => [api, new LedgerClient({ baseUrl: api, userId: network.operators.provider })]));
+      for (const operator of Object.values(operators)) await operator.uploadDar(DAR);
+      onStep('dar uploaded', { participants: apis, packageId });
+      for (const role of ROLES) {
+        const operator = operators[network.apiFor(role)];
+        users[role] = `draw-${role}-${tag}`;
+        await operator.createUser(users[role], {});
+        const keyName = `${tag}-${role}`;
+        const key = PartyKey.named(keyName);
+        const synchronizerId = await operator.synchronizerFor();
+        const { party: id, fingerprint } = await operator.allocateExternalParty({
+          partyHint: `draw-${role}-${tag}`,
+          publicKeySpki: key.publicKeySpki,
+          fingerprintSign: async (hash, fp) => key.signature(hash, fp),
+          synchronizerId,
+          rightsFor: users[role],
+        });
+        party[role] = id;
+        external[role] = { keyName, fingerprint };
+      }
+      users.verifier = `draw-verifier-${tag}`;
+      await operators[network.apiFor('admin')].createUser(users.verifier, { readAs: [party.admin] });
+    } else if (network.partyMode === 'allocate') {
       const operators = Object.fromEntries(apis.map((api) => [api, new LedgerClient({ baseUrl: api, userId: network.operators.provider })]));
       for (const operator of Object.values(operators)) await operator.uploadDar(DAR);
       onStep('dar uploaded', { participants: apis, packageId });
@@ -98,11 +133,11 @@ export class DrawSession {
         if (!known.includes(packageId)) throw new Error(`package ${packageId} is not on ${api}. Upload ${DAR} first.`);
       }
     }
-    return new DrawSession({ party, users, instrument: await amuletInstrument() });
+    return new DrawSession({ party, users, external, instrument: await amuletInstrument() });
   }
 
-  static async resume({ party, users }) {
-    return new DrawSession({ party, users, instrument: await amuletInstrument() });
+  static async resume({ party, users, external, signers }) {
+    return new DrawSession({ party, users, external, signers, instrument: await amuletInstrument() });
   }
 
   async tap(role, amount) {

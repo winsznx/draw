@@ -9,9 +9,11 @@ import { dirname, extname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { TEMPLATES } from '../scripts/demo/lib/ledger.mjs';
-import { DrawSession, LPS, eventually, newRef, packageInfo, sum } from '../scripts/demo/lib/draw.mjs';
+import { DAR, DrawSession, LPS, eventually, newRef, packageInfo, sum } from '../scripts/demo/lib/draw.mjs';
 import { ROLES, ROOT, network } from '../scripts/demo/lib/network.mjs';
 import { OUTCOME, classifyPayments, obligationOutcome } from '../scripts/demo/lib/reconcile.mjs';
+import { LedgerClient } from '../scripts/demo/lib/ledger.mjs';
+import { createRelay } from './relay.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB = join(HERE, 'web/dist');
@@ -23,14 +25,24 @@ const NETWORK_LABEL = { localnet: 'LocalNet', devnet: 'DevNet' }[network.name] ?
 const COMMITMENTS = { lpA: '1000000.0', lpB: '700000.0', lpC: '500000.0' };
 // Off by default. When on, the server settles matching payments as the fund
 // admin through the same path as the Settle button.
-const AUTO_SETTLE = process.env.DRAW_AUTO_SETTLE === 'true';
+// With DRAW_PARTY_MODE=external each party's key lives in the user's browser,
+// so the server can only relay. Automatic settlement needs the admin's
+// signature and is therefore off in that mode.
+const BROWSER_KEYS = network.partyMode === 'external';
+const relay = createRelay();
+const AUTO_SETTLE = process.env.DRAW_AUTO_SETTLE === 'true' && !BROWSER_KEYS;
 const AUTO_SETTLE_MS = Number(process.env.DRAW_AUTO_SETTLE_MS ?? 5000);
 
+const browserSigners = (s) => Object.fromEntries(Object.entries(s.external ?? {})
+  .map(([role, { fingerprint }]) => [role, relay.signerFor(role, s.party[role], fingerprint)]));
+const openSession = async (s) => DrawSession.resume({ ...s, signers: BROWSER_KEYS ? browserSigners(s) : undefined });
+const saveSession = () => writeFileSync(SESSION_FILE, `${JSON.stringify(session, null, 2)}\n`);
+
 let session = existsSync(SESSION_FILE) ? JSON.parse(readFileSync(SESSION_FILE, 'utf8')) : null;
-let draw = session ? await DrawSession.resume(session) : null;
+let draw = session ? await openSession(session) : null;
 
 // ---------------------------------------------------------------- app evidence
-const appEvidenceDir = () => join(EVIDENCE, NETWORK_DIR, 'app', session.fundId);
+const appEvidenceDir = () => join(EVIDENCE, NETWORK_DIR, 'app', session.fundId ?? `session-${session.tag}`);
 function record(action, detail) {
   mkdirSync(appEvidenceDir(), { recursive: true });
   appendFileSync(join(appEvidenceDir(), 'actions.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), action, ...detail })}\n`);
@@ -100,8 +112,15 @@ function businessStatus(state, outcome, payments) {
 }
 
 async function viewFor(role) {
-  const base = { network: NETWORK_LABEL, role, singleCredential: network.singleCredential, autoSettle: AUTO_SETTLE };
+  const base = { network: NETWORK_LABEL, role, singleCredential: network.singleCredential, autoSettle: AUTO_SETTLE, browserKeys: BROWSER_KEYS };
   if (!session) return { ...base, session: false };
+  // Which roles have created accounts. The admin uses it to know whom to invite;
+  // in a real deployment an investor would share its party id with the fund.
+  const keyInfo = { sessionTag: session.tag ?? null, fingerprint: session.external?.[role]?.fingerprint ?? null, accounts: Object.keys(session.party ?? {}) };
+  if (BROWSER_KEYS && !session.party?.[role]) return { ...base, ...keyInfo, session: true, onboarded: false };
+  if (!session.fundId) {
+    return { ...base, ...keyInfo, session: true, onboarded: true, needsFund: true, queriedAs: { userId: draw.users[role], party: draw.party[role] }, balance: role === 'outsider' ? null : await draw.balance(role) };
+  }
 
   const { fundId } = session;
   const read = (templateId) => draw.contracts(role, templateId, fundId);
@@ -176,7 +195,9 @@ async function viewFor(role) {
 
   return {
     ...base,
+    ...keyInfo,
     session: true,
+    onboarded: true,
     queriedAs: { userId: draw.users[role], party: draw.party[role] },
     fund: funds[0] ? { fundId, name: funds[0].payload.fundName } : null,
     fundName: session.fundName,
@@ -204,13 +225,28 @@ async function ownObligation(role, ref) {
 
 const resolution = (choice, verb) => async ({ ref, note }) => {
   if (!note?.trim()) throw new Error('Add a note so the decision is on the record.');
+  relay.describe(`${verb[0].toUpperCase()}${verb.slice(1)} notice ${ref} with the note "${note.trim()}", as the fund admin`);
   const result = await draw.resolve((await adminObligation(ref)).contractId, choice, note.trim());
   record(verb, { ref, note, updateId: result.transaction.updateId });
   return { message: { flag: 'Sent to manual review.', waive: 'Waived.', reopen: 'Reopened.', release: 'Released. It can take a new payment.' }[verb] };
 };
 
+const pendingOnboarding = new Map();
+
 const actions = {
   async setup({ fundName = 'Example Ventures I (demo)' }) {
+    if (BROWSER_KEYS) {
+      // No parties yet: each person creates their own account and key in the browser.
+      const tag = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
+      const { packageId } = packageInfo();
+      const apis = [...new Set(ROLES.map((role) => network.apiFor(role)))];
+      for (const api of apis) await new LedgerClient({ baseUrl: api, userId: network.operators.provider }).uploadDar(DAR);
+      session = { network: network.name, tag, fundName, packageId, party: {}, users: {}, external: {} };
+      draw = await openSession(session);
+      saveSession();
+      record('setup', { mode: 'browser-keys', packageId });
+      return { message: 'Ready. The fund admin creates an account first, then each investor.' };
+    }
     const tag = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
     const { packageId } = packageInfo();
     const next = await DrawSession.open({ tag, packageId });
@@ -225,7 +261,74 @@ const actions = {
     return { message: `${fundName} is set up. Each investor has an invitation to accept.` };
   },
 
+  // Step 1 of sign-up: the participant builds the onboarding transactions for
+  // the public key the browser generated. Nothing is allocated yet.
+  async onboardstart({ role, publicKeySpki }) {
+    if (!BROWSER_KEYS) throw new Error('Accounts with their own keys need DRAW_PARTY_MODE=external.');
+    if (session.party[role]) throw new Error('This role already has an account.');
+    const operator = new LedgerClient({ baseUrl: network.apiFor(role), userId: network.operators.provider });
+    const user = `draw-${role}-${session.tag}`;
+    await operator.createUser(user, {}).catch((error) => { if (!/409|ALREADY_EXISTS/.test(error.message)) throw error; });
+    const synchronizer = await operator.synchronizerFor();
+    const topology = await operator.request('POST', '/v2/parties/external/generate-topology', {
+      json: { synchronizer, partyHint: `draw-${role}-${session.tag}`, publicKey: { format: 'CRYPTO_KEY_FORMAT_DER_X509_SUBJECT_PUBLIC_KEY_INFO', keyData: publicKeySpki, keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519' } },
+    });
+    pendingOnboarding.set(role, { topology, user, synchronizer });
+    return { partyId: topology.partyId, fingerprint: topology.publicKeyFingerprint, multiHash: topology.multiHash };
+  },
+
+  // Step 2: the browser signed the onboarding hash with its key. The party now
+  // exists, hosted here, and only that key can authorize its transactions.
+  async onboardfinish({ role, signature }) {
+    const pending = pendingOnboarding.get(role);
+    if (!pending) throw new Error('Start creating the account again.');
+    const { topology, user, synchronizer } = pending;
+    const operator = new LedgerClient({ baseUrl: network.apiFor(role), userId: network.operators.provider });
+    const allocated = await operator.request('POST', '/v2/parties/external/allocate', {
+      json: {
+        synchronizer,
+        onboardingTransactions: topology.topologyTransactions.map((transaction) => ({ transaction })),
+        multiHashSignatures: [{ format: 'SIGNATURE_FORMAT_CONCAT', signature, signedBy: topology.publicKeyFingerprint, signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519' }],
+        waitForAllocation: true,
+        userId: user,
+      },
+    });
+    pendingOnboarding.delete(role);
+    session.party[role] = allocated.partyId;
+    session.users[role] = user;
+    session.external[role] = { fingerprint: topology.publicKeyFingerprint };
+    if (role === 'admin') {
+      session.users.verifier = `draw-verifier-${session.tag}`;
+      await operator.createUser(session.users.verifier, { readAs: [allocated.partyId] });
+    }
+    saveSession();
+    draw = await openSession(session);
+    record('onboard', { role, party: allocated.partyId, fingerprint: topology.publicKeyFingerprint });
+    return { message: 'Account created. Your key stays in this browser. Download a backup from the header.' };
+  },
+
+  async fund({ fundName }) {
+    if (!session.party.admin) throw new Error('The fund admin needs an account first.');
+    const name = fundName?.trim() || session.fundName;
+    const fundId = `FUND-${session.tag}`;
+    relay.describe(`Create the fund "${name}" as the fund admin`);
+    const fundCid = await draw.createFund({ fundId, fundName: name });
+    Object.assign(session, { fundId, fundCid, fundName: name });
+    saveSession();
+    record('fund', { fundId, fundName: name });
+    return { message: `${name} created. Invite investors once they have accounts.` };
+  },
+
+  async invite({ role, committedUsd }) {
+    if (!session.party[role]) throw new Error(`${role} has not created an account yet.`);
+    relay.describe(`Invite ${role} to commit $${Number(committedUsd).toLocaleString('en-US')} to ${session.fundName}, as the fund admin`);
+    const result = await draw.invite(session.fundCid, role, String(committedUsd));
+    record('invite', { role, committedUsd, updateId: result.transaction.updateId });
+    return { message: `Invitation sent to ${role}.` };
+  },
+
   async accept({ role }) {
+    relay.describe(`Accept the commitment to ${session.fundName} as ${role}`);
     const [invitation] = await draw.contracts(role, TEMPLATES.CommitmentInvitation, session.fundId);
     if (!invitation) throw new Error('There is no invitation for this investor.');
     const result = await draw.acceptInvitation(role, invitation.contractId);
@@ -247,6 +350,7 @@ const actions = {
       if (!(Number(units) > 0)) throw new Error('Every called investor needs a settlement amount above zero.');
       return { commitmentCid: commitment.contractId, obligationRef: newRef(), amountDue: String(units), scenarioAmount: String(scenarioUsd) };
     });
+    relay.describe(`Issue capital call "${callId.trim()}" to ${requests.length} investor(s) as the fund admin`);
     const result = await draw.issueCall(session.fundCid, { callId: callId.trim(), description: description?.trim() || callId.trim(), dueAt: new Date(dueAt).toISOString(), requests });
     record('issue', { callId, dueAt, requests, updateId: result.transaction.updateId });
     return { message: `${callId.trim()} issued. Each investor now sees only its own notice.` };
@@ -256,6 +360,7 @@ const actions = {
     const { payload } = await ownObligation(role, ref);
     const value = String(amount ?? payload.amountDue);
     record('pay', { role, ref, amount: value });
+    relay.describe(`Lock ${Number(value)} Amulet for the fund against notice ${ref}, as ${role}`);
     try {
       const allocation = await draw.allocate(role, { obligationRef: ref, amount: value });
       record('pay-locked', { role, ref, amount: value, ...allocation });
@@ -267,12 +372,14 @@ const actions = {
   },
 
   async withdraw({ role, allocationCid }) {
+    relay.describe(`Withdraw your locked payment back to your balance, as ${role}`);
     const result = await draw.withdraw(role, allocationCid);
     record('withdraw', { role, allocationCid, updateId: result.transaction.updateId });
     return { message: 'Payment withdrawn. The Amulet is back in your balance.' };
   },
 
   async faucet({ role }) {
+    relay.describe(`Receive ${Number(network.tapAmount)} test Amulet from the DevNet faucet, as ${role}`);
     const updateId = await draw.tap(role, network.tapAmount);
     record('faucet', { role, updateId });
     return { message: `Added ${Number(network.tapAmount)} test Amulet.` };
@@ -282,9 +389,11 @@ const actions = {
     let obligation = await adminObligation(ref);
     const stateBefore = obligation.payload.state;
     if (stateBefore === 'Issued') {
+      relay.describe(`Match the payment to notice ${ref} (it stays unfunded until settled), as the fund admin`);
       await draw.markPending(obligation.contractId, allocationCid);
       obligation = await eventually(() => adminObligation(ref), (o) => o.payload.state === 'PaymentPending');
     }
+    relay.describe(`Settle notice ${ref}: move the payment to the fund and mark it funded, as the fund admin`);
     const settled = await draw.settle(obligation.contractId, allocationCid);
     const updateId = settled.transaction.updateId;
     record('settle', { ref, allocationCid, updateId });
@@ -303,6 +412,7 @@ const actions = {
   },
 
   async overdue({ ref }) {
+    relay.describe(`Mark notice ${ref} overdue, as the fund admin`);
     const result = await draw.markOverdue((await adminObligation(ref)).contractId);
     record('overdue', { ref, updateId: result.transaction.updateId });
     return { message: 'Marked overdue.' };
@@ -321,13 +431,25 @@ const actions = {
   },
 };
 
-// One ledger action at a time keeps clicks from racing each other.
+// One ledger action at a time keeps clicks from racing each other. With
+// browser keys an action can pause for a signature, and the queue waits for
+// the action itself, not for its first reply.
 let queue = Promise.resolve();
 const serialized = (fn) => {
   const run = queue.then(fn, fn);
   queue = run.catch(() => {});
   return run;
 };
+function relayed(fn) {
+  let first;
+  const started = new Promise((resolve) => { first = resolve; });
+  queue = queue.then(() => {
+    const handle = relay.run(fn, explain);
+    handle.first.then(first);
+    return handle.done;
+  }).catch(() => {});
+  return started;
+}
 
 // ---------------------------------------------------------------- proof
 function latest(dir) {
@@ -435,11 +557,21 @@ createServer(async (req, res) => {
     if (req.method === 'POST' && action && Object.hasOwn(actions, action)) {
       const body = await readBody(req);
       if (action !== 'setup' && action !== 'reset' && !session) return send(res, 409, { error: 'Start a demo fund first.' });
+      if (BROWSER_KEYS) {
+        const reply = await relayed(() => actions[action](body));
+        return send(res, reply.status, reply.body);
+      }
       try {
         return send(res, 200, await serialized(() => actions[action](body)));
       } catch (error) {
         return send(res, 422, explain(error));
       }
+    }
+    const signing = url.pathname.match(/^\/api\/sign\/([0-9a-f-]{36})$/)?.[1];
+    if (req.method === 'POST' && signing) {
+      const body = await readBody(req);
+      const reply = await new Promise((resolve) => relay.answer(signing, body, resolve));
+      return send(res, reply.status, reply.body);
     }
     if (req.method === 'GET' && url.pathname.startsWith('/evidence/')) {
       if (sendFile(res, EVIDENCE, decodeURIComponent(url.pathname.slice('/evidence/'.length)))) return;

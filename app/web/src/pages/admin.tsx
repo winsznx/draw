@@ -6,6 +6,7 @@ import { href, navigate, useApp } from '../state';
 import type { Call, Investor, Obligation, ViewWithSession } from '../types';
 
 const INVESTORS: Investor[] = ['lpA', 'lpB', 'lpC'];
+const DEFAULT_COMMITMENT: Record<Investor, number> = { lpA: 1000000, lpB: 700000, lpC: 500000 };
 const FIRST_CALL: Record<Investor, { usd: number; units: number }> = {
   lpA: { usd: 400000, units: 40 },
   lpB: { usd: 350000, units: 35 },
@@ -17,7 +18,18 @@ const hasMatch = (o: Obligation) => o.payments.some((p) => p.kind === 'match');
 const canMarkOverdue = (o: Obligation) => (o.ledgerState === 'Issued' || o.ledgerState === 'PaymentPending') && isPast(o.dueAt) && !hasMatch(o);
 
 // ---------------------------------------------------------------- setup
-export function SetupPage({ network }: { network: string }) {
+export function SetupPage({ network, browserKeys }: { network: string; browserKeys: boolean }) {
+  if (browserKeys) {
+    return (
+      <Empty title="Start a demo">
+        <p>
+          Each person in this demo, the fund admin and every investor, creates their own account. Their signing key is generated in
+          their browser and never sent to the server. All names are demo data.
+        </p>
+        <ActionButton name="setup" body={{}}>Start demo</ActionButton>
+      </Empty>
+    );
+  }
   return (
     <Empty title="Start a demo fund">
       <p>
@@ -372,7 +384,12 @@ export function InvestorsPage({ view }: { view: ViewWithSession }) {
             const invited = view.invitations.find((x) => x.investor === r);
             return (
               <tr key={r}>
-                <td>{roleName(r)}{!c && <span className="sub">{invited ? 'Invitation not accepted yet' : 'Not invited'}</span>}</td>
+                <td>
+                  {roleName(r)}{!c && <span className="sub">{invited ? 'Invitation not accepted yet' : view.browserKeys && !view.accounts?.includes(r) ? 'No account yet' : 'Not invited'}</span>}
+                  {view.browserKeys && !c && !invited && view.accounts?.includes(r) && (
+                    <ActionButton className="btn small" name="invite" body={{ role: r, committedUsd: DEFAULT_COMMITMENT[r] }}>Invite for {usd(DEFAULT_COMMITMENT[r])}</ActionButton>
+                  )}
+                </td>
                 <td className="num">{c ? usd(c.committedUsd) : invited ? usd(invited.committedUsd) : '-'}</td>
                 <td className="num">{c ? usd(c.calledUsd) : '-'}</td>
                 <td className="num">{c ? usd(c.committedUsd - c.calledUsd) : '-'}</td>

@@ -131,20 +131,42 @@ export interface Commitment {
   calledUsd: number;
 }
 
-export interface ViewNoSession {
+interface ViewBase {
   network: string;
   role: Role;
   singleCredential: boolean;
   autoSettle: boolean;
+  browserKeys: boolean;
+  accounts?: Role[];
+}
+
+export interface ViewNoSession extends ViewBase {
   session: false;
 }
 
-export interface ViewWithSession {
-  network: string;
-  role: Role;
-  singleCredential: boolean;
-  autoSettle: boolean;
+export interface ViewNotOnboarded extends ViewBase {
   session: true;
+  onboarded: false;
+  sessionTag: string;
+  fingerprint: null;
+}
+
+export interface ViewNeedsFund extends ViewBase {
+  session: true;
+  onboarded: true;
+  needsFund: true;
+  sessionTag: string | null;
+  fingerprint: string | null;
+  queriedAs: { userId: string; party: string };
+  balance: number | null;
+}
+
+export interface ViewWithSession extends ViewBase {
+  session: true;
+  onboarded: true;
+  needsFund?: undefined;
+  sessionTag: string | null;
+  fingerprint: string | null;
   queriedAs: { userId: string; party: string };
   fund: { fundId: string; name: string } | null;
   fundName: string;
@@ -156,7 +178,7 @@ export interface ViewWithSession {
   balance: number | null;
 }
 
-export type View = ViewNoSession | ViewWithSession;
+export type View = ViewNoSession | ViewNotOnboarded | ViewNeedsFund | ViewWithSession;
 
 export interface ProofReceipt {
   payer: string;

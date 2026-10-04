@@ -196,3 +196,11 @@ td input { width: 120px; padding: 6px 8px; border: 1px solid var(--rule); border
 @media (prefers-reduced-motion: no-preference) {
   .progress span { transition: width .4s ease; }
 }
+
+/* ---------------------------------------------------------------- signing */
+.dialog-backdrop { position: fixed; inset: 0; background: rgba(23, 33, 43, .45); display: grid; place-items: center; padding: 16px; z-index: 20; }
+.dialog { background: var(--paper); border-radius: 8px; padding: 24px; width: min(520px, 100%); box-shadow: 0 20px 48px -20px rgba(23, 33, 43, .5); }
+.dialog h2 { font-size: 18px; }
+.dialog dd { word-break: break-all; }
+.field-input { width: min(360px, 100%); padding: 8px 10px; border: 1px solid var(--rule); border-radius: 5px; }
+.keychip { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; }

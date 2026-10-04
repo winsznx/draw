@@ -163,3 +163,30 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
     </div>
   );
 }
+
+// Shown whenever the ledger needs this browser's key. Nothing is submitted
+// until the user signs.
+export function SignDialog(): ReactNode {
+  const { signRequest, answerSign } = useApp();
+  if (!signRequest) return null;
+  return (
+    <div className="dialog-backdrop" role="presentation">
+      <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="sign-title">
+        <h2 id="sign-title">Sign with your key</h2>
+        <p>{signRequest.description || 'Authorize this transaction.'}</p>
+        <p className="small muted">
+          Signing as {roleName(signRequest.role)}{signRequest.step > 1 ? `, signature ${signRequest.step}` : ''}. The key stays in this browser.
+          Only the signature is sent.
+        </p>
+        <details className="ledger">
+          <summary>What gets signed</summary>
+          <dl><dt>Transaction hash</dt><dd>{signRequest.hash}</dd><dt>Party</dt><dd>{signRequest.party}</dd></dl>
+        </details>
+        <div className="actions" style={{ marginTop: 16 }}>
+          <button type="button" className="btn" autoFocus onClick={() => answerSign(true)}>Sign</button>
+          <button type="button" className="btn quiet" onClick={() => answerSign(false)}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}

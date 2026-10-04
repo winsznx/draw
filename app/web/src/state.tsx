@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
-import { ActionError, fetchView, runAction } from './api';
+import { ActionError, fetchView, postAction, postSignature, type SignatureRequest } from './api';
+import { signHash } from './keys';
 import type { Role, View } from './types';
 
 const ROLES: Role[] = ['admin', 'lpA', 'lpB', 'lpC', 'outsider'];
@@ -39,6 +40,8 @@ interface AppState {
   toast: Toast | null;
   dismissToast: () => void;
   act: (name: string, body: Record<string, unknown>, key?: string) => Promise<boolean>;
+  signRequest: SignatureRequest | null;
+  answerSign: (approve: boolean) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -55,6 +58,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [version, setVersion] = useState(0);
+  const [signRequest, setSignRequest] = useState<SignatureRequest | null>(null);
+  const signDecision = useRef<((approve: boolean) => void) | null>(null);
+  const latestView = useRef<View | null>(null);
 
   // Ledger reads for the selected party, refreshed on a timer and after actions.
   useEffect(() => {
@@ -63,6 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (document.hidden) return;
       fetchView(role, controller.signal)
         .then((next) => {
+          latestView.current = next;
           setView(next);
           setLoadError(null);
         })
@@ -91,11 +98,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRoleState(next);
   }, []);
 
+  // Asks the user to approve one signature. Resolves when they choose.
+  const askToSign = useCallback((request: SignatureRequest) => new Promise<boolean>((resolve) => {
+    signDecision.current = resolve;
+    setSignRequest(request);
+  }), []);
+
+  const answerSign = useCallback((approve: boolean) => {
+    signDecision.current?.(approve);
+    signDecision.current = null;
+    setSignRequest(null);
+  }, []);
+
   const act = useCallback(async (name: string, body: Record<string, unknown>, key = name) => {
     setBusy(key);
     try {
-      const message = await runAction(name, body);
-      setToast({ message, error: false });
+      let reply = await postAction(name, body);
+      // With browser keys the server pauses each time the ledger needs a signature.
+      while (reply.kind === 'sign') {
+        const { request } = reply;
+        const current = latestView.current;
+        const tag = current?.session ? current.sessionTag : null;
+        const approved = await askToSign(request);
+        if (!approved || !current || !tag) {
+          reply = await postSignature(request.id, { cancel: true });
+          continue;
+        }
+        const signature = await signHash(current.network, tag, request.role, request.hash);
+        reply = await postSignature(request.id, { signature });
+      }
+      setToast({ message: reply.message, error: false });
       return true;
     } catch (error) {
       const failure = error instanceof ActionError ? error : new ActionError('The action failed.');
@@ -110,8 +142,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const dismissToast = useCallback(() => setToast(null), []);
 
   const value = useMemo(
-    () => ({ role, setRole, view, loadError, busy, toast, dismissToast, act }),
-    [role, setRole, view, loadError, busy, toast, dismissToast, act],
+    () => ({ role, setRole, view, loadError, busy, toast, dismissToast, act, signRequest, answerSign }),
+    [role, setRole, view, loadError, busy, toast, dismissToast, act, signRequest, answerSign],
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

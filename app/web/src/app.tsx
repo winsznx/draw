@@ -1,9 +1,11 @@
 import type { ReactElement } from 'react';
 
-import { Empty, ToastHost } from './components';
+import { Empty, SignDialog, ToastHost } from './components';
 import { ROLE_NAME, shortId } from './format';
 import { AdminHome, CallDetail, CreateCall, InvestorsPage, PaymentsInbox, SetupPage } from './pages/admin';
 import { InvestorHome, Notice, OutsiderHome } from './pages/investor';
+import { NeedsFund, Onboarding } from './pages/onboarding';
+import { backupPem } from './keys';
 import { ProofPage } from './pages/proof';
 import { href, useApp, useRoute } from './state';
 import type { Role, View, ViewWithSession } from './types';
@@ -13,7 +15,7 @@ const ROLES = Object.keys(ROLE_NAME) as Role[];
 function Tabs({ view, route }: { view: View | null; route: string[] }): ReactElement {
   const { role } = useApp();
   const section = route[0] ?? '';
-  const waiting = view?.session ? view.payments.filter((p) => p.recommendation !== 'ignore').length : 0;
+  const waiting = view?.session && 'payments' in view ? view.payments.filter((p) => p.recommendation !== 'ignore').length : 0;
   const tabs: { label: string; target: string; match: string[]; count?: number }[] = role === 'admin'
     ? [
       { label: 'Calls', target: href(), match: ['', 'calls'] },
@@ -60,6 +62,24 @@ function Page({ view, route }: { view: ViewWithSession; route: string[] }): Reac
   return <InvestorHome view={view} />;
 }
 
+function KeyChip({ network, tag, fingerprint }: { network: string; tag: string; fingerprint: string }): ReactElement {
+  const { role } = useApp();
+  async function download() {
+    const pem = await backupPem(network, tag, role);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([pem], { type: 'application/x-pem-file' }));
+    link.download = `draw-${role}-key.pem`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+  return (
+    <span className="keychip" title={fingerprint}>
+      Your key {fingerprint.slice(4, 12)}
+      <button type="button" className="link small" onClick={() => void download()}>Back up</button>
+    </span>
+  );
+}
+
 export function App(): ReactElement {
   const { role, setRole, view, loadError } = useApp();
   const route = useRoute();
@@ -69,7 +89,9 @@ export function App(): ReactElement {
   if (isProof) body = <ProofPage />;
   else if (loadError && !view) body = <Empty title="Could not read the ledger"><p>{loadError}</p></Empty>;
   else if (!view) body = <div className="empty"><p>Reading the ledger as {ROLE_NAME[role]}…</p></div>;
-  else if (!view.session) body = role === 'admin' ? <SetupPage network={view.network} /> : <Empty title="No fund yet"><p>Switch to the fund admin to create the demo fund.</p></Empty>;
+  else if (!view.session) body = role === 'admin' ? <SetupPage network={view.network} browserKeys={view.browserKeys} /> : <Empty title="No fund yet"><p>Switch to the fund admin to create the demo fund.</p></Empty>;
+  else if (!view.onboarded) body = <Onboarding key={`${role}-${view.sessionTag}`} view={view} />;
+  else if (view.needsFund) body = <NeedsFund view={view} />;
   else body = <Page view={view} route={route} />;
 
   return (
@@ -85,13 +107,14 @@ export function App(): ReactElement {
               ))}
             </div>
           </div>
+          {view?.session && view.fingerprint && view.sessionTag && <KeyChip network={view.network} tag={view.sessionTag} fingerprint={view.fingerprint} />}
           <span className="env"><strong>{view?.network ?? '…'}</strong> demo environment</span>
         </div>
         <Tabs view={view} route={route} />
       </header>
       <main>{body}</main>
       <footer className="provenance">
-        {view?.session && !isProof && (
+        {view?.session && 'queriedAs' in view && !isProof && (
           <p>
             {view.singleCredential
               ? <>Everything above was read from the ledger as party {shortId(view.queriedAs.party)} ({ROLE_NAME[role]}). On this node one shared login acts for every demo party, so this shows party-level visibility, not separate credentials.</>
@@ -103,6 +126,7 @@ export function App(): ReactElement {
         {loadError && view && <p>Last refresh failed: {loadError}</p>}
       </footer>
       <ToastHost />
+      <SignDialog />
     </>
   );
 }

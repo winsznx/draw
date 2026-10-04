@@ -23,16 +23,31 @@ export async function fetchProof(signal?: AbortSignal): Promise<Proof> {
   return readJson<Proof>(await fetch('/api/proof', { signal }));
 }
 
-export async function runAction(name: string, body: Record<string, unknown>): Promise<string> {
+export interface SignatureRequest {
+  id: string;
+  role: string;
+  party: string;
+  hash: string;
+  description: string;
+  step: number;
+}
+
+export type ActionReply = { kind: 'done'; message: string } | { kind: 'sign'; request: SignatureRequest };
+
+async function post(path: string, body: Record<string, unknown>): Promise<ActionReply> {
+  let response: Response;
   try {
-    const response = await fetch(`/api/actions/${name}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    return (await readJson<{ message: string }>(response)).message;
-  } catch (error) {
-    if (error instanceof ActionError) throw error;
+    response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  } catch {
     throw new ActionError('Could not reach the DRAW server. Check that it is running.');
   }
+  const json = (await response.json()) as { message?: string; needsSignature?: SignatureRequest; error?: string; detail?: string };
+  if (response.status === 202 && json.needsSignature) return { kind: 'sign', request: json.needsSignature };
+  if (!response.ok) throw new ActionError(json.error ?? 'The request failed.', json.detail);
+  return { kind: 'done', message: json.message ?? 'Done.' };
 }
+
+export const postAction = (name: string, body: Record<string, unknown>): Promise<ActionReply> => post(`/api/actions/${name}`, body);
+
+// The answer to a signature request: a signature, or a cancellation.
+export const postSignature = (id: string, body: { signature: string } | { cancel: true }): Promise<ActionReply> => post(`/api/sign/${id}`, body);

@@ -30,10 +30,14 @@ export class LedgerError extends Error {
 }
 
 export class LedgerClient {
-  constructor({ baseUrl, userId, label }) {
+  // `signer` makes this client act for an external party: every submission is
+  // prepared by the participant, signed by the party's own key, then executed.
+  // Without the key the participant cannot act for that party.
+  constructor({ baseUrl, userId, label, signer }) {
     this.baseUrl = baseUrl;
     this.userId = userId;
     this.label = label ?? userId;
+    this.signer = signer;
   }
 
   async request(method, path, { json, body, contentType } = {}) {
@@ -132,7 +136,81 @@ export class LedgerClient {
       }));
   }
 
+  static transactionFormat(party) {
+    return {
+      eventFormat: {
+        verbose: true,
+        filtersByParty: { [party]: { cumulative: [{ identifierFilter: { WildcardFilter: { value: { includeCreatedEventBlob: false } } } }] } },
+      },
+      transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+    };
+  }
+
+  // Interactive submission: the participant prepares, the party signs the hash.
+  async prepare({ actAs, readAs = [], commands, disclosedContracts = [], synchronizerId }) {
+    return this.request('POST', '/v2/interactive-submission/prepare', {
+      json: {
+        userId: this.userId,
+        commandId: `draw-${randomUUID()}`,
+        actAs,
+        readAs,
+        commands,
+        disclosedContracts,
+        ...(synchronizerId ? { synchronizerId } : {}),
+      },
+    });
+  }
+
+  async executeSigned({ prepared, party, signature }) {
+    const result = await this.request('POST', '/v2/interactive-submission/executeAndWaitForTransaction', {
+      json: {
+        preparedTransaction: prepared.preparedTransaction,
+        hashingSchemeVersion: prepared.hashingSchemeVersion,
+        submissionId: randomUUID(),
+        userId: this.userId,
+        deduplicationPeriod: { Empty: {} },
+        partySignatures: { signatures: [{ party, signatures: [signature] }] },
+        transactionFormat: LedgerClient.transactionFormat(party),
+      },
+    });
+    return { commandId: prepared.preparedTransactionHash, transaction: result.transaction };
+  }
+
+  // Onboards an external party whose key the caller holds. `sign` signs base64 bytes.
+  async allocateExternalParty({ partyHint, publicKeySpki, fingerprintSign, synchronizerId, rightsFor }) {
+    const topology = await this.request('POST', '/v2/parties/external/generate-topology', {
+      json: {
+        synchronizer: synchronizerId,
+        partyHint,
+        publicKey: { format: 'CRYPTO_KEY_FORMAT_DER_X509_SUBJECT_PUBLIC_KEY_INFO', keyData: publicKeySpki, keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519' },
+      },
+    });
+    const signature = await fingerprintSign(topology.multiHash, topology.publicKeyFingerprint);
+    const allocated = await this.request('POST', '/v2/parties/external/allocate', {
+      json: {
+        synchronizer: synchronizerId,
+        onboardingTransactions: topology.topologyTransactions.map((transaction) => ({ transaction })),
+        multiHashSignatures: [signature],
+        waitForAllocation: true,
+        ...(rightsFor ? { userId: rightsFor } : {}),
+      },
+    });
+    return { party: allocated.partyId, fingerprint: topology.publicKeyFingerprint };
+  }
+
+  // Without a party, the participant's own connected synchronizers.
+  async synchronizerFor(party) {
+    const query = party ? `?party=${encodeURIComponent(party)}` : '';
+    const result = await this.request('GET', `/v2/state/connected-synchronizers${query}`);
+    return result.connectedSynchronizers?.[0]?.synchronizerId;
+  }
+
   async submit({ actAs, readAs = [], commands, disclosedContracts = [], synchronizerId }) {
+    if (this.signer && actAs.includes(this.signer.party)) {
+      const prepared = await this.prepare({ actAs, readAs, commands, disclosedContracts, synchronizerId });
+      const signature = await this.signer.sign(prepared.preparedTransactionHash);
+      return this.executeSigned({ prepared, party: this.signer.party, signature });
+    }
     const commandId = `draw-${randomUUID()}`;
     const party = actAs[0];
     const result = await this.request('POST', '/v2/commands/submit-and-wait-for-transaction', {
