@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from 'react';
 
-import { ActionError } from '../api';
+import { ActionError, accessHeaders } from '../api';
 import { ActionButton, Empty } from '../components';
 import { ROLE_NAME } from '../format';
 import { createKey, signHash } from '../keys';
@@ -22,7 +22,7 @@ export function Onboarding({ view }: { view: ViewNotOnboarded }): ReactElement {
       const publicKeySpki = await createKey(view.network, view.sessionTag, view.role);
       const response = await fetch('/api/actions/onboardstart', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...accessHeaders() },
         body: JSON.stringify({ role: view.role, publicKeySpki }),
       });
       const started = (await response.json()) as { multiHash?: string; error?: string; detail?: string };

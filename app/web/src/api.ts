@@ -34,14 +34,45 @@ export interface SignatureRequest {
 
 export type ActionReply = { kind: 'done'; message: string } | { kind: 'sign'; request: SignatureRequest };
 
+const ACCESS_KEY = 'draw-access-code';
+
+function accessCode(): string | null {
+  try {
+    return window.localStorage.getItem(ACCESS_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function rememberAccessCode(code: string): void {
+  try {
+    window.localStorage.setItem(ACCESS_KEY, code);
+  } catch {
+    // Storage blocked: the code then lasts only until the next prompt.
+  }
+}
+
+export class AccessCodeNeeded extends ActionError {}
+
+export const accessHeaders = (): Record<string, string> => {
+  const code = accessCode();
+  return code ? { 'x-draw-access': code } : {};
+};
+
 async function post(path: string, body: Record<string, unknown>): Promise<ActionReply> {
   let response: Response;
+  const code = accessCode();
   try {
-    response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    response = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(code ? { 'x-draw-access': code } : {}) },
+      body: JSON.stringify(body),
+    });
   } catch {
     throw new ActionError('Could not reach the DRAW server. Check that it is running.');
   }
   const json = (await response.json()) as { message?: string; needsSignature?: SignatureRequest; error?: string; detail?: string };
+  if (response.status === 401) throw new AccessCodeNeeded(json.error ?? 'This demo needs an access code for actions.');
   if (response.status === 202 && json.needsSignature) return { kind: 'sign', request: json.needsSignature };
   if (!response.ok) throw new ActionError(json.error ?? 'The request failed.', json.detail);
   return { kind: 'done', message: json.message ?? 'Done.' };

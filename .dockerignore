@@ -1,0 +1,9 @@
+.git
+.env
+.keys
+internal
+localnet
+**/node_modules
+**/.daml
+app/web/dist
+evidence/local/browser/*/artifacts

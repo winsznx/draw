@@ -1,0 +1,5 @@
+# Replace draw.example.com with your domain. Caddy fetches the TLS certificate.
+draw.example.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:4173
+}

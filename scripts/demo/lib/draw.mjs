@@ -2,7 +2,7 @@
 // submits or reads with the acting role's own ledger user.
 import { execFileSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { LedgerClient, TEMPLATES, INTERFACES, transactionEvents } from './ledger.mjs';
@@ -13,7 +13,10 @@ import { sharedUserId } from './auth.mjs';
 import { PartyKey } from './keys.mjs';
 
 const darVersion = readFileSync(join(ROOT, 'contracts/daml/daml.yaml'), 'utf8').match(/^version:\s*(\S+)/m)[1];
-export const DAR = join(ROOT, `contracts/daml/.daml/dist/draw-${darVersion}.dar`);
+// A fresh build if there is one, otherwise the committed release copy, so a
+// server without the Daml SDK still deploys the exact same package.
+const built = join(ROOT, `contracts/daml/.daml/dist/draw-${darVersion}.dar`);
+export const DAR = existsSync(built) ? built : join(ROOT, `contracts/dist/draw-${darVersion}.dar`);
 export const LPS = ['lpA', 'lpB', 'lpC'];
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -33,15 +36,19 @@ export async function eventually(read, accept = Boolean, attempts = 30) {
   return value;
 }
 
+// The main package id, read from the DAR's manifest. Manifest lines wrap at 72
+// characters with continuation lines that start with a space.
+function packageIdFromManifest() {
+  const manifest = execFileSync('unzip', ['-p', DAR, 'META-INF/MANIFEST.MF']).toString().replace(/\r?\n /g, '');
+  const mainDalf = manifest.match(/^Main-Dalf:\s*(\S+)/m)?.[1];
+  const id = mainDalf?.match(/-([0-9a-f]{64})\//)?.[1];
+  if (!id) throw new Error(`could not read the package id from ${DAR}`);
+  return id;
+}
+
 export function packageInfo() {
-  const inspect = execFileSync(join(process.env.HOME, '.dpm/bin/dpm'), ['damlc', 'inspect-dar', '--json', DAR], {
-    env: { ...process.env, JAVA_HOME: process.env.JAVA_HOME ?? '/opt/homebrew/opt/openjdk@21' },
-    stdio: ['ignore', 'pipe', 'ignore'],
-  });
-  return {
-    packageId: JSON.parse(inspect.toString()).main_package_id,
-    darSha256: createHash('sha256').update(readFileSync(DAR)).digest('hex'),
-  };
+  const darSha256 = createHash('sha256').update(readFileSync(DAR)).digest('hex');
+  return { packageId: packageIdFromManifest(), darSha256 };
 }
 
 const firstCreated = (transaction) => transactionEvents(transaction).find((e) => e.kind === 'created');

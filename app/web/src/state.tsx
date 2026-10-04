@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
-import { ActionError, fetchView, postAction, postSignature, type SignatureRequest } from './api';
+import { AccessCodeNeeded, ActionError, fetchView, postAction, postSignature, rememberAccessCode, type SignatureRequest } from './api';
 import { signHash } from './keys';
 import type { Role, View } from './types';
 
@@ -130,6 +130,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setToast({ message: reply.message, error: false });
       return true;
     } catch (error) {
+      if (error instanceof AccessCodeNeeded) {
+        const code = window.prompt('This demo is read-only for visitors. Enter the access code to take actions:');
+        if (code) rememberAccessCode(code.trim());
+        setToast({ message: code ? 'Access code saved. Try the action again.' : error.message, error: !code });
+        return false;
+      }
       const failure = error instanceof ActionError ? error : new ActionError('The action failed.');
       setToast({ message: failure.message, detail: failure.detail, error: true });
       return false;

@@ -20,7 +20,8 @@ const WEB = join(HERE, 'web/dist');
 const EVIDENCE = join(ROOT, 'evidence');
 const NETWORK_DIR = network.name === 'localnet' ? 'local' : network.name;
 const PORT = Number(process.env.PORT ?? 4173);
-const SESSION_FILE = join(HERE, `.session-${network.name}.json`);
+// DRAW_STATE_DIR puts the session file on a volume when the app runs in a container.
+const SESSION_FILE = join(process.env.DRAW_STATE_DIR ?? HERE, `.session-${network.name}.json`);
 const NETWORK_LABEL = { localnet: 'LocalNet', devnet: 'DevNet' }[network.name] ?? network.name;
 const COMMITMENTS = { lpA: '1000000.0', lpB: '700000.0', lpC: '500000.0' };
 // Off by default. When on, the server settles matching payments as the fund
@@ -32,6 +33,9 @@ const BROWSER_KEYS = network.partyMode === 'external';
 const relay = createRelay();
 const AUTO_SETTLE = process.env.DRAW_AUTO_SETTLE === 'true' && !BROWSER_KEYS;
 const AUTO_SETTLE_MS = Number(process.env.DRAW_AUTO_SETTLE_MS ?? 5000);
+// When set, anyone can read every view and the proof page, but actions need
+// this code. Use it whenever the server is reachable from the internet.
+const ACCESS_CODE = process.env.DRAW_ACCESS_CODE || null;
 
 const browserSigners = (s) => Object.fromEntries(Object.entries(s.external ?? {})
   .map(([role, { fingerprint }]) => [role, relay.signerFor(role, s.party[role], fingerprint)]));
@@ -112,7 +116,7 @@ function businessStatus(state, outcome, payments) {
 }
 
 async function viewFor(role) {
-  const base = { network: NETWORK_LABEL, role, singleCredential: network.singleCredential, autoSettle: AUTO_SETTLE, browserKeys: BROWSER_KEYS };
+  const base = { network: NETWORK_LABEL, role, singleCredential: network.singleCredential, autoSettle: AUTO_SETTLE, browserKeys: BROWSER_KEYS, accessCodeRequired: Boolean(ACCESS_CODE) };
   if (!session) return { ...base, session: false };
   // Which roles have created accounts. The admin uses it to know whom to invite;
   // in a real deployment an investor would share its party id with the fund.
@@ -553,6 +557,9 @@ createServer(async (req, res) => {
       return send(res, 200, await viewFor(role));
     }
     if (req.method === 'GET' && url.pathname === '/api/proof') return send(res, 200, proof());
+    if (req.method === 'POST' && ACCESS_CODE && req.headers['x-draw-access'] !== ACCESS_CODE) {
+      return send(res, 401, { error: 'This demo is read-only without the access code.' });
+    }
     const action = url.pathname.match(/^\/api\/actions\/([a-z]+)$/)?.[1];
     if (req.method === 'POST' && action && Object.hasOwn(actions, action)) {
       const body = await readBody(req);
