@@ -58,3 +58,21 @@ No starter, DevNet endpoint, or credential is present in the repo or environment
 ## Grofty and BitSafe
 
 Out of scope for this pass. See `docs/DECISIONS.md`.
+
+## HackCanton DevNet node (added 2026-10-04)
+
+Source: NODERS "Canton DevNet Quickstart — HackCanton shared node" (hackmd.io/@IzUWaelHTRa_fG1NRW376w/HkBpCR5YGx), shared by the organizers on 2026-10-04.
+
+| Primitive | Use | Status |
+|---|---|---|
+| Keycloak password grant and refresh token, client `web-app-ui-hackcanton-01-devnet`, audience `https://hackcanton-01.devnet.naas.noders.services` | Ledger API login | Endpoint and client checked with fake credentials (`invalid_grant`). Real login UNVERIFIED |
+| JSON Ledger API v2 on the shared participant | All reads and commands | `/livez` 200. Commands UNVERIFIED |
+| Validator `/api/validator/version` | Version check | 0.8.4, same as our LocalNet |
+| Scan proxy GET `amulet-rules`, `open-and-issuing-mining-rounds` | Disclosed contracts for the tap | Paths from Splice 0.8.4 `scan-proxy.yaml`. Requires a token (401 without). UNVERIFIED with a token |
+| Token Standard registry through the scan proxy, `/api/validator/v0/scan-proxy/registry/...` | Allocation factory and choice contexts | From Splice release notes ("Expose token-standard endpoints on the validator scan-proxy"). UNVERIFIED on this node |
+| Console party creation and DAR upload | Parties and package | Manual, web UI |
+| Error responses with a trace id only | Refusal checks | The run accepts a trace-id refusal and marks the reason hidden |
+
+## Token Standard V2 (CIP-0112)
+
+CIP-0112, "Canton Network Token Standard V2 - Improvements for Privacy, Performance and Traditional Accounting", status Approved, created 2026-03-31. Per a summary of the CIP (not read in full): backward compatible with CIP-0056, adds committed allocations for prefunded workflows, account structures beyond single-party holdings, and batch settlement. Our LocalNet registry listed `splice-api-token-allocation-v2` support for Amulet. DRAW uses V1 allocations. Committed allocations could let an LP prefund a call before it is due. Not used, UNVERIFIED.
