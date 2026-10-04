@@ -5,11 +5,13 @@ import { createHmac } from 'node:crypto';
 
 const oauthClients = new Map();
 const tokenCache = new Map();
+let shared = null;
 let settings = { mode: 'hs256', secret: 'unsafe', audience: 'https://canton.network.global' };
 
 export function configureAuth(next) {
   settings = { ...settings, ...next };
   tokenCache.clear();
+  shared = null;
 }
 
 export function registerOAuthClient(userId, { clientId, clientSecret }) {
@@ -54,7 +56,6 @@ async function oauthToken(userId) {
 // One person's login on a shared node: password grant once, then refresh.
 // Every ledger user id maps to the same token, so the caller must label the
 // run as single-credential.
-let shared = null;
 async function sharedToken() {
   if (shared && shared.expiresAt > Date.now() + 60_000) return shared.token;
   const refresh = shared?.refreshToken ?? settings.refreshToken;

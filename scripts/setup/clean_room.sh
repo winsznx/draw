@@ -29,6 +29,7 @@ cd "$WORK/draw"
 run_step prerequisites bash -c 'dpm version --active && java -version 2>&1 | head -1 && node --version && npm --version && docker --version'
 run_step contracts-build bash -c 'cd contracts && dpm build --all'
 run_step contracts-test bash -c 'cd contracts/tests && dpm test'
+run_step unit-tests node --test 'scripts/test/*.test.mjs'
 run_step web-install bash -c 'cd app/web && npm ci --no-audit --no-fund'
 run_step web-build bash -c 'cd app/web && npm run build'
 

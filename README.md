@@ -104,6 +104,7 @@ LocalNet uses its documented `unsafe` HS256 secret. Each party gets its own ledg
 ## Tests and proof campaign
 
 ```sh
+node --test 'scripts/test/*.test.mjs'  # unit tests: payment classifier, outcome truth, login, config
 node scripts/demo/run.mjs          # canonical call, writes evidence/local/runs/<run>
 node scripts/demo/summary.mjs      # plain-language summary of the latest run
 node scripts/eval/campaign.mjs     # 100 seeded cases (DRAW_EVAL_SEED, DRAW_EVAL_CASES)
