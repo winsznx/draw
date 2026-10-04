@@ -96,3 +96,10 @@ claims:
     environments: []
     evidence: [evidence/local/browser/20261002T195013Z/NOTE.md]
     blocker: "First run failed before any ledger action because LocalNet was down. Rerun after LocalNet is restored."
+
+  - id: non-custodial
+    text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused."
+    status: local_verified
+    environments: [localnet]
+    evidence: [evidence/local/runs/20261004T183146Z/result.json]
+    limits: "LocalNet only. The HackCanton DevNet node refuses external-party allocation for team accounts (requested from NODERS 2026-10-04). Keys in the scripted run are held by the run itself, one per party. The browser-key app flow is built and not yet run end to end."

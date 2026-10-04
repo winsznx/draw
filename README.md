@@ -46,6 +46,7 @@ On the honest path both systems produce the same totals. The difference is what 
 | What | Evidence |
 |---|---|
 | The full call on the HackCanton DevNet node: two LPs settle with real Canton Coin and independent read-back, bad payments refused, the unpaid LP goes overdue, totals match the money, and each party's transaction history holds only its own records. 72 of 72 checks | [`evidence/devnet/runs/20261004T120110Z`](evidence/devnet/runs/20261004T120110Z/result.json) |
+| Non-custodial mode: each party signs its own transactions with its own key, and the server cannot act for a party without that key. 76 of 76 checks on LocalNet | [`evidence/local/runs/20261004T183146Z`](evidence/local/runs/20261004T183146Z/result.json) |
 | Per-LP private obligations, checked with each party's own ledger login, including a leak check across everything it can see | [`evidence/local/runs/`](evidence/local/runs), `visibility-final.json` |
 | Real Amulet settlement through Token Standard allocations, with an independent read-back receipt | `receipt-lpA.json`, `receipt-lpB.json` in the same runs |
 | Wrong amount, wrong payer, wrong reference, and replay refused. Unpaid LP overdue only after the due time | run `result.json` |

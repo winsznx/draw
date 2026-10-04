@@ -1,0 +1,27 @@
+{
+  "admin": {
+    "transactions": 21,
+    "events": 77,
+    "foreign": []
+  },
+  "lpA": {
+    "transactions": 7,
+    "events": 30,
+    "foreign": []
+  },
+  "lpB": {
+    "transactions": 11,
+    "events": 56,
+    "foreign": []
+  },
+  "lpC": {
+    "transactions": 7,
+    "events": 24,
+    "foreign": []
+  },
+  "outsider": {
+    "transactions": 0,
+    "events": 0,
+    "foreign": []
+  }
+}

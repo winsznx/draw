@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-04T12:05:35.484Z",
-  "generatedAtCommit": "01c09caf432ce8af5aa9b98090216b354b9d8110",
+  "generatedAt": "2026-10-04T18:35:27.808Z",
+  "generatedAtCommit": "f7614231cfd2bb057e38080bdd2ee67a0a5c7db6",
   "generator": "node scripts/evidence/manifest.mjs",
   "tokenStandardPackages": [
     {
@@ -1316,6 +1316,118 @@
         }
       ],
       "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "local",
+      "runId": "20261004T182943Z",
+      "path": "evidence/local/runs/20261004T182943Z",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "steps.jsonl",
+          "sha256": "6d443129e8daba869100b2c2b44ea3bd57d43cf3591be2c5b0502055e847574c"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "runs",
+      "environment": "localnet",
+      "runId": "20261004T183146Z",
+      "path": "evidence/local/runs/20261004T183146Z",
+      "commit": "f7614231cfd2bb057e38080bdd2ee67a0a5c7db6",
+      "verdict": "LOCAL_SETTLEMENT=PASS PRIVACY_CAMPAIGN=PASS CUSTODY=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496"
+      ],
+      "instrument": {
+        "admin": "DSO::1220ff4d2277353721cfbed22e66592a45a64f1d0dc06025f64b436496bff9e9f49d",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "1220ff4c42e88fb5e8f10dff74b7a81ce2987b183424c386d8c6d3eb46b37ffe4a0d",
+          "allocationCid": "00e4c1c76cfdeaa4be77d7321a43677f53eeb9a715e31d4f91fe985e6dfd8861feca121220c3313abed2fcffae1a6ff017519aa08931d870aff3476cd12fe8cec0aa2d8b65",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "12202535108d70635dbd8248113fbcc526d5e09dc21fda389fef0ba48e62300f8326",
+          "allocationCid": "00d7f82ca211f0f85942f87c528f6ca8d46c08bce739f9b5cf9fa561ba3d0ecb5fca121220a51e1396c5b2fada80ab812c6dff890b37d219bebe460223ebc7986436c1c46b",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "1220ff4c42e88fb5e8f10dff74b7a81ce2987b183424c386d8c6d3eb46b37ffe4a0d",
+          "allocationCid": "00e4c1c76cfdeaa4be77d7321a43677f53eeb9a715e31d4f91fe985e6dfd8861feca121220c3313abed2fcffae1a6ff017519aa08931d870aff3476cd12fe8cec0aa2d8b65",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "d54ff722e6d3e2409b36b10ba311134b59d09f1dba00edf19fe2052bba48c4cc"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "c95f50fadcb7297cd897ecb43fde2e1fb63e04ef81512fe04d08cb0045db0cfa"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "a1ee4abf4348b5f9cf3989d034c4447076a9851f6a68879e1c7c03653991509a"
+        },
+        {
+          "path": "result.json",
+          "sha256": "183a1698ca27b86b36a849c0168d48475f3a5d31b2b0a386ea9c947b99229b10"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "66fd9cbf6e05bc0f5528c674873dd2a7f5e432acfc156b2bbbb2e2a43cf9ebc8"
+        },
+        {
+          "path": "streams.json",
+          "sha256": "480b0e03936c43331bcbc6f25cd6b0389105f14aff6cf68f6772c0329e573b62"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "8aa5287b19a9e0d992551c76f906eb7e41b18570673a32deee13816a2da42fd2"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "4e3b8a159d8f6a0b65f1519dffa08bfbfbea3db3b075df00731923fdf727fbae"
+        }
+      ],
+      "claims": [
+        "non-custodial"
+      ]
     },
     {
       "kind": "workload",
