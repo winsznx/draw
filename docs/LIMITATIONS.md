@@ -4,7 +4,7 @@ Plainly, what DRAW does not do or has not shown yet.
 
 ## Environment
 
-- Everything has run on Splice LocalNet 0.8.4 only. No DevNet run exists. DevNet access is blocked on organizer credentials.
+- Everything has run on Splice LocalNet 0.8.4 only. No DevNet run exists yet. The organizers provided the shared node and DRAW supports it. The run needs the team's hackathon login.
 - All LPs sit on one LocalNet participant. Its operator can read every LP. Production needs each LP on its own validator or a trusted provider.
 - The settlement asset is LocalNet Amulet from the DevNet tap. No real money, no USDCx, no bank rail.
 
