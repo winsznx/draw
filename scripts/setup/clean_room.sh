@@ -34,7 +34,7 @@ run_step web-install bash -c 'cd app/web && npm ci --no-audit --no-fund'
 run_step web-build bash -c 'cd app/web && npm run build'
 
 LEDGER=skipped
-if curl -s -o /dev/null -w '%{http_code}' http://localhost:3975/v2/version | grep -q 401; then
+if [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3975/v2/version)" != 000 ]; then
   LEDGER=ran
   run_step canonical-run node scripts/demo/run.mjs
 else

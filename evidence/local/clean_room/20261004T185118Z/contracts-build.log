@@ -1,0 +1,19 @@
+Running multi-package build of all packages in /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.I6qZn7XE21/draw/contracts.
+
+2026-10-04 18:51:20.99 [INFO]  [multi-package build] 
+Building /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.I6qZn7XE21/draw/contracts/daml
+
+2026-10-04 18:51:37.24 [INFO]  [build] 
+Compiling draw to a DAR.
+
+2026-10-04 18:51:39.72 [INFO]  [build] 
+Created .daml/dist/draw-0.2.0.dar
+
+2026-10-04 18:51:39.78 [INFO]  [multi-package build] 
+Building /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.I6qZn7XE21/draw/contracts/tests
+
+2026-10-04 18:51:46.75 [INFO]  [build] 
+Compiling draw-tests to a DAR.
+
+2026-10-04 18:51:49.74 [INFO]  [build] 
+Created .daml/dist/draw-tests-0.1.0.dar
