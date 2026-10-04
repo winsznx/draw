@@ -96,7 +96,7 @@ function businessStatus(state, outcome, payments) {
 }
 
 async function viewFor(role) {
-  const base = { network: NETWORK_LABEL, role };
+  const base = { network: NETWORK_LABEL, role, singleCredential: network.singleCredential };
   if (!session) return { ...base, session: false };
 
   const { fundId } = session;

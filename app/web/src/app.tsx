@@ -93,7 +93,9 @@ export function App(): ReactElement {
       <footer className="provenance">
         {view?.session && !isProof && (
           <p>
-            Everything above was read from the ledger with {ROLE_NAME[role]}'s own login: user {view.queriedAs.userId}, party {shortId(view.queriedAs.party)}.
+            {view.singleCredential
+              ? <>Everything above was read from the ledger as party {shortId(view.queriedAs.party)} ({ROLE_NAME[role]}). On this node one shared login acts for every demo party, so this shows party-level visibility, not separate credentials.</>
+              : <>Everything above was read from the ledger with {ROLE_NAME[role]}'s own login: user {view.queriedAs.userId}, party {shortId(view.queriedAs.party)}.</>}
             Dollar amounts are the business scenario. Amulet amounts are what moves on {view.network}. Funded means an independent read-only verifier confirmed the settlement.
             Switching role here switches the ledger login. It is a demo convenience, not production sign-in.
           </p>

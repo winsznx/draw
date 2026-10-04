@@ -134,12 +134,14 @@ export interface Commitment {
 export interface ViewNoSession {
   network: string;
   role: Role;
+  singleCredential: boolean;
   session: false;
 }
 
 export interface ViewWithSession {
   network: string;
   role: Role;
+  singleCredential: boolean;
   session: true;
   queriedAs: { userId: string; party: string };
   fund: { fundId: string; name: string } | null;
