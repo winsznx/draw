@@ -44,6 +44,7 @@ Updated 2026-10-02 evening.
 | 35 | Errors in plain language with technical detail, empty states, mobile | DONE | |
 | 40A | `/proof` judge surface | DONE | Proof tab |
 | — | Reconciliation inbox | DONE | Payments tab |
+| — | Automatic settlement of exact matches | BLOCKED_ON_LOCALNET | `DRAW_AUTO_SETTLE=true` in `app/server.mjs`, test `app/web/e2e/auto-settle.spec.ts`. Off by default, unclaimed |
 | 23 | Lender projection | SKIPPED | optional, excluded by CLAUDE.md for the core pass |
 | 24 | AI features | SKIPPED | excluded by CLAUDE.md |
 | v10 | Grofty MainNet slice | SKIPPED | excluded by CLAUDE.md. Needs invite and MainNet CC |

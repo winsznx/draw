@@ -46,6 +46,7 @@ export function AdminHome({ view }: { view: ViewWithSession }) {
         <div>
           <h1>{view.fund?.name ?? view.fundName}</h1>
           <p className="muted">How much called capital is deployable now, and what is still unresolved.</p>
+          {view.autoSettle && <p className="small muted">Automatic settlement is on: exact matching payments settle within seconds, each with an independent check.</p>}
         </div>
         <a className="btn" href={href('calls', 'new')}>Create capital call</a>
       </div>

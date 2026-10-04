@@ -21,6 +21,10 @@ const PORT = Number(process.env.PORT ?? 4173);
 const SESSION_FILE = join(HERE, `.session-${network.name}.json`);
 const NETWORK_LABEL = { localnet: 'LocalNet', devnet: 'DevNet' }[network.name] ?? network.name;
 const COMMITMENTS = { lpA: '1000000.0', lpB: '700000.0', lpC: '500000.0' };
+// Off by default. When on, the server settles matching payments as the fund
+// admin through the same path as the Settle button.
+const AUTO_SETTLE = process.env.DRAW_AUTO_SETTLE === 'true';
+const AUTO_SETTLE_MS = Number(process.env.DRAW_AUTO_SETTLE_MS ?? 5000);
 
 let session = existsSync(SESSION_FILE) ? JSON.parse(readFileSync(SESSION_FILE, 'utf8')) : null;
 let draw = session ? await DrawSession.resume(session) : null;
@@ -42,7 +46,7 @@ function receiptFor(ref) {
 
 // Execution stages from the app's own log. Outcome truth comes from the ledger
 // and the verifier, see obligationOutcome.
-const STAGE = { pay: 'ACTION_REQUESTED', 'pay-locked': 'ACKNOWLEDGED', 'pay-failed': 'FAILED', settle: 'TRANSFER_EXECUTED', observed: 'SETTLEMENT_OBSERVED', verify: null };
+const STAGE = { 'auto-settle-refused': 'FAILED', pay: 'ACTION_REQUESTED', 'pay-locked': 'ACKNOWLEDGED', 'pay-failed': 'FAILED', settle: 'TRANSFER_EXECUTED', observed: 'SETTLEMENT_OBSERVED', verify: null };
 function timelineFor(ref, log) {
   return log.filter((entry) => entry.ref === ref && entry.action in STAGE).map((entry) => ({
     at: entry.at,
@@ -96,7 +100,7 @@ function businessStatus(state, outcome, payments) {
 }
 
 async function viewFor(role) {
-  const base = { network: NETWORK_LABEL, role, singleCredential: network.singleCredential };
+  const base = { network: NETWORK_LABEL, role, singleCredential: network.singleCredential, autoSettle: AUTO_SETTLE };
   if (!session) return { ...base, session: false };
 
   const { fundId } = session;
@@ -394,6 +398,30 @@ async function readBody(req) {
   return raw ? JSON.parse(raw) : {};
 }
 
+// ---------------------------------------------------------------- automatic settlement
+// Only payments the classifier marks as an exact match are settled, one at a
+// time through the action queue. A refusal is recorded and that payment is not
+// retried, so a bad payment cannot loop.
+const autoTried = new Set();
+async function autoSettleOnce() {
+  if (!session) return;
+  const obligations = await draw.contracts('admin', TEMPLATES.CapitalCallObligation, session.fundId);
+  const payments = classifyPayments({ adminParty: draw.party.admin, obligations, allocations: await draw.allocations('admin') });
+  for (const payment of payments.filter((p) => p.kind === 'match' && !autoTried.has(p.allocationCid))) {
+    autoTried.add(payment.allocationCid);
+    try {
+      const { message } = await serialized(() => actions.settle({ ref: payment.obligationRef, allocationCid: payment.allocationCid }));
+      record('auto-settle', { ref: payment.obligationRef, allocationCid: payment.allocationCid, message });
+    } catch (error) {
+      record('auto-settle-refused', { ref: payment.obligationRef, allocationCid: payment.allocationCid, error: error.message.slice(0, 300) });
+    }
+  }
+}
+if (AUTO_SETTLE) {
+  const tick = () => autoSettleOnce().catch((error) => console.error(`auto-settle: ${error.message}`)).finally(() => setTimeout(tick, AUTO_SETTLE_MS));
+  setTimeout(tick, AUTO_SETTLE_MS);
+}
+
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   try {
@@ -427,4 +455,4 @@ createServer(async (req, res) => {
   } catch (error) {
     send(res, 502, explain(error));
   }
-}).listen(PORT, () => console.log(`DRAW on ${NETWORK_LABEL}: http://localhost:${PORT}`));
+}).listen(PORT, () => console.log(`DRAW on ${NETWORK_LABEL}: http://localhost:${PORT}${AUTO_SETTLE ? ' (automatic settlement on)' : ''}`));

@@ -11,7 +11,7 @@ Plainly, what DRAW does not do or has not shown yet.
 ## Product
 
 - Overdue needs an admin click after the due time. There is no scheduler.
-- The admin clicks Settle. Settlement is not automatic when a matching payment arrives.
+- The admin clicks Settle by default. `DRAW_AUTO_SETTLE=true` settles exact matches automatically through the same path, but that mode has not run against a ledger yet.
 - Commitments are created in the demo setup. There is no onboarding, KYC, or document flow.
 - One currency and instrument per fund. Scenario dollars and Amulet units are separate fields, and the UI labels both.
 - No partial payments. Anything other than the exact amount is refused.

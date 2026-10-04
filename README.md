@@ -61,7 +61,8 @@ Every result was written by a script. [`evidence/manifest.json`](evidence/manife
 - DevNet run. The code is ready and configured from `.env` ([`docs/DEVNET_DEPLOYMENT.md`](docs/DEVNET_DEPLOYMENT.md)). Waiting on organizer access.
 - Browser journey and transaction-stream privacy check. Both are written. They have not passed yet because LocalNet went down before they could run.
 - Production sign-in where the app server holds no LP credentials ([`docs/SECURITY.md`](docs/SECURITY.md)).
-- A real settlement asset (tokenized dollar), automatic settlement on a matching payment, and a scheduler for overdue.
+- Automatic settlement of exact matches is written (`DRAW_AUTO_SETTLE=true`) and not yet run against a ledger.
+- A real settlement asset (tokenized dollar) and a scheduler for overdue.
 
 ## Roles
 

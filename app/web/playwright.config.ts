@@ -22,6 +22,7 @@ export default defineConfig({
   outputDir: `${out}/artifacts`,
   webServer: {
     command: 'node ../server.mjs',
+    env: { DRAW_AUTO_SETTLE: process.env.DRAW_AUTO_SETTLE ?? 'false' },
     url: 'http://localhost:4173/api/proof',
     reuseExistingServer: true,
     timeout: 60_000,
