@@ -1,0 +1,102 @@
+--   dar uploaded
+--   party-scoped users ready
+ok   credential: lpA token cannot read as lpB
+ok   credential: verifier token cannot submit as admin
+--   lpA tapped 100.0 Amulet through AmuletRules_DevNet_Tap
+--   lpB tapped 100.0 Amulet through AmuletRules_DevNet_Tap
+--   lpC tapped 100.0 Amulet through AmuletRules_DevNet_Tap
+--   unlocked Amulet balances before
+--   fund created, three commitments accepted by each LP with its own credential
+--   capital call issued by admin
+ok   deadline: overdue refused before due time
+ok   privacy[after-issue]: admin sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[after-issue]: lpA sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[after-issue]: lpB sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[after-issue]: lpC sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[after-issue]: outsider sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[after-issue]: admin sees all three obligations
+ok   privacy[after-issue]: lpA sees only its own obligation
+ok   privacy[after-issue]: lpA sees only its own commitment
+ok   privacy[after-issue]: lpA sees no Fund or CapitalCall
+ok   privacy[after-issue]: lpA sees no other LP's allocation
+ok   privacy[after-issue]: lpB sees only its own obligation
+ok   privacy[after-issue]: lpB sees only its own commitment
+ok   privacy[after-issue]: lpB sees no Fund or CapitalCall
+ok   privacy[after-issue]: lpB sees no other LP's allocation
+ok   privacy[after-issue]: lpC sees only its own obligation
+ok   privacy[after-issue]: lpC sees only its own commitment
+ok   privacy[after-issue]: lpC sees no Fund or CapitalCall
+ok   privacy[after-issue]: lpC sees no other LP's allocation
+ok   privacy[after-issue]: outsider sees nothing
+ok   privacy: lpA cannot fetch lpB obligation by contract id
+ok   authority: lpA cannot exercise on lpB obligation
+ok   authority: lpA cannot change its own obligation state
+--   lpA allocated 40.0 Amulet for DRAW-a0141d4b184e8447
+ok   settlement[lpA]: admin observes allocation in its own ACS
+ok   settlement[lpA]: obligation is PaymentPending, not Funded, before execution
+--   admin executed Obligation_Settle for lpA
+ok   settlement[lpA]: independent verifier returns VERIFIED_FUNDED
+ok   settlement[lpA]: LP sees its own obligation as Funded
+--   lpB allocated 30.0 Amulet for DRAW-027e072c7d22d20a
+ok   negative: wrong amount does not fund
+--   lpC allocated 35.0 Amulet for DRAW-027e072c7d22d20a
+ok   negative: wrong payer does not fund
+--   lpB allocated 35.0 Amulet for DRAW-8ff7cbcfc787b650
+ok   negative: wrong reference does not fund
+ok   negative: replayed allocation from lpA does not fund lpB
+ok   negative: replayed allocation does not fund lpA twice
+ok   negative: verifier rejects lpA settlement evidence offered for lpB
+ok   negative: lpB still unfunded after every bad attempt
+--   lpB withdrew rejected allocation
+--   lpC withdrew rejected allocation
+--   lpB withdrew rejected allocation
+ok   negative: rejected allocations withdrawn, none left for admin to execute
+--   lpB allocated 35.0 Amulet for DRAW-027e072c7d22d20a
+ok   settlement[lpB]: admin observes allocation in its own ACS
+ok   settlement[lpB]: obligation is PaymentPending, not Funded, before execution
+--   admin executed Obligation_Settle for lpB
+ok   settlement[lpB]: independent verifier returns VERIFIED_FUNDED
+ok   settlement[lpB]: LP sees its own obligation as Funded
+--   waiting 89s for the due time to pass
+ok   unpaid: lpC obligation is Overdue after the due time, not Funded
+ok   totals: funded is 750,000 USD scenario
+ok   totals: unresolved is 250,000 USD scenario
+ok   totals: funded + unresolved equals the call total
+ok   totals: funded units equal verified receipt units
+ok   totals: lpA unlocked balance fell by exactly what it settled (40)
+ok   totals: lpB unlocked balance fell by exactly what it settled (35)
+ok   totals: lpC unlocked balance fell by exactly what it settled (0)
+ok   totals: admin Amulet balance grew by exactly the funded units
+ok   privacy[final]: admin sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[final]: lpA sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[final]: lpB sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[final]: lpC sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[final]: outsider sees no DRAW or allocation contract it is not party to, from any run
+ok   privacy[final]: admin sees all three obligations
+ok   privacy[final]: lpA sees only its own obligation
+ok   privacy[final]: lpA sees only its own commitment
+ok   privacy[final]: lpA sees no Fund or CapitalCall
+ok   privacy[final]: lpA sees no other LP's allocation
+ok   privacy[final]: lpB sees only its own obligation
+ok   privacy[final]: lpB sees only its own commitment
+ok   privacy[final]: lpB sees no Fund or CapitalCall
+ok   privacy[final]: lpB sees no other LP's allocation
+ok   privacy[final]: lpC sees only its own obligation
+ok   privacy[final]: lpC sees only its own commitment
+ok   privacy[final]: lpC sees no Fund or CapitalCall
+ok   privacy[final]: lpC sees no other LP's allocation
+ok   privacy[final]: outsider sees nothing
+ok   privacy[stream]: admin received no transaction event about another party's fund records or payments
+ok   privacy[stream]: lpA received no transaction event about another party's fund records or payments
+ok   privacy[stream]: lpB received no transaction event about another party's fund records or payments
+ok   privacy[stream]: lpC received no transaction event about another party's fund records or payments
+ok   privacy[stream]: outsider received no transaction event about another party's fund records or payments
+{
+  "runId": "20261004T195713Z",
+  "gates": {
+    "LOCAL_SETTLEMENT": "PASS",
+    "PRIVACY_CAMPAIGN": "PASS"
+  },
+  "passed": 74,
+  "failed": []
+}

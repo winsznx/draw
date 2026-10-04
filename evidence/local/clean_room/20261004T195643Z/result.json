@@ -1,0 +1,50 @@
+{
+  "check": "CLEAN_ROOM",
+  "runId": "20261004T195643Z",
+  "commit": "c8acfea9786cef59a7514a43201b5b1018da0f1e",
+  "ledgerSteps": "ran",
+  "damlSuitesOk": 5,
+  "steps": [
+    {
+      "name": "clone",
+      "exit": 0,
+      "seconds": 0
+    },
+    {
+      "name": "prerequisites",
+      "exit": 0,
+      "seconds": 1
+    },
+    {
+      "name": "contracts-build",
+      "exit": 0,
+      "seconds": 16
+    },
+    {
+      "name": "contracts-test",
+      "exit": 0,
+      "seconds": 9
+    },
+    {
+      "name": "unit-tests",
+      "exit": 0,
+      "seconds": 0
+    },
+    {
+      "name": "web-install",
+      "exit": 0,
+      "seconds": 1
+    },
+    {
+      "name": "web-build",
+      "exit": 0,
+      "seconds": 3
+    },
+    {
+      "name": "canonical-run",
+      "exit": 0,
+      "seconds": 106
+    }
+  ],
+  "verdict": "PASS"
+}

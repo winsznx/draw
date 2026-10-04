@@ -23,3 +23,10 @@ Receipts, the action log, and the session live on Docker volumes (`draw-evidence
 ## Checked locally (2026-10-04)
 
 The image built from a clean context, contained the release DAR and the built app, contained no `.env`, started against DevNet with `--env-file`, served the app and `/api/proof`, and refused an action without the access code.
+
+## Live deployment (2026-10-05)
+
+- URL: https://187-77-178-30.sslip.io (Hostinger VPS, Ubuntu 26.04, 1 vCPU, 3.8 GB RAM). `sslip.io` maps the hostname to the IP so Caddy can get a certificate. Swap in a real subdomain by changing `/etc/caddy/Caddyfile`.
+- Mode: DevNet, shared hackathon login, access code required for actions. Visitors can read every role and the Proof page.
+- Runs without Docker, next to the Sleeve and Nightbook workers already on the box: system user `draw`, code in `/opt/draw/app`, session in `/opt/draw/state`, `.env` mode 600 owned by `draw`, systemd unit `draw.service` (`ProtectSystem=strict`, writes only under `/opt/draw`), listening on `127.0.0.1:4173`. Caddy on 80/443 proxies to it.
+- Update: `rsync` the same file list again, then `systemctl restart draw`. Logs: `journalctl -u draw`.

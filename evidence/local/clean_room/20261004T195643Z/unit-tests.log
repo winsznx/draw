@@ -1,0 +1,30 @@
+✔ logs in with a password once, then reuses the token for every user id (22.377084ms)
+✔ refreshes instead of sending the password again when the token is about to expire (7.372333ms)
+✔ falls back to the password when a stored refresh token is rejected (5.627375ms)
+✔ a wrong password fails with the server's reason (2.740208ms)
+✔ LocalNet tokens are signed per user (0.426375ms)
+✔ LocalNet needs no configuration (43.926333ms)
+✔ the HackCanton shared-login setup is labelled single-credential (41.966875ms)
+✔ a missing party id fails before any ledger call, naming the variable (39.201583ms)
+✔ shared login without credentials fails with a clear message (37.883209ms)
+✔ DevNet without a ledger URL fails (48.550625ms)
+✔ an exact payment from the obligated LP matches and is recommended for settlement (0.653208ms)
+✔ each way a payment can be wrong gets its own classification (0.197916ms)
+✔ a wrong payer and a duplicate need a decision, a wrong amount goes back to the payer (0.605125ms)
+✔ the earliest matching payment is the one to settle, regardless of input order (0.078417ms)
+✔ a payment matching an open overdue obligation still settles (0.082708ms)
+✔ amounts compare as numbers, not strings (0.066042ms)
+✔ funded is shown only with a VERIFIED_FUNDED receipt (0.083208ms)
+✔ an open obligation reports what its payments support, never funded (0.095625ms)
+✔ an action pauses for each signature and resumes with the browser's answer (1.662584ms)
+✔ cancelling a signature fails the action and submits nothing (0.208292ms)
+✔ an unknown or already answered request is refused (0.069917ms)
+✔ an action that needs no signature replies once (0.092959ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 265.581709
