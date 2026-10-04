@@ -195,7 +195,6 @@ export class LedgerClient {
       json: {
         beginExclusive,
         endInclusive,
-        verbose: true,
         updateFormat: {
           includeTransactions: {
             eventFormat: {

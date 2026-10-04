@@ -1,0 +1,1 @@
+Aborted at the transaction-stream check: /v2/updates rejected a request that set both verbose and updateFormat (client bug, fixed). All settlement, negative, deadline, totals, and ACS privacy checks before it passed. No result.json was written.
