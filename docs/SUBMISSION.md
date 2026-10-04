@@ -6,7 +6,7 @@ Draft answers. Keep in sync with `claims.yaml`. Anything about DevNet stays out 
 
 **One-line description:** Private capital calls on Canton: each investor sees and funds only its own obligation, while the fund sees what capital is actually deployable.
 
-**Problem:** When a fund calls capital, each LP gets a notice, pays on a separate rail, and fund operations matches payments to what was expected and chases whoever is short or late. Until that is reconciled, the fund can't safely count the money as deployable, and the pieces sit in different systems.
+**Problem:** When a fund calls capital, each LP pays by wire and fund software attributes the wires in batches from bank exports, with partial, split, and wrong-name payments handled by hand. Money counts as in only once it clears and is reconciled, and fake capital-call notices with swapped payment details are a known fraud pattern.
 
 **Solution:** DRAW issues one private obligation per LP on Canton. LPs pay with a Token Standard allocation that carries the obligation's reference. The fund's settle step checks the reference, payer, amount, and asset, moves the money, and marks the obligation funded in one transaction. A separate read-only check confirms each settlement before the dashboard counts it. Unpaid obligations stay explicit: overdue, in review, or waived with a note.
 

@@ -6,7 +6,9 @@ Working on Splice LocalNet with real Amulet. Not yet run on DevNet. [`claims.yam
 
 ## The problem
 
-A fund calls capital from its investors (LPs). Each LP gets a notice for its own share, pays on a separate rail, someone matches payments to what was expected, and the fund chases whoever is short or late. Until that matching is done, the fund cannot safely treat the money as deployable. Notices, payments, matching, and follow-up usually live in different systems.
+A fund calls capital from its investors (LPs). Each LP gets a notice for its own share and pays by wire. Today's fund software attributes those wires to investors, but in batches from bank exports, with partial, split, and wrong-name payments handled by hand. Funds count money as in only once it has cleared and been reconciled, and fake capital-call notices with swapped payment details are a known fraud pattern that funds fight with procedures, not with the payment itself.
+
+DRAW makes the obligation and the payment the same record: the payment carries the obligation's reference in a field the ledger checks, and the obligation becomes funded in the transaction that moves the money.
 
 That is our working hypothesis about the workflow. Public evidence and its limits are in [`docs/PROBLEM_EVIDENCE.md`](docs/PROBLEM_EVIDENCE.md). No fund operator has been interviewed yet.
 

@@ -4,7 +4,9 @@
 
 ## Problem
 
-When a fund calls capital, every LP gets a notice for its own share, pays on a separate rail, and someone in fund operations matches incoming payments to what was expected. Short, late, or unidentifiable payments get chased by email. Until that matching is done, the fund cannot safely treat the money as deployable. Notices, payments, matching, and follow-up usually sit in different systems.
+A fund calls capital from its investors (LPs). Each LP gets a notice for its own share and pays by wire. Today's fund software attributes those wires to investors, but in batches from bank exports, with partial, split, and wrong-name payments handled by hand. Funds count money as in only once it has cleared and been reconciled, and fake capital-call notices with swapped payment details are a known fraud pattern that funds fight with procedures, not with the payment itself. Existing tools (Carta, Juniper Square, Finologee) cover notices and attribution on bank rails. The gaps are batch matching, manual exceptions, and payment instructions that can be forged.
+
+DRAW makes the obligation and the payment the same record: the payment carries the obligation's reference in a field the ledger checks, and the obligation becomes funded in the transaction that moves the money.
 
 This is a hypothesis built from public process descriptions (`PROBLEM_EVIDENCE.md`). No fund operator has confirmed it to us yet.
 
