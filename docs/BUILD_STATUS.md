@@ -16,8 +16,8 @@ Updated 2026-10-02 evening.
 | 14 | Payment failure cases | PARTIAL | Correct, wrong amount, wrong payer, wrong reference, wrong call, wrong executor, wrong instrument, duplicate, after closure, after deadline, replay, pending, withdrawn all covered. Expired allocation and mid-payment network failure not produced |
 | 15 | DAML_CORE | DONE | `evidence/local/daml_core/20261002T192910Z` |
 | 16 | LOCAL_SETTLEMENT | DONE on 0.1.0 | Rerun on 0.2.0 is BLOCKED_ON_LOCALNET |
-| 17 | PRIVACY_CAMPAIGN | DONE (ACS), stream check BLOCKED_ON_LOCALNET | `scripts/demo/run.mjs` now also reads each party's transaction stream |
-| 18 | DEVNET_E2E, `docs/DEVNET_DEPLOYMENT.md` | BLOCKED_ON_HUMAN | Runbook written. Code is env-driven and tested in provisioned and OAuth modes on LocalNet |
+| 17 | PRIVACY_CAMPAIGN | DONE | ACS with per-party credentials on LocalNet, ACS plus transaction streams on DevNet |
+| 18 | DEVNET_E2E, `docs/DEVNET_DEPLOYMENT.md` | DONE (single credential) | `evidence/devnet/runs/20261004T120110Z` |
 | 19 | Party-aware read path | DONE | |
 | 21 | Deadline refuse-before, allow-after | DONE | |
 | 22 | Aggregate recomputed and independently checked | DONE | |

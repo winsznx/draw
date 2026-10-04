@@ -4,7 +4,8 @@ Plainly, what DRAW does not do or has not shown yet.
 
 ## Environment
 
-- Everything has run on Splice LocalNet 0.8.4 only. No DevNet run exists yet. The organizers provided the shared node and DRAW supports it. The run needs the team's hackathon login.
+- The canonical flow has run on the HackCanton DevNet node and on LocalNet. The 100-case campaign, the ablation, and the browser journey have only run on LocalNet (the browser journey has not passed yet).
+- On the DevNet node one hackathon account acts for all five demo parties, so credential separation is only proven on LocalNet.
 - All LPs sit on one LocalNet participant. Its operator can read every LP. Production needs each LP on its own validator or a trusted provider.
 - The settlement asset is LocalNet Amulet from the DevNet tap. No real money, no USDCx, no bank rail.
 

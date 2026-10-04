@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { configureAuth, registerOAuthClient } from './auth.mjs';
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-if (existsSync(join(ROOT, '.env'))) process.loadEnvFile(join(ROOT, '.env'));
+// DRAW_ENV_FILE=none skips the file, so tests see only the environment they set.
+if (process.env.DRAW_ENV_FILE !== 'none' && existsSync(join(ROOT, '.env'))) process.loadEnvFile(join(ROOT, '.env'));
 
 export const ROLES = ['admin', 'lpA', 'lpB', 'lpC', 'outsider'];
 export const SHARED_USER = '__shared__';

@@ -9,7 +9,7 @@ function load(env) {
     console.log(JSON.stringify({ name: network.name, authMode: network.authMode, partyMode: network.partyMode,
       singleCredential: network.singleCredential, errorsMayBeHidden: network.errorsMayBeHidden,
       users: network.provisioned && Object.values(network.provisioned).map((p) => p.userId) }));
-  `], { env: { PATH: process.env.PATH, HOME: process.env.HOME, ...env }, encoding: 'utf8' });
+  `], { env: { PATH: process.env.PATH, HOME: process.env.HOME, DRAW_ENV_FILE: 'none', ...env }, encoding: 'utf8' });
   return child.status === 0 ? { ok: true, value: JSON.parse(child.stdout) } : { ok: false, error: child.stderr };
 }
 

@@ -58,11 +58,16 @@ claims:
     limits: "LocalNet DevNet-tap Amulet, 40 and 35 units. Not DevNet, not MainNet." 
 
   - id: devnet
-    text: "DRAW runs end-to-end on HackCanton DevNet."
-    status: blocked
-    environments: []
-    evidence: []
-    blocker: BLOCKED_ON_HUMAN, no AppsFactory or NODERS DevNet credentials
+    text: "DRAW runs end-to-end on the HackCanton DevNet node: real Canton Coin settles two LPs' obligations with independent read-back, bad payments are refused, the unpaid LP goes overdue, and each party's view and transaction history contain only its own records."
+    status: devnet_verified
+    environments: [devnet]
+    evidence:
+      - evidence/devnet/runs/20261004T120110Z/result.json
+      - evidence/devnet/runs/20261004T120110Z/receipt-lpA.json
+      - evidence/devnet/runs/20261004T120110Z/receipt-lpB.json
+      - evidence/devnet/runs/20261004T120110Z/streams.json
+      - evidence/devnet/runs/20261004T120110Z/totals.json
+    limits: "One hackathon account acts for all five parties on the shared node, so credential separation was not tested on DevNet (it was on LocalNet). Party-scoped visibility and real settlement were." 
 
   - id: grofty
     text: "An LP funds an obligation through Grofty on MainNet."

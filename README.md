@@ -2,7 +2,7 @@
 
 Private capital calls on Canton. Each investor sees and funds only its own obligation, and the fund sees how much called capital is actually deployable.
 
-Working on Splice LocalNet with real Amulet. Not yet run on DevNet. [`claims.yaml`](claims.yaml) lists exactly what has been verified and where.
+Running end to end on the HackCanton DevNet node with real Canton Coin, and on Splice LocalNet. [`claims.yaml`](claims.yaml) lists exactly what has been verified and where.
 
 ## The problem
 
@@ -45,6 +45,7 @@ On the honest path both systems produce the same totals. The difference is what 
 
 | What | Evidence |
 |---|---|
+| The full call on the HackCanton DevNet node: two LPs settle with real Canton Coin and independent read-back, bad payments refused, the unpaid LP goes overdue, totals match the money, and each party's transaction history holds only its own records. 72 of 72 checks | [`evidence/devnet/runs/20261004T120110Z`](evidence/devnet/runs/20261004T120110Z/result.json) |
 | Per-LP private obligations, checked with each party's own ledger login, including a leak check across everything it can see | [`evidence/local/runs/`](evidence/local/runs), `visibility-final.json` |
 | Real Amulet settlement through Token Standard allocations, with an independent read-back receipt | `receipt-lpA.json`, `receipt-lpB.json` in the same runs |
 | Wrong amount, wrong payer, wrong reference, and replay refused. Unpaid LP overdue only after the due time | run `result.json` |
@@ -58,8 +59,8 @@ Every result was written by a script. [`evidence/manifest.json`](evidence/manife
 
 ## Roadmap
 
-- DevNet run. The code is ready and configured from `.env` ([`docs/DEVNET_DEPLOYMENT.md`](docs/DEVNET_DEPLOYMENT.md)). Waiting on organizer access.
-- Browser journey and transaction-stream privacy check. Both are written. They have not passed yet because LocalNet went down before they could run.
+- Separate credentials per party on DevNet. The shared hackathon node gives one account act-as on every party it creates, so DevNet proves party-level privacy and LocalNet proves credential separation ([`docs/DEVNET_DEPLOYMENT.md`](docs/DEVNET_DEPLOYMENT.md)).
+- The browser journey is written and has not passed yet. LocalNet went down before it could run.
 - Production sign-in where the app server holds no LP credentials ([`docs/SECURITY.md`](docs/SECURITY.md)).
 - Automatic settlement of exact matches is written (`DRAW_AUTO_SETTLE=true`) and not yet run against a ledger.
 - A real settlement asset (tokenized dollar) and a scheduler for overdue.
@@ -121,7 +122,7 @@ Copy `.env.example` to `.env`, set `DRAW_NETWORK=devnet`, and fill in the partic
 
 ## Known limitations
 
-All runs so far are LocalNet. All LPs share one participant there, so its operator can read them all. The demo server holds every role's credential. The token registry sees each payment's (random) reference. Full list: [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
+On both LocalNet and the DevNet node, all parties share one participant, so its operator can read them all. On DevNet one login acts for every party. The demo server holds every role's credential. The token registry sees each payment's (random) reference. Full list: [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md).
 
 ## Demo
 

@@ -1,6 +1,6 @@
 # DevNet deployment
 
-Status: BLOCKED_ON_HUMAN. No DevNet run exists. Nothing in this repository may say DRAW runs on DevNet until `evidence/devnet/runs/` holds a passing run.
+Status: DEVNET_E2E PASS on 2026-10-04, `evidence/devnet/runs/20261004T120110Z/result.json`, single credential. Two earlier runs aborted on run-script bugs and are kept with notes.
 
 ## What the organizers provided (2026-10-04)
 
@@ -41,7 +41,20 @@ Verified without an account (2026-10-04): the token endpoint and client id refus
 7. Run the campaign and the browser journey against DevNet if traffic allows. Keep DevNet and LocalNet evidence separate.
 8. Fill in the sections below from the run's own files, then update `claims.yaml`, `GATES.md`, and `SPONSOR_FINDINGS.md` (DEVNET_VERIFIED only for what ran).
 
-## Record (to fill from the DevNet run)
+## Record
+
+| Item | Value |
+|---|---|
+| Run | `evidence/devnet/runs/20261004T120110Z`, commit `01c09ca`, 0 uncommitted files |
+| Participant | `hackcanton-devnet-3`, Ledger API 3.5.19 |
+| Package | `draw` 0.2.0, `a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496`, uploaded through the Console, vetted |
+| Parties | `b94ab230-draw-admin`, `-lpa`, `-lpb`, `-lpc`, `-outsider`, all `::12204a9d…dbdf0e` |
+| Settlement | Canton Coin through the scan-proxy token registry. LP A 40, LP B 35, admin +75. Receipts `VERIFIED_FUNDED`, 14 checks each |
+| Privacy | ACS matrix and leak check clean. Transaction streams: admin 21 transactions, LP A 7, LP B 11, LP C 7, outsider 0, no foreign events |
+| Refusals | wrong amount, wrong payer, wrong reference, replay, early overdue: refused with full Daml reasons (the node did not hide them) |
+| Skipped | the two credential checks, reason recorded in `result.json` |
+| Aborted runs | `20261004T115*` (early-overdue check ran after the due time on slower DevNet), second (`/v2/updates` request bug). Both fixed in the run script |
+
 
 - Network and participant
 - Package ids

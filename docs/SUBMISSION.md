@@ -1,6 +1,6 @@
 # Submission V0
 
-Draft answers. Keep in sync with `claims.yaml`. Anything about DevNet stays out until a DevNet run exists.
+Draft answers. Keep in sync with `claims.yaml`. DevNet claims carry the single-credential caveat.
 
 **Project name:** DRAW
 
@@ -18,7 +18,7 @@ Draft answers. Keep in sync with `claims.yaml`. Anything about DevNet stays out 
 
 **Technical architecture:** Daml package `draw` (Fund, CapitalCall, InvestorCommitment, CapitalCallObligation), CIP-0056 Allocation V1 with Amulet through the Splice registry, a Node server that reads and acts with one ledger user per party, a React + TypeScript app, and an independent read-only verifier.
 
-**Working demo:** Splice LocalNet 0.8.4 with real Amulet. Canonical run, 100 generated calls with no false funding or privacy leaks, ablation, and a role-aware app. See `docs/PROOF.md`.
+**Working demo:** Runs end to end on the HackCanton DevNet node with real Canton Coin (72 of 72 checks, one shared hackathon login for all demo parties), and on Splice LocalNet with a separate login per party. 100 generated calls with no false funding or privacy leaks, an ablation, and a role-aware app. See `docs/PROOF.md`.
 
 **Repository:** (public URL to add)
 
