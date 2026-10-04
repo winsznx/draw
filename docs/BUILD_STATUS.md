@@ -66,7 +66,7 @@ Updated 2026-10-02 evening.
 |---|---|---|
 | 1A | GATES.md | DONE |
 | 2A | TRACK_PROOF_MODALITY.md | DONE |
-| 2B | PROBLEM_EVIDENCE.md | IN PROGRESS (public sources). Direct operator evidence BLOCKED_ON_HUMAN |
+| 2B | PROBLEM_EVIDENCE.md | DONE (12 public sources). Direct operator evidence BLOCKED_ON_HUMAN |
 | 2B | Outsider pull test | BLOCKED_ON_HUMAN |
 | 3A | PRODUCT.md | DONE |
 | 3C | FIRST_UNIT_VALUE.md | DONE |
@@ -74,16 +74,16 @@ Updated 2026-10-02 evening.
 | 4A | MECHANISM_HYPOTHESIS.md | DONE |
 | 7A | DEPENDENCY_GATE.md | DONE |
 | 13A | SPONSOR_TRANSFORMATION.md | DONE |
-| 36 | BUSINESS_BRIEF.md | IN PROGRESS |
+| 36 | BUSINESS_BRIEF.md | DONE |
 | 37 | PILOT_PLAN.md | DONE |
-| 37A | Prior-art research | IN PROGRESS |
+| 37A | Prior-art research | DONE (kept outside the repo) |
 | 37B | JUDGE_NOTE.md | DONE |
-| 37C | RUBRIC_ARTIFACT_MAP.md | IN PROGRESS |
-| 38 | JUDGE_SCORECARD.md | IN PROGRESS |
+| 37C | RUBRIC_ARTIFACT_MAP.md | DONE (criteria text unconfirmed) |
+| 38 | JUDGE_SCORECARD.md | DONE |
 | 39 | DEMO_SCRIPT.md | DONE |
 | 42 | README | DONE |
 | 42 | HACKATHON_DELTA.md | DONE |
-| 43 | SUBMISSION.md | IN PROGRESS |
+| 43 | SUBMISSION.md | DONE (V0) |
 | — | LIMITATIONS.md, PROOF.md, CLEAN_ROOM.md | DONE |
 
 ## Needs a human
