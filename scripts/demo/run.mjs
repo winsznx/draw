@@ -166,6 +166,10 @@ function assertMatrix(label, { matrix, leaks }) {
   check(`privacy[${label}]: outsider sees nothing`, Object.values(matrix.outsider).every((v) => v.length === 0), matrix.outsider);
 }
 
+// Checked right after issue, while the due time is certainly still ahead.
+await expectRejection('deadline: overdue refused before due time',
+  async () => draw.markOverdue((await obligationFor('lpC')).contractId), 'obligation is not yet due');
+
 for (const role of LPS) await obligationFor(role, role);
 assertMatrix('after-issue', await visibilityMatrix('after-issue'));
 
@@ -272,8 +276,6 @@ check('negative: rejected allocations withdrawn, none left for admin to execute'
 await settleAndVerify('lpB');
 
 // ---------------------------------------------------------------- LP C never pays
-await expectRejection('deadline: overdue refused before due time',
-  async () => draw.markOverdue((await obligationFor('lpC')).contractId), 'obligation is not yet due');
 const waitMs = Date.parse(dueAt) - Date.now() + 5_000;
 if (waitMs > 0) {
   step(`waiting ${Math.ceil(waitMs / 1000)}s for the due time to pass`, { dueAt });
