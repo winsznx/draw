@@ -73,11 +73,18 @@ const toDisclosed = ({ contract, domain_id }) => ({
 // AmuletRules and the most recent mining round that is already open, both as
 // disclosed contracts for AmuletRules_DevNet_Tap.
 export async function tapContext() {
-  const rules = await postJson(`${SCAN_URL}/v0/amulet-rules`, {});
-  const rounds = await postJson(`${SCAN_URL}/v0/open-and-issuing-mining-rounds`, {
-    cached_open_mining_round_contract_ids: [],
-    cached_issuing_round_contract_ids: [],
-  });
+  // Through a validator's scan proxy (DevNet) the reads are GETs and return
+  // plain contracts. Public Scan (LocalNet) takes POSTs and returns cache maps.
+  const proxy = network.scanProxyUrl;
+  const rules = proxy
+    ? { amulet_rules_update: (await getJson(`${proxy}/amulet-rules`)).amulet_rules }
+    : await postJson(`${SCAN_URL}/v0/amulet-rules`, {});
+  const rounds = proxy
+    ? await getJson(`${proxy}/open-and-issuing-mining-rounds`)
+    : await postJson(`${SCAN_URL}/v0/open-and-issuing-mining-rounds`, {
+      cached_open_mining_round_contract_ids: [],
+      cached_issuing_round_contract_ids: [],
+    });
   const now = Date.now();
   const open = Object.values(rounds.open_mining_rounds)
     .filter(({ contract }) => Date.parse(contract.payload.opensAt) <= now)

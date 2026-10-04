@@ -9,6 +9,7 @@ import { LedgerClient, TEMPLATES, INTERFACES, transactionEvents } from './ledger
 import { allocationFactory, amuletInstrument, executeTransferContext, tapContext, withdrawContext } from './registry.mjs';
 import { SettlementVerifier } from './verifier.mjs';
 import { ROLES, ROOT, network } from './network.mjs';
+import { sharedUserId } from './auth.mjs';
 
 const darVersion = readFileSync(join(ROOT, 'contracts/daml/daml.yaml'), 'utf8').match(/^version:\s*(\S+)/m)[1];
 export const DAR = join(ROOT, `contracts/daml/.daml/dist/draw-${darVersion}.dar`);
@@ -81,11 +82,12 @@ export class DrawSession {
       users.verifier = `draw-verifier-${tag}`;
       await operators[network.apiFor('admin')].createUser(users.verifier, { readAs: [party.admin] });
     } else {
+      const shared = network.singleCredential ? await sharedUserId() : null;
       for (const role of ROLES) {
         party[role] = network.provisioned[role].party;
-        users[role] = network.provisioned[role].userId;
+        users[role] = shared ?? network.provisioned[role].userId;
       }
-      users.verifier = network.provisioned.verifier.userId;
+      users.verifier = shared ?? network.provisioned.verifier.userId;
       if (network.operators.provider) {
         await new LedgerClient({ baseUrl: network.apiFor('admin'), userId: network.operators.provider }).uploadDar(DAR);
         onStep('dar uploaded', { participant: network.apiFor('admin'), packageId });

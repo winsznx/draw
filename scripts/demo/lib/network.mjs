@@ -11,6 +11,7 @@ export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 if (existsSync(join(ROOT, '.env'))) process.loadEnvFile(join(ROOT, '.env'));
 
 export const ROLES = ['admin', 'lpA', 'lpB', 'lpC', 'outsider'];
+export const SHARED_USER = '__shared__';
 const env = (name, fallback) => {
   const value = process.env[name];
   return value === undefined || value === '' ? fallback : value;
@@ -32,7 +33,20 @@ function loadNetwork() {
   const userApi = env('APP_USER_JSON_API', defaultApi ?? 'http://localhost:2975');
   const apiFor = (role) => env(`DRAW_${envKey(role)}_JSON_API`, role === 'admin' || role === 'verifier' ? providerApi : userApi);
 
-  if (authMode === 'oauth') {
+  if (authMode === 'password') {
+    configureAuth({
+      mode: 'password',
+      tokenUrl: required('OAUTH_TOKEN_URL'),
+      clientId: required('OAUTH_CLIENT_ID'),
+      username: env('HACKCANTON_USERNAME'),
+      password: env('HACKCANTON_PASSWORD'),
+      refreshToken: env('HACKCANTON_REFRESH_TOKEN'),
+      scope: env('OAUTH_SCOPE', 'openid daml_ledger_api offline_access'),
+    });
+    if (!env('HACKCANTON_REFRESH_TOKEN') && !(env('HACKCANTON_USERNAME') && env('HACKCANTON_PASSWORD'))) {
+      throw new Error('LEDGER_AUTH_MODE=password needs HACKCANTON_USERNAME and HACKCANTON_PASSWORD, or HACKCANTON_REFRESH_TOKEN');
+    }
+  } else if (authMode === 'oauth') {
     configureAuth({
       mode: 'oauth',
       tokenUrl: required('OAUTH_TOKEN_URL'),
@@ -57,7 +71,8 @@ function loadNetwork() {
 
   const provisioned = partyMode === 'provisioned'
     ? Object.fromEntries([...ROLES, 'verifier'].map((role) => [role, {
-      userId: required(`DRAW_${envKey(role)}_USER`),
+      // With one shared login every role is the same ledger user, resolved from the token.
+      userId: authMode === 'password' ? SHARED_USER : required(`DRAW_${envKey(role)}_USER`),
       party: role === 'verifier' ? undefined : required(`DRAW_${envKey(role)}_PARTY`),
     }]))
     : undefined;
@@ -65,6 +80,10 @@ function loadNetwork() {
   return {
     name,
     authMode,
+    singleCredential: authMode === 'password',
+    // Shared nodes may hide error details behind a trace id.
+    errorsMayBeHidden: env('DRAW_ERRORS_HIDDEN', name === 'localnet' ? 'false' : 'true') === 'true',
+    scanProxyUrl: env('SCAN_PROXY_URL'),
     partyMode,
     apiFor,
     participantLabel: (role) => (apiFor(role) === providerApi ? (name === 'localnet' ? 'app-provider' : 'admin participant') : (name === 'localnet' ? 'app-user' : 'lp participant')),

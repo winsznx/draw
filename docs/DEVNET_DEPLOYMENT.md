@@ -2,9 +2,33 @@
 
 Status: BLOCKED_ON_HUMAN. No DevNet run exists. Nothing in this repository may say DRAW runs on DevNet until `evidence/devnet/runs/` holds a passing run.
 
-Blocker: the organizers' answer on participant access, OAuth clients, party provisioning, Scan and registry URLs, faucet, and traffic. The questions were drafted on 2026-10-02.
+## What the organizers provided (2026-10-04)
 
-## Runbook once access exists
+NODERS hosts one shared DevNet participant for HackCanton (`hackcanton-01`). From their quickstart:
+
+| Item | Value |
+|---|---|
+| JSON Ledger API | `https://ledger-api-json.participant.hackcanton-01.devnet.naas.noders.services` |
+| Login | Keycloak realm `noders-appsfactory`, client `web-app-ui-hackcanton-01-devnet`, password grant then refresh token. Token `sub` is the ledger user |
+| Validator and Scan proxy | `https://validator-api-http.validator.hackcanton-01.devnet.naas.noders.services`, Splice 0.8.4 (checked 2026-10-04). Token Standard registry under `/api/validator/v0/scan-proxy/registry` (Splice release notes: token-standard endpoints exposed on the scan proxy) |
+| Parties | Created in the web Console, namespaced to the team, up to 20. The account's ledger user gets act-as and read-as on each |
+| DAR upload | Web Console, Collections, Upload DAR |
+| Canton Coin | Wallet faucet (TAP), or `AmuletRules_DevNet_Tap` through the ledger |
+| Errors | The node returns a trace id instead of the cause. Look it up in their Grafana |
+
+Consequence: one hackathon account is one credential for every party it creates. A DevNet run with one account proves party-scoped visibility and real settlement, not credential separation. The run records `credentialSeparation: NOT_TESTED_SINGLE_CREDENTIAL` and skips the two credential checks with that reason. Separate credentials need M2M clients from NODERS (requested 2026-10-04) or teammates' accounts. A participant replied that Daml privacy is protocol-level and works on the shared node, which is correct for party visibility and does not change the credential point.
+
+Verified without an account (2026-10-04): the token endpoint and client id refuse fake credentials with `invalid_grant`, `/livez` answers 200, the scan proxy requires a token.
+
+## Runbook with one hackathon account
+
+1. Onboard once in the Wallet ("Onboard yourself").
+2. In the Console: create parties `draw-admin`, `draw-lpa`, `draw-lpb`, `draw-lpc`, `draw-outsider`. Upload `contracts/daml/.daml/dist/draw-0.2.0.dar` under Collections.
+3. In `.env`, uncomment the HackCanton DevNet block from `.env.example`, set `HACKCANTON_USERNAME`, `HACKCANTON_PASSWORD`, and the five party ids copied from the Console.
+4. `node scripts/demo/run.mjs`. Evidence goes to `evidence/devnet/runs/<runId>/`.
+5. Then `node app/server.mjs` with the same `.env` for the app on DevNet.
+
+## Runbook with one client per role
 
 1. Copy `.env.example` to `.env`. Set `DRAW_NETWORK=devnet`, `DRAW_JSON_API`, `OAUTH_TOKEN_URL`, `OAUTH_AUDIENCE`, `OAUTH_SCOPE`, `REGISTRY_URL`, `SCAN_URL`, and `SCAN_AUTH_USER` if Scan sits behind the validator's proxy.
 2. Parties:

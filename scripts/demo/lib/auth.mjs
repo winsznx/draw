@@ -51,6 +51,41 @@ async function oauthToken(userId) {
   return body.access_token;
 }
 
+// One person's login on a shared node: password grant once, then refresh.
+// Every ledger user id maps to the same token, so the caller must label the
+// run as single-credential.
+let shared = null;
+async function sharedToken() {
+  if (shared && shared.expiresAt > Date.now() + 60_000) return shared.token;
+  const refresh = shared?.refreshToken ?? settings.refreshToken;
+  const form = new URLSearchParams(refresh
+    ? { grant_type: 'refresh_token', client_id: settings.clientId, refresh_token: refresh }
+    : { grant_type: 'password', client_id: settings.clientId, username: settings.username, password: settings.password, scope: settings.scope });
+  const response = await fetch(settings.tokenUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form,
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || !body.access_token) {
+    if (refresh && settings.password) {
+      shared = null;
+      settings = { ...settings, refreshToken: undefined };
+      return sharedToken();
+    }
+    throw new Error(`login failed: HTTP ${response.status} ${body.error ?? ''} ${body.error_description ?? ''}`);
+  }
+  shared = { token: body.access_token, refreshToken: body.refresh_token ?? refresh, expiresAt: Date.now() + (body.expires_in ?? 300) * 1000 };
+  return shared.token;
+}
+
+// The ledger user id is the token's subject.
+export async function sharedUserId() {
+  const payload = (await sharedToken()).split('.')[1];
+  return JSON.parse(Buffer.from(payload, 'base64url').toString()).sub;
+}
+
 export async function tokenFor(userId) {
+  if (settings.mode === 'password') return sharedToken();
   return settings.mode === 'oauth' ? oauthToken(userId) : hs256Token(userId);
 }
