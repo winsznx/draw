@@ -1,0 +1,42 @@
+{
+  "run": "20261005214111",
+  "test": "capital call journey",
+  "site": "https://draw.timjosh507.workers.dev",
+  "steps": [
+    {
+      "step": "landing loads",
+      "at": "2026-10-05T21:41:16.077Z"
+    },
+    {
+      "step": "LP A committed",
+      "at": "2026-10-05T21:41:20.268Z"
+    },
+    {
+      "step": "fund manager onboarded",
+      "at": "2026-10-05T21:41:22.841Z"
+    },
+    {
+      "step": "call issued",
+      "at": "2026-10-05T21:41:28.635Z"
+    },
+    {
+      "step": "LP A locked its payment",
+      "at": "2026-10-05T21:41:36.753Z"
+    },
+    {
+      "step": "LP B cannot open LP A notice",
+      "at": "2026-10-05T21:41:41.184Z"
+    },
+    {
+      "step": "fund manager settled, verifier confirmed",
+      "at": "2026-10-05T21:41:55.217Z"
+    },
+    {
+      "step": "LP A sees verified funded",
+      "at": "2026-10-05T21:41:59.215Z"
+    }
+  ],
+  "expectedSteps": 8,
+  "verdict": "PASS",
+  "error": null
+}

@@ -102,7 +102,7 @@
   display: grid;
   gap: var(--s-3);
   padding: var(--s-5);
-  border-radius: var(--r-panel);
+  border-radius: 18px;
   background: var(--funded-soft);
   border: 1px solid color-mix(in srgb, var(--funded) 25%, transparent);
 }
@@ -176,11 +176,12 @@
 
 .dialog {
   width: min(480px, calc(100vw - 32px));
-  padding: var(--s-6);
+  padding: var(--s-8) var(--s-6) var(--s-6);
   border: 1px solid var(--rule);
-  border-radius: var(--r-sheet);
+  border-radius: var(--r-shell);
   background: var(--sheet);
   color: var(--ink);
+  box-shadow: var(--shadow-float);
 }
 
 .dialog::backdrop {
@@ -193,7 +194,7 @@
   height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--intaglio-soft);
   color: var(--intaglio);
 }
@@ -216,8 +217,9 @@
 
 .toast {
   position: relative;
-  padding: var(--s-4) var(--s-10) var(--s-4) var(--s-4);
-  border-radius: var(--r-panel);
+  padding: var(--s-4) var(--s-10) var(--s-4) var(--s-5);
+  border-radius: 18px;
+  box-shadow: var(--shadow-float);
   background: var(--ink);
   color: var(--paper);
   font-size: 14px;

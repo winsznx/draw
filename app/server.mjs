@@ -371,7 +371,7 @@ const actions = {
     const { payload } = await ownObligation(role, ref);
     const value = String(amount ?? payload.amountDue);
     record('pay', { role, ref, amount: value });
-    relay.describe(`Lock ${Number(value)} Amulet for the fund against notice ${ref}, as ${ROLE_LABEL[role]}`);
+    relay.describe(`Lock ${Number(value)} CC for the fund against notice ${ref}, as ${ROLE_LABEL[role]}`);
     try {
       const allocation = await draw.allocate(role, { obligationRef: ref, amount: value });
       record('pay-locked', { role, ref, amount: value, ...allocation });
@@ -379,21 +379,21 @@ const actions = {
       record('pay-failed', { role, ref, amount: value, error: error.message.slice(0, 300) });
       throw error;
     }
-    return { message: `${Number(value)} Amulet locked for the fund. The fund manager settles it next.` };
+    return { message: `${Number(value)} CC locked for the fund. The fund manager settles it next.` };
   },
 
   async withdraw({ role, allocationCid }) {
     relay.describe(`Withdraw your locked payment back to your balance, as ${ROLE_LABEL[role]}`);
     const result = await draw.withdraw(role, allocationCid);
     record('withdraw', { role, allocationCid, updateId: result.transaction.updateId });
-    return { message: 'Payment withdrawn. The Amulet is back in your balance.' };
+    return { message: 'Payment withdrawn. The CC is back in your balance.' };
   },
 
   async faucet({ role }) {
-    relay.describe(`Receive ${Number(network.tapAmount)} test Amulet from the faucet, as ${ROLE_LABEL[role]}`);
+    relay.describe(`Receive ${Number(network.tapAmount)} test CC from the faucet, as ${ROLE_LABEL[role]}`);
     const updateId = await draw.tap(role, network.tapAmount);
     record('faucet', { role, updateId });
-    return { message: `Added ${Number(network.tapAmount)} test Amulet.` };
+    return { message: `Added ${Number(network.tapAmount)} test CC.` };
   },
 
   async settle({ ref, allocationCid }) {
@@ -419,7 +419,7 @@ const actions = {
     if (receipt.verdict !== 'VERIFIED_FUNDED') {
       return { message: `Settled on the ledger, but the verifier did not confirm it: ${receipt.checks.filter((c) => !c.ok).map((c) => c.name).join(', ')}` };
     }
-    return { message: `Settled and independently verified. ${receipt.receivedAmount} Amulet received.` };
+    return { message: `Settled and independently verified. ${receipt.receivedAmount} CC received.` };
   },
 
   async overdue({ ref }) {

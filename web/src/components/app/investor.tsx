@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { LP_STATUS, PAYMENT_KIND, coin, dateTime, relative, roleName, units, usd } from '@/lib/format';
 import type { Obligation, Status, ViewWithSession } from '@/lib/types';
 
+import { IconNotice } from '@/components/icons';
+
 import { ActionButton, LedgerDetails, PageHead, ReceiptCard, StatusMark, Timeline, ZeroState } from './ui';
 import styles from './screens.module.css';
 
@@ -52,6 +54,7 @@ export function InvestorHome({ view }: { view: ViewWithSession }) {
         <div className={styles.noticeList}>
           {notices.map((o) => (
             <Link key={o.ref} className={styles.noticeCard} href={`/app/notices/${encodeURIComponent(o.ref)}`}>
+              <span className={styles.docIcon}><IconNotice size={20} /></span>
               <span className="stack-2">
                 <span className="t-xs faint">{o.fundName}, {o.callId}</span>
                 <span className="t-h3">Due {dateTime(o.dueAt)}<span className="t-sm faint"> {relative(o.dueAt)}</span></span>
@@ -153,7 +156,7 @@ export function NoticePage({ view, obligationRef }: { view: ViewWithSession; obl
             <div className="stack-2">
               <p className="t-sm" style={{ fontWeight: 650 }}>Your payments for this notice</p>
               {o.payments.map((p) => (
-                <div key={p.allocationCid} className="row between panel">
+                <div key={p.allocationCid} className={styles.payRow}>
                   <span className="t-sm">{units(p.amount)} {coin(o.instrument)}: {p.kind === 'match' ? 'locked, waiting for the fund' : PAYMENT_KIND[p.kind].toLowerCase()}</span>
                   <ActionButton className="btn btn-sm" name="withdraw" body={{ role: view.role, allocationCid: p.allocationCid }} busyLabel="Withdrawing…">Withdraw</ActionButton>
                 </div>

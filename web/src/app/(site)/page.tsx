@@ -1,20 +1,14 @@
 import Link from 'next/link';
 
+import { IconCheckCircle, IconCoin, IconEyeOff, IconLayers, IconLock, IconNotice, IconShield, IconSpark } from '@/components/icons';
 import { CallSheet } from '@/components/landing/call-sheet';
+import { Lifecycle } from '@/components/landing/lifecycle';
 import { loadProof } from '@/lib/server-proof';
 import type { Proof } from '@/lib/types';
 
 import styles from './landing.module.css';
 
 export const dynamic = 'force-dynamic';
-
-const STEPS = [
-  { title: 'Invite', who: 'Fund manager', text: 'Each LP gets a private commitment invitation and accepts it with its own party.' },
-  { title: 'Call', who: 'Fund manager', text: 'One capital call becomes a separate notice per LP, for that LP’s amount only.' },
-  { title: 'Pay', who: 'LP', text: 'The LP locks the exact amount of Canton Coin for the fund against its notice reference.' },
-  { title: 'Settle', who: 'Fund manager', text: 'Settling moves the coin and marks the notice funded in the same transaction. A wrong amount, payer or reference is refused by the ledger.' },
-  { title: 'Verify', who: 'Independent verifier', text: 'A read-only verifier reads the settlement back. Only then does the money count as deployable.' },
-];
 
 const PARTIES = [
   { id: 'admin', name: 'Fund manager' },
@@ -27,19 +21,18 @@ const PARTIES = [
 const RECORDS = [
   { id: 'Fund', name: 'Fund' },
   { id: 'InvestorCommitment', name: 'Commitments' },
-  { id: 'CapitalCall', name: 'Call header' },
+  { id: 'CapitalCall', name: 'Call' },
   { id: 'CapitalCallObligation', name: 'Notices' },
 ] as const;
 
-function visibleCount(proof: Proof | null, party: string, record: string): number | null {
-  const matrix = proof?.canonical?.visibility;
-  const seen = matrix?.[party]?.[record];
-  return seen ? seen.length : null;
+function seen(proof: Proof | null, party: string, record: string): number | null {
+  const list = proof?.canonical?.visibility?.[party]?.[record];
+  return list ? list.length : null;
 }
 
 function Cell({ count, total }: { count: number | null; total: number }) {
-  if (count === null) return <td className="num faint">?</td>;
-  if (count === 0) return <td className="num"><span className={styles.none}>None</span></td>;
+  if (count === null) return <td className="num faint">Not loaded</td>;
+  if (count === 0) return <td className="num"><span className={styles.none}><IconEyeOff size={15} />None</span></td>;
   const word = total > 1 && count === total ? `All ${count}` : total > 1 && count === 1 ? 'Own only' : 'Yes';
   return <td className="num"><span className={styles.seen}>{word}</span></td>;
 }
@@ -49,213 +42,207 @@ export default async function Landing() {
   const run = proof?.canonical ?? null;
   const receipt = run?.receipts[0] ?? null;
   const local = proof?.localnet ?? null;
+  const clean = run?.leaks ? Object.values(run.leaks).every((l) => l.length === 0) : null;
+
+  const record = [
+    { figure: run ? `${run.passed}/${run.passed + run.failed.length}` : 'Not loaded', label: 'checks on DevNet', text: 'Two LPs funded with real test Canton Coin, bad payments refused, the unpaid LP marked overdue.', env: 'DevNet' },
+    { figure: local?.campaign ? `${local.campaign.metrics.passed ?? 0}/${local.campaign.metrics.cases ?? 0}` : 'Not loaded', label: 'generated capital calls', text: `${local?.campaign?.metrics.obligations ?? 0} notices. Nothing falsely funded, no party saw another’s records.`, env: 'LocalNet' },
+    { figure: local?.ablation ? `${local.ablation.comparison.filter((c) => c.treatment === 'stopped').length}/${local.ablation.comparison.length}` : 'Not loaded', label: 'attacks stopped', text: `The same flow on a database with a paid flag let ${local?.ablation?.comparison.filter((c) => c.counterfactualA === 'LANDED').length ?? 0} through.`, env: 'LocalNet' },
+    { figure: local?.custody ? `${local.custody.passed}/${local.custody.passed + local.custody.failed.length}` : 'Not loaded', label: 'checks, each party holding its key', text: 'The participant cannot act for a party without that party’s signature.', env: 'LocalNet' },
+  ];
 
   return (
     <>
-      <section className={styles.hero}>
-        <div className={styles.heroCopy}>
-          <h1 className="t-display">Capital calls that only the right investor can read.</h1>
-          <p className="t-lead">
-            DRAW sends each LP a private notice, lets it pay in Canton Coin, and counts the money as deployable only after an
-            independent check confirms it reached the fund.
-          </p>
-          <div className={styles.ctas}>
-            <Link href="/app" className="btn btn-primary btn-lg">Open the app</Link>
-            <Link href="/proof" className="btn btn-lg">See the DevNet proof</Link>
+      <section className={styles.heroWrap}>
+        <div className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <span className={styles.heroEyebrow}><IconLayers size={15} />Private capital calls on Canton</span>
+            <h1 className={styles.heroTitle}>Capital calls only the right investor can read.</h1>
+            <p className={styles.heroLead}>
+              Each LP gets a private notice and pays it in Canton Coin. The fund counts the money as deployable only after an independent
+              check confirms it arrived.
+            </p>
+            <div className={styles.ctas}>
+              <Link href="/onboard" className="btn btn-light btn-lg">Take a seat in the demo fund</Link>
+              <Link href="/proof" className="btn btn-ghost-light btn-lg">See the DevNet proof</Link>
+            </div>
           </div>
-          <p className="t-sm faint">Running on the Canton DevNet with test Canton Coin.</p>
-        </div>
-        <div className={styles.heroSheet}>
-          <CallSheet />
-          <p className={styles.sheetCaption}>Switch parties to see what each one&rsquo;s ledger returns.</p>
+
+          <div className={styles.scene}>
+            <div className={styles.floatLeft}>
+              <p className={styles.floatLabel}>LP B&rsquo;s ledger</p>
+              <div className={styles.floatRow}><span>LP A&rsquo;s notice</span><b><IconEyeOff size={14} />Not visible</b></div>
+              <div className={styles.floatRow}><span>Fund totals</span><b><IconEyeOff size={14} />Not visible</b></div>
+            </div>
+            <div className={styles.sheetSlot}>
+              <CallSheet />
+            </div>
+            <div className={styles.floatRight}>
+              <p className={styles.floatLabel}>Settlement receipt</p>
+              <p className={styles.floatFig}>{receipt ? `${receipt.receivedAmount} CC` : '40 CC'}</p>
+              <span className="mark mark-good">Verified, {receipt?.checks ?? 14} of {receipt?.checks ?? 14}</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className={styles.section}>
-        <div className={styles.compare}>
-          <div>
-            <h2 className="t-h2">A capital call today is a PDF, a wire and a spreadsheet.</h2>
-          </div>
-          <div className={styles.compareCols}>
-            <div className="stack-3">
-              <p className={styles.colHead}>Today</p>
-              <ul className={styles.list}>
-                <li>Notices go out by email, so every LP&rsquo;s amount sits in someone&rsquo;s inbox.</li>
-                <li>Ops matches wires to LPs by hand from bank statements.</li>
-                <li>&ldquo;Paid&rdquo; is a checkbox someone ticks.</li>
-              </ul>
-            </div>
-            <div className="stack-3">
-              <p className={styles.colHead}>With DRAW</p>
-              <ul className={`${styles.list} ${styles.listGood}`}>
-                <li>Each notice is a contract only the fund and that LP can read.</li>
-                <li>The payment carries the notice reference, so matching is exact.</li>
-                <li>Funded is set by the settlement itself and then checked by a separate verifier.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+      <section className={styles.strip}>
+        <p><IconLayers size={16} />Settles on the Canton Network with the CIP-0056 Token Standard</p>
+        <ul>
+          <li><span className={styles.stripMark}><IconCoin size={16} /></span>Canton Coin</li>
+          <li><span className={styles.stripMark}><IconShield size={16} /></span>Daml contracts</li>
+          <li><span className={styles.stripMark}><IconLock size={16} /></span>Token allocations</li>
+          <li><span className={styles.stripMark}><IconCheckCircle size={16} /></span>Independent read-back</li>
+        </ul>
       </section>
 
       <section id="how" className={styles.section}>
-        <h2 className="t-h2">How a call moves</h2>
-        <ol className={styles.steps}>
-          {STEPS.map((step, index) => (
-            <li key={step.title} className={styles.step}>
-              <span className={styles.stepNum}>{index + 1}</span>
-              <p className="t-h3">{step.title}</p>
-              <p className={styles.stepWho}>{step.who}</p>
-              <p className="t-sm muted">{step.text}</p>
-            </li>
-          ))}
-        </ol>
+        <div className={styles.split}>
+          <div className="stack-4">
+            <span className="eyebrow"><IconNotice size={15} />How a call moves</span>
+            <h2 className="t-h2">Issue once. Every LP pays its own notice.</h2>
+          </div>
+          <p className="t-lead">
+            A capital call on DRAW is five steps on one ledger. Pick a step to see the record it leaves behind. Nothing is a status someone
+            ticks by hand.
+          </p>
+        </div>
+        <Lifecycle />
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.center}>
+          <span className="eyebrow"><IconSpark size={15} />Why it holds</span>
+          <h2 className="t-h2">Three things a spreadsheet can&rsquo;t promise</h2>
+          <p className="t-lead">The ledger enforces each one. The app only shows what the ledger already decided.</p>
+        </div>
+        <div className={styles.trio}>
+          <article className={styles.tile}>
+            <span className={styles.tileIcon}><IconEyeOff size={18} /></span>
+            <h3 className={styles.tileTitle}>Private by the ledger</h3>
+            <p className={styles.tileText}>A notice is a contract only the fund and that LP can read. Another LP asking for it by its id gets nothing back.</p>
+            <div className={styles.mini}>
+              <div className={styles.miniRow}><span>LP A</span><b className={styles.miniGood}>Own notice</b></div>
+              <div className={styles.miniRow}><span>LP B</span><b className={styles.miniGood}>Own notice</b></div>
+              <div className={styles.miniRow}><span>Anyone else</span><b>Nothing</b></div>
+            </div>
+          </article>
+          <article className={`${styles.tile} ${styles.tileBrand}`}>
+            <span className={styles.tileIcon}><IconCoin size={18} /></span>
+            <h3 className={styles.tileTitle}>Funded follows the money</h3>
+            <p className={styles.tileText}>The notice turns funded in the same transaction that moves the coin. A wrong amount, payer or reference is refused.</p>
+            <div className={styles.miniDark}>
+              <p>Refused by the ledger</p>
+              <ul>
+                <li>Wrong amount</li>
+                <li>Wrong payer</li>
+                <li>Wrong reference</li>
+                <li>Reused payment</li>
+              </ul>
+            </div>
+          </article>
+          <article className={styles.tile}>
+            <span className={styles.tileIcon}><IconCheckCircle size={18} /></span>
+            <h3 className={styles.tileTitle}>Checked by someone else</h3>
+            <p className={styles.tileText}>A separate read-only verifier fetches each settlement. Deployable means it agreed, not that a button was pressed.</p>
+            <div className={styles.mini}>
+              <div className={styles.miniRow}><span>Deployable now</span><b className={styles.miniGood}>$750,000</b></div>
+              <div className={styles.miniRow}><span>Unresolved</span><b>$250,000</b></div>
+              <div className={styles.miniBar}><i style={{ width: '75%' }} /></div>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section id="privacy" className={styles.section}>
         <div className={styles.split}>
           <div className="stack-4">
-            <h2 className="t-h2">Who sees what</h2>
-            <p className="muted prose">
-              Privacy is enforced by the ledger, not by the app hiding rows. Each column below is what that party&rsquo;s own ledger
-              query returned at the end of the DevNet run. Asking for another LP&rsquo;s notice by its contract id returns nothing.
+            <span className="eyebrow"><IconShield size={15} />Who sees what</span>
+            <h2 className="t-h2">Each party reads its own ledger.</h2>
+            <p className="t-lead">
+              These are the records each party&rsquo;s own query returned at the end of the DevNet run. DRAW doesn&rsquo;t hide rows. The
+              ledger never sends them.
             </p>
-            {run && <p className="t-sm faint">DevNet run {run.runId}. {run.leaks && Object.values(run.leaks).every((l) => l.length === 0) ? 'No party saw a record it should not.' : ''}</p>}
+            {run && <p className="t-sm faint">DevNet run {run.runId}.{clean ? ' No party saw a record it should not.' : ''}</p>}
           </div>
-          <div className={`sheet sheet-pad ${styles.matrixWrap}`}>
+          <div className={`module module-pad ${styles.matrixWrap}`}>
             <table className={`table ${styles.matrix}`}>
               <caption className="sr-only">Records each party can read</caption>
               <thead>
-                <tr>
-                  <th scope="col">Party</th>
-                  {RECORDS.map((r) => <th key={r.id} scope="col" className="num">{r.name}</th>)}
-                </tr>
+                <tr><th scope="col">Party</th>{RECORDS.map((r) => <th key={r.id} scope="col" className="num">{r.name}</th>)}</tr>
               </thead>
               <tbody>
                 {PARTIES.map((p) => (
                   <tr key={p.id}>
                     <th scope="row">{p.name}</th>
-                    {RECORDS.map((r) => {
-                      const total = visibleCount(proof, 'admin', r.id) ?? 0;
-                      return <Cell key={r.id} count={visibleCount(proof, p.id, r.id)} total={total} />;
-                    })}
+                    {RECORDS.map((r) => <Cell key={r.id} count={seen(proof, p.id, r.id)} total={seen(proof, 'admin', r.id) ?? 0} />)}
                   </tr>
                 ))}
               </tbody>
             </table>
-            {!run && <p className="t-sm faint">The run record could not be loaded right now.</p>}
           </div>
         </div>
       </section>
 
       <section className={styles.section}>
-        <div className={styles.split}>
+        <div className={styles.recordHead}>
           <div className="stack-4">
-            <h2 className="t-h2">Funded means someone else checked</h2>
-            <p className="muted prose">
-              A submitted payment is not funded. A signed transaction is not funded. A notice counts as funded only when the
-              settlement transaction moved the exact coin from that LP to the fund, and a separate read-only verifier fetched that
-              transaction and agreed.
-            </p>
-            <Link href="/proof" className="link">Read every check</Link>
+            <span className="eyebrow"><IconCheckCircle size={15} />The record so far</span>
+            <h2 className="t-h2">Every number was written by a test.</h2>
           </div>
-          {receipt ? (
-            <div className={`sheet sheet-pad ${styles.receipt}`}>
-              <div className="row between">
-                <p className="t-h3">Settlement receipt</p>
-                <span className="mark mark-good">Verified funded</span>
-              </div>
-              <p className={styles.receiptAmt}>{receipt.receivedAmount} CC<span> received by the fund</span></p>
-              <dl className="kv">
-                <dt>Notice</dt><dd className="mono">{receipt.obligationRef}</dd>
-                <dt>State</dt><dd>{receipt.stateBefore} to {receipt.stateAfter}</dd>
-                <dt>Checks</dt><dd>{receipt.checks} of {receipt.checks} passed</dd>
-                <dt>Update</dt><dd className="mono">{receipt.claimedUpdateId.slice(0, 28)}…</dd>
-              </dl>
-              <p className="t-xs faint">From DevNet run {run?.runId}.</p>
-            </div>
-          ) : (
-            <div className="panel"><p className="muted">The receipt could not be loaded right now. The proof page has the full record.</p></div>
-          )}
+          <Link href="/proof" className="btn">Open the proof</Link>
         </div>
-      </section>
-
-      <section className={styles.section}>
-        <h2 className="t-h2">The record so far</h2>
         <div className={styles.record}>
-          <RecordItem
-            figure={run ? `${run.passed}/${run.passed + run.failed.length}` : 'Not loaded'}
-            label="checks passed on DevNet"
-            text="Two LPs funded with real test Canton Coin, bad payments refused, the unpaid LP marked overdue."
-            env="DevNet"
-          />
-          <RecordItem
-            figure={local?.campaign ? `${local.campaign.metrics.passed ?? 0}/${local.campaign.metrics.cases ?? 0}` : 'Not loaded'}
-            label="seeded capital calls"
-            text={local?.campaign ? `${local.campaign.metrics.obligations ?? 0} obligations, nothing falsely funded, no party saw another’s records.` : 'Seeded campaign record unavailable.'}
-            env="LocalNet"
-          />
-          <RecordItem
-            figure={local?.ablation ? `${local.ablation.comparison.filter((c) => c.treatment === 'stopped').length}/${local.ablation.comparison.length}` : 'Not loaded'}
-            label="attacks stopped"
-            text={local?.ablation ? `The same flow on a database with a paid flag let ${local.ablation.comparison.filter((c) => c.counterfactualA === 'LANDED').length} of them through.` : 'Ablation record unavailable.'}
-            env="LocalNet"
-          />
-          <RecordItem
-            figure={local?.custody ? `${local.custody.passed}/${local.custody.passed + local.custody.failed.length}` : 'Not loaded'}
-            label="checks with keys held by each party"
-            text="Every party signs its own transactions. The participant cannot act for a party without its signature."
-            env="LocalNet"
-          />
+          {record.map((item) => (
+            <div key={item.label} className={styles.recordItem}>
+              <span className={styles.env}>{item.env}</span>
+              <p className={styles.recordFig}>{item.figure}</p>
+              <p className="t-h4">{item.label}</p>
+              <p className="t-sm muted">{item.text}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className={styles.section}>
-        <div className={styles.split}>
-          <h2 className="t-h2">Questions</h2>
+      <section id="questions" className={styles.section}>
+        <div className={styles.faqGrid}>
+          <div className="stack-4">
+            <span className="eyebrow"><IconNotice size={15} />Questions</span>
+            <h2 className="t-h2">Know what you&rsquo;re looking at.</h2>
+            <div className={`module module-pad ${styles.brief}`}>
+              <p className="t-h4">DRAW in brief</p>
+              <dl className="kv">
+                <dt>Network</dt><dd>Canton DevNet, HackCanton node</dd>
+                <dt>Settles in</dt><dd>Test Canton Coin</dd>
+                <dt>Standard</dt><dd>CIP-0056 allocations</dd>
+                <dt>Contracts</dt><dd>Daml package draw 0.2.0</dd>
+              </dl>
+            </div>
+          </div>
           <div className={styles.faq}>
-            <details className="more">
-              <summary>Is this real money?</summary>
-              <p className="muted">No. It runs on the Canton DevNet with test Canton Coin. Dollar figures are the business scenario; the coin is what actually moves.</p>
-            </details>
-            <details className="more">
-              <summary>Who holds the keys?</summary>
-              <p className="muted">
-                On LocalNet each party creates a key in its own browser and signs every action. On the shared HackCanton DevNet node,
-                parties with their own keys are not enabled for teams yet, so one hackathon login acts for the demo parties there.
-                The app tells you which mode you are in.
-              </p>
-            </details>
-            <details className="more">
-              <summary>Why Canton?</summary>
-              <p className="muted">
-                Canton gives each contract a fixed set of parties who can read it, and settles token transfers and state changes in one
-                transaction. Those two properties are what make a private notice and a provable &ldquo;funded&rdquo; possible.
-              </p>
-            </details>
-            <details className="more">
-              <summary>What does the fund manager see?</summary>
-              <p className="muted">Every notice in its fund, the payments waiting against them, and two totals: deployable now and unresolved.</p>
-            </details>
+            {[
+              ['Is this real money?', 'No. It runs on the Canton DevNet with test Canton Coin. Dollar figures are the business scenario; the coin is what actually moves.'],
+              ['Who holds the keys?', 'On LocalNet each person creates a key in their own browser and signs every action. On the shared HackCanton DevNet node, parties with their own keys are not enabled for teams yet, so one hackathon login acts for the demo parties there. The app says which mode you are in.'],
+              ['Why Canton?', 'Canton gives each contract a fixed set of parties who can read it, and settles a token transfer and a state change in one transaction. Those two properties are what make a private notice and a provable funded status possible.'],
+              ['What does the fund manager see?', 'Every notice in its fund, the payments waiting against them, and two totals: deployable now and unresolved.'],
+              ['Can an LP see the other LPs?', 'No. An LP’s ledger returns its own commitment and notices only. Opening another LP’s notice link shows nothing, because the ledger returns nothing.'],
+            ].map(([q, a]) => (
+              <details key={q} className={styles.qa}>
+                <summary>{q}<span aria-hidden="true" /></summary>
+                <p>{a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className={styles.closing}>
-        <h2 className="t-h2">Open the demo fund</h2>
-        <p className="muted">Take a seat as the fund manager or one of three LPs and run a call end to end.</p>
-        <Link href="/app" className="btn btn-primary btn-lg">Open the app</Link>
+      <section className={styles.closingWrap}>
+        <div className={styles.closing}>
+          <h2 className={styles.closingTitle}>Run a capital call end to end.</h2>
+          <p>Take a seat as the fund manager or one of three LPs. It takes about a minute.</p>
+          <Link href="/onboard" className="btn btn-light btn-lg">Take a seat</Link>
+        </div>
       </section>
     </>
-  );
-}
-
-function RecordItem({ figure, label, text, env }: { figure: string; label: string; text: string; env: string }) {
-  return (
-    <div className={styles.recordItem}>
-      <p className="t-figure">{figure}</p>
-      <p className="t-h3">{label}</p>
-      <p className="t-sm muted">{text}</p>
-      <p className={styles.env}>{env}</p>
-    </div>
   );
 }

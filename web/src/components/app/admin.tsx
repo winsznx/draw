@@ -8,6 +8,9 @@ import { useActions } from '@/components/session';
 import { PAYMENT_KIND, coin, dateTime, isPast, relative, roleName, units, usd } from '@/lib/format';
 import type { Call, Investor, Obligation, ViewWithSession } from '@/lib/types';
 
+import { IconCheck } from '@/components/icons';
+
+import { Identicon } from './shell';
 import { ActionButton, LedgerDetails, NoteAction, PageHead, ReceiptCard, Spinner, StatusMark, Timeline, ZeroState } from './ui';
 import styles from './screens.module.css';
 
@@ -81,8 +84,8 @@ export function Overview({ view }: { view: ViewWithSession }) {
       />
 
       <div className={styles.twoCol}>
-        <section className="sheet sheet-pad">
-          <div className="row between" style={{ marginBottom: 16 }}>
+        <section className="module module-pad">
+          <div className={styles.moduleHead}>
             <h2 className="t-h3">Capital calls</h2>
             {view.calls.length > 0 && <Link href="/app/calls" className="link t-sm">All calls</Link>}
           </div>
@@ -98,9 +101,15 @@ export function Overview({ view }: { view: ViewWithSession }) {
           ) : <CallsTable calls={view.calls.slice(0, 5)} />}
         </section>
 
-        <section className="sheet sheet-pad">
-          <h2 className="t-h3" style={{ marginBottom: 12 }}>Needs your attention</h2>
-          {nothingToDo ? <p className="t-sm muted">Nothing is waiting on you.</p> : (
+        <section className="module module-pad">
+          <div className={styles.moduleHead}><h2 className="t-h3">Needs your attention</h2></div>
+          {nothingToDo ? (
+            <div className={styles.calm}>
+              <span className={styles.calmIcon}><IconCheck size={18} /></span>
+              <p className="t-h4">Nothing is waiting on you</p>
+              <p className="t-sm muted">Payments to settle, overdue notices and open invitations show up here.</p>
+            </div>
+          ) : (
             <ul className={styles.attention}>
               {ready.map((p) => (
                 <li key={p.allocationCid}>
@@ -134,11 +143,11 @@ export function Overview({ view }: { view: ViewWithSession }) {
 export function Figures({ items }: { items: { label: string; value: string; note: string; tone?: 'good' | 'wait' }[] }) {
   return (
     <div className={styles.figures}>
-      {items.map((item) => (
-        <div key={item.label} className={styles.figure}>
-          <p className="t-sm muted">{item.label}</p>
-          <p className={`t-figure ${item.tone === 'good' ? styles.good : item.tone === 'wait' ? styles.wait : ''}`}>{item.value}</p>
-          <p className="t-xs faint">{item.note}</p>
+      {items.map((item, index) => (
+        <div key={item.label} className={`${styles.figure} ${index === 0 ? styles.figureLead : ''}`}>
+          <p className={styles.figureLabel}>{item.label}</p>
+          <p className={`${styles.figureValue} ${index > 0 && item.tone === 'wait' ? styles.wait : ''}`}>{item.value}</p>
+          <p className={styles.figureNote}>{item.note}</p>
         </div>
       ))}
     </div>
@@ -157,6 +166,7 @@ function CallsTable({ calls }: { calls: Call[] }) {
             <td>
               <Link className={styles.rowLink} href={`/app/calls/${encodeURIComponent(call.callId)}`}>{call.callId}</Link>
               <span className="sub">{call.totals.fundedCount} of {call.totals.count} funded{call.totals.unresolvedUsd === 0 ? ', closed' : ''}</span>
+              <span className={styles.callBar} aria-hidden="true"><span style={{ width: `${call.totals.calledUsd ? (call.totals.fundedUsd / call.totals.calledUsd) * 100 : 0}%` }} /></span>
             </td>
             <td className="hide-sm">{dateTime(call.dueAt)}<span className="sub">{relative(call.dueAt)}</span></td>
             <td className="num">{usd(call.totals.calledUsd)}</td>
@@ -174,7 +184,7 @@ export function CallsPage({ view }: { view: ViewWithSession }) {
       <PageHead title="Capital calls" lead="Every call this fund has issued, newest first." actions={<Link href="/app/calls/new" className="btn btn-primary">Create capital call</Link>} />
       {view.calls.length === 0
         ? <ZeroState title="No calls yet" action={<Link href="/app/calls/new" className="btn btn-primary">Create the first call</Link>}><p>A call becomes one private notice per investor.</p></ZeroState>
-        : <section className="sheet sheet-pad"><CallsTable calls={view.calls} /></section>}
+        : <section className="module module-pad"><CallsTable calls={view.calls} /></section>}
     </>
   );
 }
@@ -229,7 +239,7 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
   return (
     <>
       <PageHead title="Create capital call" back={{ href: '/app/calls', label: 'Calls' }} lead={`Each investor receives a private notice for its own amount only. Dollar amounts are the business figure. Canton Coin is what each investor pays on ${view.network}.`} />
-      <form className="sheet sheet-pad stack-6" onSubmit={submit}>
+      <form className="module module-pad stack-6" onSubmit={submit}>
         <div className={styles.formGrid}>
           <div className="field">
             <label htmlFor="call-name">Name or reference</label>
@@ -256,9 +266,15 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
                 <td className="num"><input className={`input input-num ${styles.cellInputSm}`} aria-label={`Canton Coin for ${roleName(r)}`} inputMode="decimal" value={rows[r]?.units ?? ''} onChange={(e) => updateRow(r, 'units', e.target.value)} /></td>
               </tr>
             ))}
-            <tr><td><strong>Total</strong></td><td className="hide-sm" /><td className="num"><strong>{usd(total)}</strong></td><td /></tr>
           </tbody>
         </table>
+        <div className={styles.summary}>
+          <div className="stack-1">
+            <p className="t-sm muted">Total called</p>
+            <p className={styles.summaryFig}>{usd(total)}</p>
+          </div>
+          <p className="t-sm muted" style={{ maxWidth: '34ch' }}>Each investor sees only its own line. Nobody sees this total but you.</p>
+        </div>
         {problem && <p className="form-error">{problem}</p>}
         <div className="row">
           <button type="submit" className="btn btn-primary btn-lg" disabled={busy !== null}>{busy === 'issue' ? <><Spinner />Issuing on the ledger…</> : 'Issue capital call'}</button>
@@ -299,7 +315,7 @@ export function CallDetail({ view, callId }: { view: ViewWithSession; callId: st
   const waiting = t.calledUsd - t.fundedUsd - t.waivedUsd;
   return (
     <>
-      <PageHead title={call.callId} back={{ href: '/app/calls', label: 'Calls' }} lead={`${call.description ?? ''} Due ${dateTime(call.dueAt)}, ${relative(call.dueAt)}.`} />
+      <PageHead title={call.callId} back={{ href: '/app/calls', label: 'Calls' }} lead={`${call.description && call.description !== call.callId ? `${call.description}. ` : ''}Due ${dateTime(call.dueAt)}, ${relative(call.dueAt)}.`} />
       <Figures
         items={[
           { label: 'Funded and verified', value: usd(t.fundedUsd), note: `${units(t.fundedUnits)} CC received`, tone: 'good' },
@@ -307,17 +323,23 @@ export function CallDetail({ view, callId }: { view: ViewWithSession; callId: st
           { label: 'Called', value: usd(t.calledUsd), note: t.waivedUsd ? `${usd(t.waivedUsd)} waived` : 'Nothing waived' },
         ]}
       />
-      <section className="sheet sheet-pad">
-        <h2 className="t-h3">Notices</h2>
+      <section className="module module-pad">
+        <div className={styles.moduleHead}><h2 className="t-h3">Notices</h2><span className="t-sm muted">{t.fundedCount} of {t.count} funded</span></div>
         <div className={styles.progress} role="img" aria-label={`${usd(t.fundedUsd)} of ${usd(t.calledUsd)} funded`}>
           <span className={styles.pGood} style={{ width: share(t.fundedUsd) }} />
           <span className={styles.pWait} style={{ width: share(waiting) }} />
           <span className={styles.pPlain} style={{ width: share(t.waivedUsd) }} />
         </div>
+        <div className={styles.legend}>
+          <span><i style={{ background: 'var(--funded)' }} />Funded {usd(t.fundedUsd)}</span>
+          <span><i style={{ background: 'var(--waiting)' }} />Waiting {usd(waiting)}</span>
+          {t.waivedUsd > 0 && <span><i style={{ background: 'var(--ink-3)' }} />Waived {usd(t.waivedUsd)}</span>}
+        </div>
         <ul className={styles.obligations}>
           {call.obligations.map((o) => (
             <li key={o.ref} className={styles.obligation}>
               <div className={styles.obligationHead}>
+                <Identicon seed={o.investor} size={36} />
                 <div>
                   <p className="t-h3">{roleName(o.investor)}</p>
                   <p className="t-xs faint">{units(o.units)} {coin(o.instrument)}</p>
@@ -375,7 +397,7 @@ export function PaymentsPage({ view }: { view: ViewWithSession }) {
       {view.payments.length === 0 ? (
         <ZeroState title="No payments waiting"><p>When an LP locks coin against a notice, it shows up here.</p></ZeroState>
       ) : (
-        <section className="sheet sheet-pad">
+        <section className="module module-pad">
           <table className="table table-stack">
             <thead><tr><th>From</th><th>Against</th><th className="num">Amount</th><th>What it is</th><th>Next step</th></tr></thead>
             <tbody>
@@ -413,7 +435,7 @@ export function InvestorsPage({ view }: { view: ViewWithSession }) {
   return (
     <>
       <PageHead title="Investors" lead="Each commitment is a separate contract between the fund and one investor. No investor can see another's." />
-      <section className="sheet sheet-pad">
+      <section className="module module-pad">
         <table className="table table-stack">
           <thead><tr><th>Investor</th><th className="num">Committed</th><th className="num">Called</th><th className="num">Left to call</th></tr></thead>
           <tbody>
@@ -424,7 +446,7 @@ export function InvestorsPage({ view }: { view: ViewWithSession }) {
               return (
                 <tr key={r}>
                   <td className="wide">
-                    <strong>{roleName(r)}</strong>
+                    <span className="row" style={{ gap: 12, flexWrap: 'nowrap' }}><Identicon seed={r} size={32} /><strong>{roleName(r)}</strong></span>
                     {!c && <span className="sub">{invited ? 'Invitation not accepted yet' : view.browserKeys && !view.accounts?.includes(r) ? 'Has not joined yet' : 'Not invited'}</span>}
                     {canInvite && (
                       <div style={{ marginTop: 8 }}>

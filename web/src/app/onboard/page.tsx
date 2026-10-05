@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { Wordmark } from '@/components/brand';
+import { Seal, Wordmark } from '@/components/brand';
 import { leaveSeat, takeSeat, useActions, useSeat, useView } from '@/components/session';
 import { ThemeSwitch } from '@/components/theme-switch';
+import { IconArrowRight, IconBuilding, IconEyeOff, IconUser } from '@/components/icons';
 import { ActionButton, AccessDialog, SignDialog, Toasts } from '@/components/app/ui';
 import { AccessCodeNeeded, accessCode, rememberAccessCode, startOnboarding } from '@/lib/api';
 import { usd } from '@/lib/format';
@@ -68,17 +69,10 @@ export default function Onboard() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Wordmark />
-        <div className="row">
-          <ThemeSwitch />
-          <Link href="/" className="btn btn-quiet btn-sm">Back to site</Link>
-        </div>
-      </header>
-
-      <main id="main" className={styles.main}>
-        <aside className={styles.rail} aria-label="Progress">
-          <p className={styles.railTitle}>Set up DRAW</p>
+      <aside className={styles.brandPanel} aria-label="Progress">
+        <Link href="/" className={styles.brandMark} aria-label="DRAW home"><Seal size={28} inverse /><span>draw</span></Link>
+        <div className={styles.brandCopy}>
+          <p className={styles.brandTitle}>Every seat reads its own ledger.</p>
           <ol className={styles.stepper}>
             {steps.map((s, index) => (
               <li key={s.id} className={index < at ? styles.done : index === at ? styles.now : ''} aria-current={index === at ? 'step' : undefined}>
@@ -90,8 +84,22 @@ export default function Onboard() {
               </li>
             ))}
           </ol>
-          {view && <p className={styles.network}><span className={styles.live} />{view.network}</p>}
-        </aside>
+        </div>
+        <SeatPreview role={role ?? 'admin'} />
+        {view && <p className={styles.network}><span className="live-dot" />{view.network}, {view.browserKeys ? 'keys in your browser' : view.singleCredential ? 'shared hackathon login' : 'one login per party'}</p>}
+      </aside>
+
+      <main id="main" className={styles.main}>
+        <header className={styles.header}>
+          <span className={styles.mobileMark}><Wordmark /></span>
+          <div className={styles.progressMobile} aria-hidden="true">
+            {steps.map((s, index) => <i key={s.id} className={index <= at ? styles.on : ''} />)}
+          </div>
+          <div className="row" style={{ gap: 4, marginLeft: 'auto', flexWrap: 'nowrap' }}>
+            <ThemeSwitch />
+            <Link href="/" className="btn btn-quiet btn-sm">Back to site</Link>
+          </div>
+        </header>
 
         <section className={styles.content}>
           {current && step === 'seat' && (
@@ -161,6 +169,32 @@ export default function Onboard() {
   );
 }
 
+function SeatPreview({ role }: { role: Role }) {
+  const own = role === 'lpA' ? 'LP A' : role === 'lpB' ? 'LP B' : role === 'lpC' ? 'LP C' : null;
+  return (
+    <div className={styles.preview} key={role}>
+      <p className={styles.previewLabel}>{role === 'admin' ? 'What the fund manager sees' : role === 'outsider' ? 'What an outsider sees' : `What ${own} sees`}</p>
+      {role === 'admin' ? (
+        <>
+          <div className={styles.previewRow}><span>LP A</span><b>$400,000</b><em className="mark mark-good">Funded</em></div>
+          <div className={styles.previewRow}><span>LP B</span><b>$350,000</b><em className="mark mark-wait">Locked</em></div>
+          <div className={styles.previewRow}><span>LP C</span><b>$250,000</b><em className="mark">Due</em></div>
+          <div className={styles.previewTotal}><span>Deployable now</span><b>$400,000</b></div>
+        </>
+      ) : role === 'outsider' ? (
+        <div className={styles.previewEmpty}><IconEyeOff size={18} />The ledger returns nothing about this fund.</div>
+      ) : (
+        <>
+          <div className={styles.previewRow}><span>{own}</span><b>$400,000</b><em className="mark mark-wait">Due</em></div>
+          {['lpA', 'lpB', 'lpC'].filter((r) => r !== role).map((r) => (
+            <div key={r} className={`${styles.previewRow} ${styles.previewHidden}`}><i /><span>Not on your ledger</span></div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
 function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefined; held: Partial<Record<Role, boolean>>; loading: boolean; failed: boolean; onPick: (role: Role) => void }) {
   return (
     <div className="stack-6">
@@ -189,6 +223,10 @@ function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefi
           const taken = view?.browserKeys && view.accounts?.includes(seat.role) && !held[seat.role];
           return (
             <button key={seat.role} type="button" role="listitem" className={styles.seat} disabled={loading || Boolean(taken) || !view?.session} onClick={() => onPick(seat.role)}>
+              <span className={styles.seatTop}>
+                <span className={styles.seatIcon}>{seat.role === 'admin' ? <IconBuilding size={20} /> : <IconUser size={20} />}</span>
+                <span className={styles.seatArrow}><IconArrowRight size={18} /></span>
+              </span>
               <span className={styles.seatName}>{seat.name}</span>
               <span className="t-sm muted">{seat.what}</span>
               {loading ? <span className="sk" style={{ width: 120, height: 14 }} /> : state && <span className={styles.seatState}>{state}</span>}

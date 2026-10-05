@@ -7,7 +7,7 @@ import { THEME_BOOT } from '@/lib/theme';
 
 import './globals.css';
 
-const sans = Schibsted_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-schibsted', display: 'swap' });
+const sans = Schibsted_Grotesk({ subsets: ['latin'], variable: '--font-schibsted', display: 'swap' });
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains', display: 'swap' });
 
 export const metadata: Metadata = {
@@ -19,8 +19,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f4f6f5' },
-    { media: '(prefers-color-scheme: dark)', color: '#0d1412' },
+    { media: '(prefers-color-scheme: light)', color: '#f5f6f5' },
+    { media: '(prefers-color-scheme: dark)', color: '#0c1210' },
   ],
 };
 
