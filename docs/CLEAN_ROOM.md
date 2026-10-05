@@ -18,7 +18,7 @@ Script: `scripts/setup/clean_room.sh`. It clones the committed repository into a
 2. Print tool versions
 3. `dpm build --all` in `contracts`
 4. `dpm test` in `contracts/tests`
-5. `npm ci` and `npm run build` in `app/web`
+5. `npm ci`, `npm run typecheck` and `npm run build` in `web`
 6. If LocalNet answers on `localhost:3975`: `node scripts/demo/run.mjs` from the clone
 
 LocalNet itself is started separately, as in the README.

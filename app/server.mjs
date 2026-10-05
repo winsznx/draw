@@ -2,7 +2,8 @@
 // selected role's own ledger user, and every action is submitted by the role
 // that takes it. FUNDED is shown only after the independent verifier issues a
 // VERIFIED_FUNDED receipt for that obligation.
-// Usage: node app/server.mjs   (serves app/web/dist, build it with `npm run build` in app/web)
+// Usage: node app/server.mjs   (the web app in web/ proxies its /api and /evidence requests here)
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { createServer } from 'node:http';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, normalize, relative } from 'node:path';
@@ -16,7 +17,6 @@ import { LedgerClient } from '../scripts/demo/lib/ledger.mjs';
 import { createRelay } from './relay.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const WEB = join(HERE, 'web/dist');
 const EVIDENCE = join(ROOT, 'evidence');
 const NETWORK_DIR = network.name === 'localnet' ? 'local' : network.name;
 const PORT = Number(process.env.PORT ?? 4173);
@@ -24,7 +24,7 @@ const PORT = Number(process.env.PORT ?? 4173);
 const SESSION_FILE = join(process.env.DRAW_STATE_DIR ?? HERE, `.session-${network.name}.json`);
 const NETWORK_LABEL = { localnet: 'LocalNet', devnet: 'DevNet' }[network.name] ?? network.name;
 const COMMITMENTS = { lpA: '1000000.0', lpB: '700000.0', lpC: '500000.0' };
-const ROLE_LABEL = { admin: 'the fund admin', lpA: 'LP A', lpB: 'LP B', lpC: 'LP C', outsider: 'the unrelated party' };
+const ROLE_LABEL = { admin: 'the fund manager', lpA: 'LP A', lpB: 'LP B', lpC: 'LP C', outsider: 'the unrelated party' };
 // Off by default. When on, the server settles matching payments as the fund
 // admin through the same path as the Settle button.
 // With DRAW_PARTY_MODE=external each party's key lives in the user's browser,
@@ -37,6 +37,12 @@ const AUTO_SETTLE_MS = Number(process.env.DRAW_AUTO_SETTLE_MS ?? 5000);
 // When set, anyone can read every view and the proof page, but actions need
 // this code. Use it whenever the server is reachable from the internet.
 const ACCESS_CODE = process.env.DRAW_ACCESS_CODE || null;
+// When set, the API answers only requests that carry this token. The web app
+// on Cloudflare adds it in its proxy, so browsers reach the API only through
+// the site and never directly.
+const SERVICE_TOKEN = process.env.DRAW_SERVICE_TOKEN || null;
+const digest = (value) => createHash('sha256').update(String(value ?? '')).digest();
+const fromProxy = (req) => timingSafeEqual(digest(req.headers['x-draw-service']), digest(SERVICE_TOKEN));
 
 const browserSigners = (s) => Object.fromEntries(Object.entries(s.external ?? {})
   .map(([role, { fingerprint }]) => [role, relay.signerFor(role, s.party[role], fingerprint)]));
@@ -218,7 +224,7 @@ async function viewFor(role) {
 // ---------------------------------------------------------------- actions
 async function adminObligation(ref) {
   const obligation = (await draw.contracts('admin', TEMPLATES.CapitalCallObligation, session.fundId)).find((o) => o.payload.obligationRef === ref);
-  if (!obligation) throw new Error('That obligation was not found for the fund admin.');
+  if (!obligation) throw new Error('That obligation was not found for the fund manager.');
   return obligation;
 }
 
@@ -230,7 +236,7 @@ async function ownObligation(role, ref) {
 
 const resolution = (choice, verb) => async ({ ref, note }) => {
   if (!note?.trim()) throw new Error('Add a note so the decision is on the record.');
-  relay.describe(`${verb[0].toUpperCase()}${verb.slice(1)} notice ${ref} with the note "${note.trim()}", as the fund admin`);
+  relay.describe(`${verb[0].toUpperCase()}${verb.slice(1)} notice ${ref} with the note "${note.trim()}", as the fund manager`);
   const result = await draw.resolve((await adminObligation(ref)).contractId, choice, note.trim());
   record(verb, { ref, note, updateId: result.transaction.updateId });
   return { message: { flag: 'Sent to manual review.', waive: 'Waived.', reopen: 'Reopened.', release: 'Released. It can take a new payment.' }[verb] };
@@ -250,7 +256,7 @@ const actions = {
       draw = await openSession(session);
       saveSession();
       record('setup', { mode: 'browser-keys', packageId });
-      return { message: 'Ready. The fund admin creates an account first, then each investor.' };
+      return { message: 'Ready. The fund manager creates an account first, then each investor.' };
     }
     const tag = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
     const { packageId } = packageInfo();
@@ -313,10 +319,10 @@ const actions = {
   },
 
   async fund({ fundName }) {
-    if (!session.party.admin) throw new Error('The fund admin needs an account first.');
+    if (!session.party.admin) throw new Error('The fund manager needs an account first.');
     const name = fundName?.trim() || session.fundName;
     const fundId = `FUND-${session.tag}`;
-    relay.describe(`Create the fund "${name}" as the fund admin`);
+    relay.describe(`Create the fund "${name}" as the fund manager`);
     const fundCid = await draw.createFund({ fundId, fundName: name });
     Object.assign(session, { fundId, fundCid, fundName: name });
     saveSession();
@@ -326,7 +332,7 @@ const actions = {
 
   async invite({ role, committedUsd }) {
     if (!session.party[role]) throw new Error(`${role} has not created an account yet.`);
-    relay.describe(`Invite ${ROLE_LABEL[role]} to commit $${Number(committedUsd).toLocaleString('en-US')} to ${session.fundName}, as the fund admin`);
+    relay.describe(`Invite ${ROLE_LABEL[role]} to commit $${Number(committedUsd).toLocaleString('en-US')} to ${session.fundName}, as the fund manager`);
     const result = await draw.invite(session.fundCid, role, String(committedUsd));
     record('invite', { role, committedUsd, updateId: result.transaction.updateId });
     return { message: `Invitation sent to ${role}.` };
@@ -355,7 +361,7 @@ const actions = {
       if (!(Number(units) > 0)) throw new Error('Every called investor needs a settlement amount above zero.');
       return { commitmentCid: commitment.contractId, obligationRef: newRef(), amountDue: String(units), scenarioAmount: String(scenarioUsd) };
     });
-    relay.describe(`Issue capital call "${callId.trim()}" to ${requests.length} investor(s) as the fund admin`);
+    relay.describe(`Issue capital call "${callId.trim()}" to ${requests.length} investor(s) as the fund manager`);
     const result = await draw.issueCall(session.fundCid, { callId: callId.trim(), description: description?.trim() || callId.trim(), dueAt: new Date(dueAt).toISOString(), requests });
     record('issue', { callId, dueAt, requests, updateId: result.transaction.updateId });
     return { message: `${callId.trim()} issued. Each investor now sees only its own notice.` };
@@ -373,7 +379,7 @@ const actions = {
       record('pay-failed', { role, ref, amount: value, error: error.message.slice(0, 300) });
       throw error;
     }
-    return { message: `${Number(value)} Amulet locked for the fund. The fund admin settles it next.` };
+    return { message: `${Number(value)} Amulet locked for the fund. The fund manager settles it next.` };
   },
 
   async withdraw({ role, allocationCid }) {
@@ -394,11 +400,11 @@ const actions = {
     let obligation = await adminObligation(ref);
     const stateBefore = obligation.payload.state;
     if (stateBefore === 'Issued') {
-      relay.describe(`Match the payment to notice ${ref} (it stays unfunded until settled), as the fund admin`);
+      relay.describe(`Match the payment to notice ${ref} (it stays unfunded until settled), as the fund manager`);
       await draw.markPending(obligation.contractId, allocationCid);
       obligation = await eventually(() => adminObligation(ref), (o) => o.payload.state === 'PaymentPending');
     }
-    relay.describe(`Settle notice ${ref}: move the payment to the fund and mark it funded, as the fund admin`);
+    relay.describe(`Settle notice ${ref}: move the payment to the fund and mark it funded, as the fund manager`);
     const settled = await draw.settle(obligation.contractId, allocationCid);
     const updateId = settled.transaction.updateId;
     record('settle', { ref, allocationCid, updateId });
@@ -417,7 +423,7 @@ const actions = {
   },
 
   async overdue({ ref }) {
-    relay.describe(`Mark notice ${ref} overdue, as the fund admin`);
+    relay.describe(`Mark notice ${ref} overdue, as the fund manager`);
     const result = await draw.markOverdue((await adminObligation(ref)).contractId);
     record('overdue', { ref, updateId: result.transaction.updateId });
     return { message: 'Marked overdue.' };
@@ -465,14 +471,38 @@ function latest(dir) {
   return { id, path: relative(ROOT, join(dir, id)), result: JSON.parse(readFileSync(join(dir, id, 'result.json'), 'utf8')) };
 }
 
-function proof() {
-  const base = join(EVIDENCE, NETWORK_DIR);
-  const run = latest(join(base, 'runs'));
-  const runFile = (name) => (run && existsSync(join(ROOT, run.path, name)) ? JSON.parse(readFileSync(join(ROOT, run.path, name), 'utf8')) : null);
+// The test suites under one evidence directory: seeded campaign, ablation,
+// Daml core tests, and mutation testing.
+function suites(base) {
   const campaign = latest(join(base, 'campaign'));
   const ablation = latest(join(base, 'ablation'));
   const core = latest(join(base, 'daml_core'));
   const mutation = latest(join(base, 'mutation'));
+  return {
+    campaign: campaign && { path: campaign.path, seed: campaign.result.seed, verdict: campaign.result.verdict, metrics: campaign.result.metrics, commit: campaign.result.commit },
+    ablation: ablation && { path: ablation.path, verdict: ablation.result.verdict, comparison: ablation.result.comparison },
+    damlCore: core && { path: core.path, verdict: core.result.verdict, packageId: core.result.packageId, tests: core.result.tests },
+    mutation: mutation && { path: mutation.path, verdict: mutation.result.verdict, killed: mutation.result.mutants.filter((m) => m.status === 'KILLED').length, total: mutation.result.mutants.length },
+  };
+}
+
+// The newest LocalNet run where every party signed with its own key.
+function custodyRun() {
+  const dir = join(EVIDENCE, 'local', 'runs');
+  if (!existsSync(dir)) return null;
+  const id = readdirSync(dir).sort().reverse().find((d) => {
+    const file = join(dir, d, 'result.json');
+    return existsSync(file) && JSON.parse(readFileSync(file, 'utf8')).gates?.CUSTODY;
+  });
+  if (!id) return null;
+  const result = JSON.parse(readFileSync(join(dir, id, 'result.json'), 'utf8'));
+  return { path: relative(ROOT, join(dir, id)), runId: id, gate: result.gates.CUSTODY, passed: result.passed, failed: result.failed };
+}
+
+function proof() {
+  const base = join(EVIDENCE, NETWORK_DIR);
+  const run = latest(join(base, 'runs'));
+  const runFile = (name) => (run && existsSync(join(ROOT, run.path, name)) ? JSON.parse(readFileSync(join(ROOT, run.path, name), 'utf8')) : null);
   const visibility = runFile('visibility-final.json');
   return {
     network: NETWORK_LABEL,
@@ -496,10 +526,10 @@ function proof() {
       totals: runFile('totals.json'),
       negative: run.result.checks.filter((c) => /^(negative|deadline|unpaid|authority|credential)/.test(c.id)).map((c) => ({ id: c.id, ok: c.ok })),
     },
-    campaign: campaign && { path: campaign.path, seed: campaign.result.seed, verdict: campaign.result.verdict, metrics: campaign.result.metrics, commit: campaign.result.commit },
-    ablation: ablation && { path: ablation.path, verdict: ablation.result.verdict, comparison: ablation.result.comparison },
-    damlCore: core && { path: core.path, verdict: core.result.verdict, packageId: core.result.packageId, tests: core.result.tests },
-    mutation: mutation && { path: mutation.path, verdict: mutation.result.verdict, killed: mutation.result.mutants.filter((m) => m.status === 'KILLED').length, total: mutation.result.mutants.length },
+    ...suites(base),
+    // LocalNet evidence, shown separately and labelled as LocalNet when the
+    // app runs on another network.
+    localnet: NETWORK_DIR === 'local' ? null : { ...suites(join(EVIDENCE, 'local')), custody: custodyRun() },
   };
 }
 
@@ -552,6 +582,9 @@ if (AUTO_SETTLE) {
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   try {
+    if (SERVICE_TOKEN && !fromProxy(req)) {
+      return send(res, 403, { error: 'Use the DRAW site. This API only answers its proxy.' });
+    }
     if (req.method === 'GET' && url.pathname === '/api/view') {
       const role = url.searchParams.get('role');
       if (!ROLES.includes(role)) return send(res, 400, { error: 'Unknown role.' });
@@ -584,12 +617,6 @@ createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname.startsWith('/evidence/')) {
       if (sendFile(res, EVIDENCE, decodeURIComponent(url.pathname.slice('/evidence/'.length)))) return;
       return send(res, 404, { error: 'No such evidence file.' });
-    }
-    if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
-      if (url.pathname !== '/' && sendFile(res, WEB, url.pathname)) return;
-      if (sendFile(res, WEB, 'index.html')) return;
-      res.writeHead(503, { 'Content-Type': 'text/plain' });
-      return res.end('The web app is not built. Run `npm run build` in app/web.');
     }
     send(res, 404, { error: 'Not found.' });
   } catch (error) {

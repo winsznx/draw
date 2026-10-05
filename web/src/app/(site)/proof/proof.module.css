@@ -1,0 +1,115 @@
+.page {
+  max-width: var(--site-max);
+  margin: 0 auto;
+  padding: clamp(40px, 7vw, 80px) var(--gutter) 0;
+}
+
+.head {
+  display: grid;
+  gap: var(--s-5);
+  margin-bottom: var(--s-8);
+}
+
+.section {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-12) 0 0;
+  scroll-margin-top: 80px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding-bottom: var(--s-3);
+  border-bottom: 2px solid var(--ink);
+}
+
+.env {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--r-mark);
+  background: var(--intaglio-soft);
+  color: var(--intaglio);
+}
+
+.runCard {
+  display: grid;
+  gap: var(--s-6);
+  align-items: start;
+}
+
+@media (min-width: 760px) {
+  .runCard {
+    grid-template-columns: 280px 1fr;
+  }
+}
+
+.runFig {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: start;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.scroll table {
+  min-width: 640px;
+}
+
+.yes {
+  color: var(--funded);
+  font-weight: 600;
+}
+
+.no {
+  color: var(--ink-3);
+}
+
+.receipts {
+  display: grid;
+  gap: var(--s-4);
+}
+
+@media (min-width: 900px) {
+  .receipts {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.receipt {
+  border-top: 4px solid var(--funded);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--s-5) var(--s-4);
+}
+
+.metric {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.facts li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14.5px;
+}

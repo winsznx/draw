@@ -30,8 +30,9 @@ run_step prerequisites bash -c 'dpm version --active && java -version 2>&1 | hea
 run_step contracts-build bash -c 'cd contracts && dpm build --all'
 run_step contracts-test bash -c 'cd contracts/tests && dpm test'
 run_step unit-tests node --test 'scripts/test/*.test.mjs'
-run_step web-install bash -c 'cd app/web && npm ci --no-audit --no-fund'
-run_step web-build bash -c 'cd app/web && npm run build'
+run_step web-install bash -c 'cd web && npm ci --no-audit --no-fund'
+run_step web-typecheck bash -c 'cd web && npm run typecheck'
+run_step web-build bash -c 'cd web && npm run build'
 
 LEDGER=skipped
 if [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3975/v2/version)" != 000 ]; then

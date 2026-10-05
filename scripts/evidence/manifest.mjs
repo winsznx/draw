@@ -17,7 +17,7 @@ const COMMANDS = {
   runs: { test: 'node scripts/demo/run.mjs', verifier: 'scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user' },
   campaign: { test: 'node scripts/eval/campaign.mjs', verifier: 'reference model in scripts/eval/campaign.mjs plus the read-only verifier' },
   ablation: { test: 'node scripts/eval/ablation.mjs', verifier: 'same attacks against node:sqlite and against the ledger' },
-  browser: { test: 'npm run e2e in app/web', verifier: 'Playwright against the running app and ledger' },
+  browser: { test: 'npm run e2e in web (app/web for runs before 2026-10-05)', verifier: 'Playwright against the running app and ledger' },
   app: { test: 'node app/server.mjs (actions taken in the UI)', verifier: 'scripts/demo/lib/verifier.mjs' },
 };
 

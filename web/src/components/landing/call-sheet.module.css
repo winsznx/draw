@@ -1,0 +1,199 @@
+.frame {
+  position: relative;
+  margin: 0;
+  padding: 12px;
+  border-radius: 24px;
+  color: var(--guilloche);
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+}
+
+.guilloche {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.sheet {
+  position: relative;
+  background: var(--sheet);
+  border: 1px solid var(--rule-2);
+  border-radius: 16px;
+  padding: clamp(16px, 2.4vw, 24px);
+  color: var(--ink);
+}
+
+.viewers {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 22px;
+  background: var(--sheet-2);
+  border-radius: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.viewer {
+  flex: 1 0 auto;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.viewer[aria-selected='true'] {
+  background: var(--sheet);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--rule);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.fund {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+}
+
+.due {
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: 'who amt' 'mark mark';
+  align-items: center;
+  gap: 8px 16px;
+  min-height: 74px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (min-width: 520px) {
+  .row {
+    grid-template-columns: 1fr auto 164px;
+    grid-template-areas: 'who amt mark';
+    min-height: 64px;
+  }
+
+  .row > :global(.mark) {
+    justify-self: end;
+  }
+}
+
+.who {
+  grid-area: who;
+  font-weight: 650;
+}
+
+.who small {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.amt {
+  grid-area: amt;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.row > :global(.mark) {
+  grid-area: mark;
+  justify-self: start;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease);
+}
+
+.hidden {
+  grid-template-columns: 1fr;
+  grid-template-areas: 'redact' 'note';
+}
+
+@media (min-width: 520px) {
+  .hidden {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'redact note';
+  }
+}
+
+.redact {
+  grid-area: redact;
+  height: 14px;
+  max-width: 260px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(135deg, var(--ink) 0 6px, color-mix(in srgb, var(--ink) 82%, transparent) 6px 12px);
+  opacity: 0.85;
+}
+
+.hiddenNote {
+  grid-area: note;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding-top: 18px;
+  min-height: 86px;
+}
+
+.label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.big {
+  display: block;
+  font-size: clamp(28px, 3.2vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--funded);
+}
+
+.small {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.note {
+  font-size: 14px;
+  color: var(--ink-2);
+  max-width: 40ch;
+}

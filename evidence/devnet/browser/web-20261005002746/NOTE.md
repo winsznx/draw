@@ -1,0 +1,1 @@
+Failed: the test read the notice URL before client-side navigation finished, so "LP B opens LP A notice" opened /app instead. Checked by hand that LP B gets "Not on your ledger". Test fixed in web-20261005003221.

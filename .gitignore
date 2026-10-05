@@ -12,3 +12,11 @@ evidence/**/secrets*
 !evidence/**/*.log
 app/.session-*.json
 .keys/
+# web: Next and OpenNext builds, wrangler state, local worker secrets
+web/.next/
+web/.open-next/
+web/.wrangler/
+web/.dev.vars*
+web/next-env.d.ts
+web/test-results/
+web/playwright-report/

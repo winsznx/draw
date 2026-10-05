@@ -1,0 +1,28 @@
+{
+  "run": "20261005002746",
+  "site": "https://draw.timjosh507.workers.dev",
+  "call": "Call 0027",
+  "steps": [
+    {
+      "step": "landing loads",
+      "ok": true,
+      "at": "2026-10-05T00:27:49.155Z"
+    },
+    {
+      "step": "fund manager onboarded",
+      "ok": true,
+      "at": "2026-10-05T00:27:51.779Z"
+    },
+    {
+      "step": "call issued",
+      "ok": true,
+      "at": "2026-10-05T00:27:58.686Z"
+    },
+    {
+      "step": "LP A locked its payment",
+      "ok": true,
+      "at": "2026-10-05T00:28:07.551Z"
+    }
+  ],
+  "verdict": "FAIL"
+}

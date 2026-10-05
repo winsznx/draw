@@ -1,0 +1,37 @@
+{
+  "name": "draw-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3100",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint --dir src",
+    "e2e": "playwright test",
+    "cf:build": "node scripts/cloudflare.mjs build",
+    "cf:preview": "node scripts/cloudflare.mjs preview",
+    "cf:deploy": "node scripts/cloudflare.mjs deploy"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.104.1",
+    "next": "15.5.27",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.8",
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.20.4",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "typescript": "5.9.3",
+    "wrangler": "4.147.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.4": true,
+    "esbuild@0.28.1": true,
+    "workerd@1.20261001.1": true
+  }
+}

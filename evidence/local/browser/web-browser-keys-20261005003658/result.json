@@ -1,0 +1,9 @@
+{
+  "run": "20261005003658",
+  "test": "each person signs with their own key",
+  "site": "http://localhost:3100",
+  "steps": [],
+  "expectedSteps": 10,
+  "verdict": "FAIL",
+  "error": null
+}

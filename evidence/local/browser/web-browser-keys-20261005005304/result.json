@@ -1,0 +1,50 @@
+{
+  "run": "20261005005304",
+  "test": "each person signs with their own key",
+  "site": "http://localhost:3100",
+  "steps": [
+    {
+      "step": "demo started",
+      "at": "2026-10-05T00:53:09.840Z"
+    },
+    {
+      "step": "fund manager created its party and the fund",
+      "at": "2026-10-05T00:53:14.855Z"
+    },
+    {
+      "step": "LP A and LP B created their parties",
+      "at": "2026-10-05T00:53:23.553Z"
+    },
+    {
+      "step": "fund manager invited both LPs",
+      "at": "2026-10-05T00:53:29.054Z"
+    },
+    {
+      "step": "both LPs accepted",
+      "at": "2026-10-05T00:53:35.672Z"
+    },
+    {
+      "step": "call issued",
+      "at": "2026-10-05T00:53:40.622Z"
+    },
+    {
+      "step": "LP A paid with its key",
+      "at": "2026-10-05T00:53:44.973Z"
+    },
+    {
+      "step": "LP B cannot open LP A notice",
+      "at": "2026-10-05T00:53:48.171Z"
+    },
+    {
+      "step": "fund manager settled with its key",
+      "at": "2026-10-05T00:53:53.014Z"
+    },
+    {
+      "step": "LP A sees verified funded",
+      "at": "2026-10-05T00:53:56.106Z"
+    }
+  ],
+  "expectedSteps": 10,
+  "verdict": "PASS",
+  "error": null
+}

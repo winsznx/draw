@@ -94,12 +94,19 @@ claims:
     text: "The full journey runs in a browser against the real app and ledger: issue, two LPs pay, a wrong amount is refused, the unpaid LP goes overdue, other parties see nothing. In non-custodial mode every person creates an account with a key in the browser and approves every action in a Sign dialog."
     status: local_verified
     environments: [localnet]
-    evidence: [evidence/local/browser/20261004T183631Z, evidence/local/browser/20261004T184730Z]
+    evidence: [evidence/local/browser/20261004T183631Z, evidence/local/browser/20261004T184730Z, evidence/local/browser/web-journey-20261005003621/result.json, evidence/local/browser/web-browser-keys-20261005005304/result.json]
     limits: "LocalNet. In the browser demo all roles' keys sit in the same browser so one person can play every role."
+
+  - id: web-journey-devnet
+    text: "The deployed web app runs a capital call end to end on DevNet: each person takes a seat at onboarding, the fund manager issues a call, LP A pays its notice, LP B opening LP A's notice link gets nothing, the fund manager settles, and LP A sees it verified funded."
+    status: devnet_verified
+    environments: [devnet]
+    evidence: [evidence/devnet/browser/web-20261005003221/result.json]
+    limits: "Shared hackathon login on the NODERS node, so one credential acts for every demo party. Actions on the public site need an access code."
 
   - id: non-custodial
     text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused."
     status: local_verified
     environments: [localnet]
     evidence: [evidence/local/runs/20261004T183146Z/result.json]
-    limits: "LocalNet only. The HackCanton DevNet node refuses external-party allocation for team accounts (requested from NODERS 2026-10-04). Keys in the scripted run are held by the run itself, one per party. The browser-key app flow is built and not yet run end to end."
+    limits: "LocalNet only. The HackCanton DevNet node refuses external-party allocation for team accounts (requested from NODERS 2026-10-04). Keys in the scripted run are held by the run itself, one per party. In the web app each person creates a key in the browser, backs it up, and signs every action (evidence/local/browser/web-browser-keys-20261005005304)."

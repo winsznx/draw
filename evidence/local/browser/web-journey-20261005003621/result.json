@@ -1,0 +1,42 @@
+{
+  "run": "20261005003621",
+  "test": "capital call journey",
+  "site": "http://localhost:3100",
+  "steps": [
+    {
+      "step": "landing loads",
+      "at": "2026-10-05T00:36:23.692Z"
+    },
+    {
+      "step": "LP A committed",
+      "at": "2026-10-05T00:36:27.192Z"
+    },
+    {
+      "step": "fund manager onboarded",
+      "at": "2026-10-05T00:36:29.166Z"
+    },
+    {
+      "step": "call issued",
+      "at": "2026-10-05T00:36:31.479Z"
+    },
+    {
+      "step": "LP A locked its payment",
+      "at": "2026-10-05T00:36:35.151Z"
+    },
+    {
+      "step": "LP B cannot open LP A notice",
+      "at": "2026-10-05T00:36:37.892Z"
+    },
+    {
+      "step": "fund manager settled, verifier confirmed",
+      "at": "2026-10-05T00:36:41.811Z"
+    },
+    {
+      "step": "LP A sees verified funded",
+      "at": "2026-10-05T00:36:44.419Z"
+    }
+  ],
+  "expectedSteps": 8,
+  "verdict": "PASS",
+  "error": null
+}

@@ -1,0 +1,1 @@
+Failed: a seat whose party already existed was locked in onboarding, even for the browser holding its key, so a person could not get back into their own account. Product bug, fixed: onboarding now reopens a seat whose key this browser holds.

@@ -4,6 +4,8 @@ Private capital calls on Canton. Each investor sees and funds only its own oblig
 
 Running end to end on the HackCanton DevNet node with real Canton Coin, and on Splice LocalNet. [`claims.yaml`](claims.yaml) lists exactly what has been verified and where.
 
+Live on DevNet: **https://draw.timjosh507.workers.dev**. Take a seat as the fund manager or an LP. Reading is open; actions need the demo access code.
+
 ## The problem
 
 A fund calls capital from its investors (LPs). Each LP gets a notice for its own share and pays by wire. Today's fund software attributes those wires to investors, but in batches from bank exports, with partial, split, and wrong-name payments handled by hand. Funds count money as in only once it has cleared and been reconciled, and fake capital-call notices with swapped payment details are a known fraud pattern that funds fight with procedures, not with the payment itself.
@@ -38,7 +40,8 @@ On the honest path both systems produce the same totals. The difference is what 
 
 - Daml package `draw` ([`contracts/daml/daml/Draw/CapitalCall.daml`](contracts/daml/daml/Draw/CapitalCall.daml)): `Fund` and `CapitalCall` are admin-only. `InvestorCommitment` and `CapitalCallObligation` are signed by the admin and one LP. `FUNDED` is set in exactly one place, inside `Obligation_Settle`, after `Allocation_ExecuteTransfer`.
 - Settlement: CIP-0056 Allocation V1 with Amulet, through the Splice token registry.
-- App: a Node server ([`app/server.mjs`](app/server.mjs)) that reads and acts with one ledger user per party, and a React + TypeScript UI ([`app/web`](app/web)).
+- API: a Node server ([`app/server.mjs`](app/server.mjs)) that reads and acts as each party. It runs on a VPS and answers only the web app's proxy.
+- Web: Next.js on Cloudflare Workers ([`web/`](web)): landing page, onboarding into a seat, the fund manager and LP apps, and the proof page. See [`docs/DEPLOY.md`](docs/DEPLOY.md).
 - Visibility and authority matrix: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Working
@@ -61,7 +64,6 @@ Every result was written by a script. [`evidence/manifest.json`](evidence/manife
 ## Roadmap
 
 - Separate credentials per party on DevNet. The shared hackathon node gives one account act-as on every party it creates, so DevNet proves party-level privacy and LocalNet proves credential separation ([`docs/DEVNET_DEPLOYMENT.md`](docs/DEVNET_DEPLOYMENT.md)).
-- The browser journey is written and has not passed yet. LocalNet went down before it could run.
 - Production sign-in where the app server holds no LP credentials ([`docs/SECURITY.md`](docs/SECURITY.md)).
 - Automatic settlement of exact matches is written (`DRAW_AUTO_SETTLE=true`) and not yet run against a ledger.
 - A real settlement asset (tokenized dollar) and a scheduler for overdue.
@@ -74,7 +76,7 @@ Every result was written by a script. [`evidence/manifest.json`](evidence/manife
 | LP | Only its own commitment, obligations, and payments | Accepts its commitment, pays, withdraws a refused payment |
 | Unrelated party | Nothing | Nothing |
 
-"Viewing as" in the app switches which ledger login runs every query. It is a demo convenience, not production sign-in.
+During onboarding you take a seat. Every screen after that is read from the ledger as that seat's party, and "Switch seat" signs out. On the shared DevNet node one hackathon login acts for every demo party; on LocalNet each party has its own login, or its own browser key in non-custodial mode.
 
 ## Run it locally
 
@@ -98,8 +100,8 @@ docker compose --env-file compose.env --env-file env/common.env -f compose.yaml 
 cd -
 
 # The app
-(cd app/web && npm ci && npm run build)
-node app/server.mjs        # http://localhost:4173, then "Create demo fund"
+DRAW_ENV_FILE=none node app/server.mjs                     # API on :4173 against LocalNet
+(cd web && npm ci && DRAW_API_URL=http://localhost:4173 npm run dev)   # http://localhost:3100
 ```
 
 LocalNet uses its documented `unsafe` HS256 secret. Each party gets its own ledger user with rights on that party only.
@@ -112,7 +114,8 @@ node scripts/demo/run.mjs          # canonical call, writes evidence/local/runs/
 node scripts/demo/summary.mjs      # plain-language summary of the latest run
 node scripts/eval/campaign.mjs     # 100 seeded cases (DRAW_EVAL_SEED, DRAW_EVAL_CASES)
 node scripts/eval/ablation.mjs     # database with a paid flag vs DRAW, same attacks
-(cd app/web && npm run e2e)        # browser journey against the real app and ledger
+(cd web && npm run e2e)            # browser journey against the real app and ledger
+(cd web && DRAW_PARTY_MODE=external npm run e2e)   # non-custodial journey, every action signed in the browser
 scripts/setup/clean_room.sh        # fresh clone, build, test, and run
 node scripts/evidence/manifest.mjs # index every evidence run with hashes
 ```

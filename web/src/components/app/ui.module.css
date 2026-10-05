@@ -1,0 +1,273 @@
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.noteForm {
+  display: grid;
+  gap: var(--s-2);
+  width: 100%;
+  max-width: 420px;
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline li {
+  position: relative;
+  padding: 0 0 var(--s-4) var(--s-6);
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--rule-2);
+  background: var(--sheet);
+}
+
+.timeline li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 20px;
+  bottom: 0;
+  width: 1.5px;
+  background: var(--rule);
+}
+
+.tlGood::before {
+  border-color: var(--funded) !important;
+  background: var(--funded) !important;
+}
+
+.tlBad::before {
+  border-color: var(--refused) !important;
+}
+
+.tlTitle {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.copy :global(.mono) {
+  word-break: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.copyHint {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--intaglio);
+  opacity: 0.75;
+}
+
+.copy:hover .copyHint {
+  opacity: 1;
+}
+
+.receipt {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  border-radius: var(--r-panel);
+  background: var(--funded-soft);
+  border: 1px solid color-mix(in srgb, var(--funded) 25%, transparent);
+}
+
+.receiptBad {
+  background: var(--refused-soft);
+  border-color: color-mix(in srgb, var(--refused) 25%, transparent);
+}
+
+.checks {
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--s-1);
+  font-size: 13px;
+}
+
+.checks li::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--s-2);
+  border-radius: 50%;
+  background: var(--funded);
+}
+
+.checks li.checkBad::before {
+  background: var(--refused);
+}
+
+.pageHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--s-4);
+  margin-bottom: var(--s-8);
+}
+
+.back {
+  display: inline-flex;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.back::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin: 6px 8px 0 2px;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.back:hover {
+  color: var(--ink);
+}
+
+.zero {
+  display: grid;
+  gap: var(--s-4);
+  justify-items: start;
+  padding: clamp(28px, 5vw, 56px) 0;
+  max-width: 620px;
+}
+
+.dialog {
+  width: min(480px, calc(100vw - 32px));
+  padding: var(--s-6);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sheet);
+  background: var(--sheet);
+  color: var(--ink);
+}
+
+.dialog::backdrop {
+  background: var(--scrim);
+  backdrop-filter: blur(2px);
+}
+
+.dialogIcon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--intaglio-soft);
+  color: var(--intaglio);
+}
+
+.toasts {
+  position: fixed;
+  z-index: 60;
+  right: var(--s-4);
+  bottom: calc(var(--s-4) + env(safe-area-inset-bottom));
+  display: grid;
+  gap: var(--s-2);
+  width: min(400px, calc(100vw - 32px));
+}
+
+@media (max-width: 899px) {
+  .toasts {
+    bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+.toast {
+  position: relative;
+  padding: var(--s-4) var(--s-10) var(--s-4) var(--s-4);
+  border-radius: var(--r-panel);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 500;
+  animation: rise var(--t) var(--ease);
+}
+
+.toastBad {
+  background: var(--refused);
+  color: #fff;
+}
+
+.toast :global(details.more) > summary {
+  color: inherit;
+  opacity: 0.8;
+  margin-top: var(--s-2);
+}
+
+.detail {
+  margin: 0;
+  max-height: 160px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.toastClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.toastClose:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

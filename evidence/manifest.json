@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-04T18:51:17.787Z",
-  "generatedAtCommit": "c86f52c2f2da4127fe229e020b80b9e00a7cbaa1",
+  "generatedAt": "2026-10-05T00:58:50.548Z",
+  "generatedAtCommit": "3aadc1db9dbde0be9a96a557663a9acbeeafa47c",
   "generator": "node scripts/evidence/manifest.mjs",
   "tokenStandardPackages": [
     {
@@ -17,6 +17,136 @@
     }
   ],
   "runs": [
+    {
+      "kind": "browser",
+      "environment": "devnet",
+      "runId": "web-20261005002723",
+      "path": "evidence/devnet/browser/web-20261005002723",
+      "commit": null,
+      "verdict": "FAIL",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "00-landing.png",
+          "sha256": "e180394c81870397df2957ed5d581b5e463dd58a02c49617be21c8e60dcc2a9f"
+        },
+        {
+          "path": "NOTE.md",
+          "sha256": "3f5d4f56ab2cd7fc877ef2eb0c66546fb63fb52b423a790ad8f06477f607052a"
+        },
+        {
+          "path": "result.json",
+          "sha256": "a5a1bcb47b228c6ec66e6ec0836afdebf88680edb62a8fbefa94a558476425bb"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "devnet",
+      "runId": "web-20261005002746",
+      "path": "evidence/devnet/browser/web-20261005002746",
+      "commit": null,
+      "verdict": "FAIL",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "00-landing.png",
+          "sha256": "e180394c81870397df2957ed5d581b5e463dd58a02c49617be21c8e60dcc2a9f"
+        },
+        {
+          "path": "01-manager-overview.png",
+          "sha256": "c12fb1a0923b9765db7a43591bf7912e62439e1c8aeaa9f0650f3227314767e2"
+        },
+        {
+          "path": "02-call-issued.png",
+          "sha256": "a8448187a656c2fc1c94f4ca27e1601d9a0d96620e58f3d2dd353122eda2c3be"
+        },
+        {
+          "path": "03-lp-paid.png",
+          "sha256": "0c8f5f46b0a87d554bf21a42e45c5490396d7e343b8084559a4ab2ebb8377621"
+        },
+        {
+          "path": "NOTE.md",
+          "sha256": "e7b4f54594fd3fae5ec0966aa3e374da279a14b8cd8e5321a2014ff68b5c55f2"
+        },
+        {
+          "path": "result.json",
+          "sha256": "f0691193d46855b28e695dd206de45151ecb7e1ad54ddc03c1519d2890d54c19"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "devnet",
+      "runId": "web-20261005003221",
+      "path": "evidence/devnet/browser/web-20261005003221",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "00-landing.png",
+          "sha256": "e180394c81870397df2957ed5d581b5e463dd58a02c49617be21c8e60dcc2a9f"
+        },
+        {
+          "path": "01-manager-overview.png",
+          "sha256": "f1206be4762e62b3281a20883a5266e02cbd251bf8049a5a1b88fff38a61c2ff"
+        },
+        {
+          "path": "02-call-issued.png",
+          "sha256": "8c83df32524c9035c7a8a48747a8fe01a0e08811b1aa0fb20aa60b69022830d5"
+        },
+        {
+          "path": "03-lp-paid.png",
+          "sha256": "59627c88f3feb21ec9823d47f89c640e22e8740213ad0d8df0fc4cbb3fd66e85"
+        },
+        {
+          "path": "04-lpb-cannot-read.png",
+          "sha256": "d3b91d763daf765e162c46e51b7d157506e2815470c7f187755d5dae457f8a0a"
+        },
+        {
+          "path": "05-settled.png",
+          "sha256": "62e6c99561eb5ec34f86c4eb54f0055fdff7a6acc47785a4304d75b72943f60c"
+        },
+        {
+          "path": "06-lp-verified.png",
+          "sha256": "4ab89df102157f87b071289df8365ff528ceba466ef40531ac9606abdf438eef"
+        },
+        {
+          "path": "result.json",
+          "sha256": "2ee0efe6b27d45dc52a8d6bd6a48d8c59b972d5909b4cbc373df9e2325e7c7da"
+        }
+      ],
+      "claims": [
+        "web-journey-devnet"
+      ]
+    },
     {
       "kind": "runs",
       "environment": "devnet",
@@ -472,12 +602,18 @@
           "updateId": "1220cc34247c3b3694c01c8da9ffa9013674fe9404b10b7c21f4f0817530360a8798",
           "allocationCid": "00d3eb1059589340a9875328ac397fcb5ef389cf7f63a4e28e4f0dec229554fd7fca121220555f407ed649f615e2b20e329081b8a8d36dc60881c188bcaf1f6288a3910a9e",
           "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-DRAW-f0687b82e3193160.json",
+          "updateId": "12208a43f54dccd889c57775ddde5ed9e1a3bdb677a86c23b1a31ad7a6f628b931f8",
+          "allocationCid": "00f66758fbd9e834d2cfc8dc1851cffe26abf4906d32da2b62d29990a8c015d885ca121220764e73ad091bb0796b6b2c4e3975323ab645adf436bca4fe7db2ab453e70af20",
+          "verdict": "VERIFIED_FUNDED"
         }
       ],
       "files": [
         {
           "path": "actions.jsonl",
-          "sha256": "68c77a1233ff8299ebe08c02ed3e2aff0969e0355c3c1a12a8a2aff01dd29974"
+          "sha256": "e7e34a6597170ae3c4df53a4b2e91b055a962d8a662a1bce771b2cf4955ec906"
         },
         {
           "path": "receipt-DRAW-988b74fffa8138e9.json",
@@ -486,6 +622,69 @@
         {
           "path": "receipt-DRAW-bd0a1ebea235ff34.json",
           "sha256": "1a049bdf5606d0463e6c5249bfe99111070b02120bc51795107f17e26ed4dda8"
+        },
+        {
+          "path": "receipt-DRAW-f0687b82e3193160.json",
+          "sha256": "7a50bb3393bab7d13554810a4a8e303c15fd6b37534521f6338ce12e0acc7f17"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "FUND-20261005003719",
+      "path": "evidence/local/app/FUND-20261005003719",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "ccec0a572a1e38d4324179ac65e0d0ebfc5c5cc1585fa906e2cbabacdf939a2d"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "FUND-20261005005308",
+      "path": "evidence/local/app/FUND-20261005005308",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [
+        {
+          "file": "receipt-DRAW-275a843349ce521d.json",
+          "updateId": "1220ddf3a88decf60ba5c13c3d16a5975edc8d830169a7d7fa90e56f5972a25032dd",
+          "allocationCid": "00e3161ac5277248aba45681d187124d7e2e018725c68d348b8d601573bc036ce7ca12122047ad9e8a494b3fcf927c9e141265d29648d1291bcd24482250baf505fbea20e8",
+          "verdict": "VERIFIED_FUNDED"
+        }
+      ],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "e7361b45064baf1f0bcd177383047c04259c38d585181e347ed97914ce0e93ed"
+        },
+        {
+          "path": "receipt-DRAW-275a843349ce521d.json",
+          "sha256": "3523edf7d88358ad2695081dc038947f32d21ebd4b36a1fae90edb1e85d49fb8"
         }
       ],
       "claims": []
@@ -515,6 +714,54 @@
       "claims": []
     },
     {
+      "kind": "app",
+      "environment": "local",
+      "runId": "session-20261005003719",
+      "path": "evidence/local/app/session-20261005003719",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "606d1c5879a0cce35ac68c77b4e6b1576f5a70221c3bb6939247623d81d92110"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "app",
+      "environment": "local",
+      "runId": "session-20261005005308",
+      "path": "evidence/local/app/session-20261005005308",
+      "commit": null,
+      "verdict": null,
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node app/server.mjs (actions taken in the UI)",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "actions.jsonl",
+          "sha256": "48456c4db7719dbddd9852b931e838cbc0e43cdf47d23a083bb19b81ac435eb9"
+        }
+      ],
+      "claims": []
+    },
+    {
       "kind": "browser",
       "environment": "local",
       "runId": "20261002T195013Z",
@@ -527,7 +774,7 @@
       "instrument": null,
       "partyAliases": null,
       "seed": null,
-      "testCommand": "npm run e2e in app/web",
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
       "verifierCommand": "Playwright against the running app and ledger",
       "updateRefs": [],
       "files": [
@@ -571,7 +818,7 @@
       "instrument": null,
       "partyAliases": null,
       "seed": null,
-      "testCommand": "npm run e2e in app/web",
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
       "verifierCommand": "Playwright against the running app and ledger",
       "updateRefs": [],
       "files": [
@@ -617,7 +864,7 @@
       "instrument": null,
       "partyAliases": null,
       "seed": null,
-      "testCommand": "npm run e2e in app/web",
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
       "verifierCommand": "Playwright against the running app and ledger",
       "updateRefs": [],
       "files": [
@@ -693,7 +940,7 @@
       "instrument": null,
       "partyAliases": null,
       "seed": null,
-      "testCommand": "npm run e2e in app/web",
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
       "verifierCommand": "Playwright against the running app and ledger",
       "updateRefs": [],
       "files": [
@@ -769,7 +1016,7 @@
       "instrument": null,
       "partyAliases": null,
       "seed": null,
-      "testCommand": "npm run e2e in app/web",
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
       "verifierCommand": "Playwright against the running app and ledger",
       "updateRefs": [],
       "files": [
@@ -824,6 +1071,163 @@
         {
           "path": "screens/11-proof.png",
           "sha256": "57143f0665dff70f309d9c939c8b7212493e30eb609df765f78e1428635f4005"
+        }
+      ],
+      "claims": [
+        "browser-journey"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "web-browser-keys-20261005003658",
+      "path": "evidence/local/browser/web-browser-keys-20261005003658",
+      "commit": null,
+      "verdict": "FAIL",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "NOTE.md",
+          "sha256": "4dabbef779239e7f8000e0fbec83d6f7cbb540a9e0bdb48548823fdaa67b2846"
+        },
+        {
+          "path": "result.json",
+          "sha256": "a5d95d651c1f05fe79a4da818948d0c9dc5edbe0a1345b30dc382a0b09d3c709"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "web-browser-keys-20261005003716",
+      "path": "evidence/local/browser/web-browser-keys-20261005003716",
+      "commit": null,
+      "verdict": "FAIL",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "01-fund-created.png",
+          "sha256": "17dcf5b56d1acbe5cfad2f87445e74fdf4c116fb805920c304b8c7097e63643d"
+        },
+        {
+          "path": "NOTE.md",
+          "sha256": "1bd9e34e14ef53918bf5bffb066cb1fde5485e829c904c9e2af1716e4ec57ef2"
+        },
+        {
+          "path": "result.json",
+          "sha256": "09c74ca0bbd6a6aaf24050e7437cb76d59aabe00d788c93399fccabcf8325300"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "web-browser-keys-20261005005304",
+      "path": "evidence/local/browser/web-browser-keys-20261005005304",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "01-fund-created.png",
+          "sha256": "01f5f029a1375ec9180bf4ed3fe1426d5e6e6de479b87be6f325008c2427c2d1"
+        },
+        {
+          "path": "05-call-issued.png",
+          "sha256": "fbc177ce1e48f03b519a7c458e626d5ba7fae19ca3fbb477c3c4b7ac40b533ae"
+        },
+        {
+          "path": "06-lp-paid.png",
+          "sha256": "e5d330bb544bd98d8dca15a96676ddaa949f8c8a282d7875ac9b9f465e1b9332"
+        },
+        {
+          "path": "09-lp-verified.png",
+          "sha256": "041166a03fd3835309a5a5a17ed63792045d75e51ddd724c4ab8caf79d4f11cf"
+        },
+        {
+          "path": "result.json",
+          "sha256": "f371d536e455a4067d7dd339397e778e6929e327b80ba9cd08f00df059dcb859"
+        }
+      ],
+      "claims": [
+        "browser-journey",
+        "non-custodial"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "local",
+      "runId": "web-journey-20261005003621",
+      "path": "evidence/local/browser/web-journey-20261005003621",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "00-landing.png",
+          "sha256": "520decba18ca2b9fba66ee3abf6547363732654e8e4a856d7d9c0a368faa8b53"
+        },
+        {
+          "path": "02-manager-overview.png",
+          "sha256": "c6d2c2919b97912f4713bd86425be58e54bca8c92eaae3bdc9518958fe7d5d1e"
+        },
+        {
+          "path": "03-call-issued.png",
+          "sha256": "3eed1e0a3de7d76199990da5e43215ad02eb1a89003a7758ea954862e40699cc"
+        },
+        {
+          "path": "04-lp-paid.png",
+          "sha256": "5e0e59962bcbad16cf62f4b26023cb1165c9dafaa1fcb947be3b7a33678778db"
+        },
+        {
+          "path": "05-lpb-cannot-read.png",
+          "sha256": "d391fc63f4cfa96a1d6bfb30632ce3d4451fdb8f87a594299a1d096a6a71b740"
+        },
+        {
+          "path": "06-settled.png",
+          "sha256": "f072533a4c581ed11ba4ed02e3ac66af621b644f7cee93e5fd83161d33da6c52"
+        },
+        {
+          "path": "07-lp-verified.png",
+          "sha256": "537ed9ca374e2d1da1d70c4dfc4fdf30a08c5cac585a6a247f4d0431fb861c17"
+        },
+        {
+          "path": "result.json",
+          "sha256": "1e2cbd3ea9008209f7e6429b0329e9b5936d80cce3f93ebca784d75a04086547"
         }
       ],
       "claims": [
@@ -954,6 +1358,122 @@
         {
           "path": "web-install.log",
           "sha256": "26f507757205d4ec8c199ee1a0401668da4ddf2c87a9770c8d344f7ac790e6ff"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "clean_room",
+      "environment": "local",
+      "runId": "20261004T185118Z",
+      "path": "evidence/local/clean_room/20261004T185118Z",
+      "commit": "98febf0fd2b40b50f08c20c644c4029df56c8f6e",
+      "verdict": "PASS_OFFLINE_ONLY",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": null,
+      "verifierCommand": null,
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "NOTE.md",
+          "sha256": "2094bc46360212c293f3c5fc67f3c36e5be4f151e2dfcfe226c427f2bbe29aaf"
+        },
+        {
+          "path": "canonical-run.log",
+          "sha256": "b762d998157f63bfbb3d0fc22d92a3001f359ab58f8ae2d6a7094c15b4d75ea4"
+        },
+        {
+          "path": "clone.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "contracts-build.log",
+          "sha256": "36420e65c0ae91972eefb59d2257e11d0c9918331ca01aab2211ac1ca65bead1"
+        },
+        {
+          "path": "contracts-test.log",
+          "sha256": "72a9385b01ac0ec6298950b6e8ce6601661727583edc55beb81cb22a97493679"
+        },
+        {
+          "path": "prerequisites.log",
+          "sha256": "aefd8bba2fde9847e353d0eab2b06333874cee68a3c8a1cb31d0fd77da2913ae"
+        },
+        {
+          "path": "result.json",
+          "sha256": "602b6f952430f51017c25d54539172bc0664ca4e71240369d53e8afe5c27f131"
+        },
+        {
+          "path": "unit-tests.log",
+          "sha256": "2d129958830ffde7bed83f28b82ac21f49d4ffe6a96f12c7f2e7a5bf56426e71"
+        },
+        {
+          "path": "web-build.log",
+          "sha256": "d8a8a2881b3a9ed430b2b6bbed670aab60f7d034f7325e0b660ae565c212ec6d"
+        },
+        {
+          "path": "web-install.log",
+          "sha256": "66a083c87fc8b89235989db1f3dac12a6e1dcad481b8507846dd632f78b885d2"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "clean_room",
+      "environment": "local",
+      "runId": "20261004T195643Z",
+      "path": "evidence/local/clean_room/20261004T195643Z",
+      "commit": "c8acfea9786cef59a7514a43201b5b1018da0f1e",
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": null,
+      "verifierCommand": null,
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "canonical-run.log",
+          "sha256": "cd7a6d148c2f477154f36b54b013f3597dd8198137f624fe8427f72ecbd24eef"
+        },
+        {
+          "path": "clone.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "contracts-build.log",
+          "sha256": "1566797d3956bd5ef2ff9bc3858d92b1a88c68e3828a1eb9eded7f81a23c8e91"
+        },
+        {
+          "path": "contracts-test.log",
+          "sha256": "72a9385b01ac0ec6298950b6e8ce6601661727583edc55beb81cb22a97493679"
+        },
+        {
+          "path": "prerequisites.log",
+          "sha256": "aefd8bba2fde9847e353d0eab2b06333874cee68a3c8a1cb31d0fd77da2913ae"
+        },
+        {
+          "path": "result.json",
+          "sha256": "a61383c7c4833db74e55e0ae7dce89f15ea14d5f5fa4f0fb873430b0aea2a947"
+        },
+        {
+          "path": "unit-tests.log",
+          "sha256": "cb880564e12e652d64b6392f8fa5f0629102d57598e22eda97b6a7475f184d6f"
+        },
+        {
+          "path": "web-build.log",
+          "sha256": "cd46251de8c2098fb25da91c05823205ac32437aac34808c9c26f318b383f1b5"
+        },
+        {
+          "path": "web-install.log",
+          "sha256": "57dba49a00ee73ac67a0d10e3a6525293664a4f7d45ff8b637660bbfc8a94571"
         }
       ],
       "claims": []

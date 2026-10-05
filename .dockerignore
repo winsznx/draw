@@ -5,5 +5,5 @@ internal
 localnet
 **/node_modules
 **/.daml
-app/web/dist
+web
 evidence/local/browser/*/artifacts

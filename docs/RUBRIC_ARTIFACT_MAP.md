@@ -13,7 +13,7 @@ The exact Season 3 judging text could not be retrieved (the Tracks and Judging t
 | What is auditable? | Every settlement has a receipt. Every decision has a note and a ledger update | Call detail, Details, timeline | `docs/PROOF.md` | receipts, app `actions.jsonl` | Proof tab | Ready |
 | Why is Canton the right choice? | Privacy below the app, funded only when money moves, no reuse | Closing line, ablation | `docs/CANTON_ABLATION.md` | ablation `result.json` | `SPONSOR_TRANSFORMATION.md` | Ready |
 | Track: create, update state, transfer or fulfil, audit or report | Issue call, settle, review or waive, receipt and totals | Full demo | `docs/TRACK_PROOF_MODALITY.md` | canonical run | `/proof` | Ready on LocalNet |
-| Track: role-aware UI | Same pages read with each party's own login | Viewing-as switcher | `app/web` | browser journey | screenshots | Browser journey blocked on LocalNet |
+| Track: role-aware UI | Same pages read with each party's own login | Seat chosen at onboarding | `web/` | browser journey | screenshots | Browser journey blocked on LocalNet |
 | Track: business brief and pilot plan | One-page brief, three-stage pilot | n/a | `BUSINESS_BRIEF.md`, `PILOT_PLAN.md` | n/a | n/a | Ready |
 | Technical execution | Daml model, tests, mutation, campaign, clean room | n/a | `docs/EVAL_CAMPAIGN.md` | manifest | `docs/CLEAN_ROOM.md` | Ready, DevNet pending |
 | Canton integration depth | CIP-0056 allocations executed inside the obligation choice, registry factory, disclosed contracts | Settle | `docs/SPONSOR_FINDINGS.md` | receipts | | Ready on LocalNet |

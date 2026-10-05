@@ -1,0 +1,13 @@
+{
+  "run": "20261005002723",
+  "site": "https://draw.timjosh507.workers.dev",
+  "call": "Call 0027",
+  "steps": [
+    {
+      "step": "landing loads",
+      "ok": true,
+      "at": "2026-10-05T00:27:26.482Z"
+    }
+  ],
+  "verdict": "FAIL"
+}

@@ -11,7 +11,7 @@ All results here are produced by scripts. Each section names the script and the 
 | Canonical run (69 checks plus stream checks) | `node scripts/demo/run.mjs` | LocalNet, Amulet | `evidence/local/runs/` latest |
 | Generalization (100 seeded cases) | `node scripts/eval/campaign.mjs` | LocalNet, Amulet | `evidence/local/campaign/20261002T193724Z` PASS |
 | Ablation (5 attacks, 2 systems) | `node scripts/eval/ablation.mjs` | node:sqlite and LocalNet | `evidence/local/ablation/20261002T193830Z` |
-| Browser journey | `npm run e2e` in `app/web` | Chrome, real app, LocalNet | first run blocked by LocalNet outage, see `evidence/local/browser/20261002T195013Z/NOTE.md` |
+| Browser journey | `npm run e2e` in `web` (`app/web` before 2026-10-05) | Chrome, real app, LocalNet or the deployed site | first run blocked by LocalNet outage, see `evidence/local/browser/20261002T195013Z/NOTE.md`. Passing runs are listed in `claims.yaml` |
 
 ## Classes the directive asks for
 

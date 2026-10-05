@@ -1,32 +1,47 @@
-# Deploying DRAW to a VPS
+# Deploying DRAW
 
-One container serves the API and the React app. Caddy in front provides HTTPS. Configuration and secrets come from `.env` on the server and are never baked into the image (`.dockerignore` excludes `.env`, `.keys/`, and `internal/`).
+DRAW has two deployable parts:
 
-## What runs where
+- **Web** (`web/`): Next.js on Cloudflare Workers through OpenNext. It serves the landing page, onboarding, the app and the proof page. Every `/api/*` and `/evidence/*` request is proxied to the API with a service token.
+- **API** (`app/server.mjs`): Node, on a VPS next to the ledger credentials. It reads and acts on the ledger and answers only requests that carry the service token.
 
-| Mode | Ledger | Who signs | Use |
-|---|---|---|---|
-| DevNet, shared login | HackCanton node | the server, with the team's hackathon login | public demo on the season's network. Set `DRAW_ACCESS_CODE` so visitors can read but not act |
-| LocalNet, browser keys (`DRAW_PARTY_MODE=external`) | LocalNet on the same VPS | each user's browser, with its own key | the non-custodial version. Needs about 10 GB RAM and 8 GB disk for LocalNet |
-
-## Steps
-
-1. On the VPS: install Docker and Caddy, and point your domain's DNS at the VPS.
-2. `git clone` the repository and `cd` into it.
-3. Create `.env` (copy `.env.example`). For DevNet, fill the HackCanton block and the five party ids. Add `DRAW_ACCESS_CODE=<something long>`.
-4. `docker compose -f deploy/docker-compose.yml up -d --build`. The app listens on `127.0.0.1:4173` only.
-5. Put your domain into `deploy/Caddyfile`, copy it to `/etc/caddy/Caddyfile`, then `systemctl reload caddy`.
-6. Open `https://<your domain>`. Visitors can browse every role and the Proof page. Actions ask for the access code once.
-
-Receipts, the action log, and the session live on Docker volumes (`draw-evidence`, `draw-state`), so they survive restarts and rebuilds.
-
-## Checked locally (2026-10-04)
-
-The image built from a clean context, contained the release DAR and the built app, contained no `.env`, started against DevNet with `--env-file`, served the app and `/api/proof`, and refused an action without the access code.
+The browser never talks to the VPS directly, so there is no CORS, and the ledger credentials never leave the VPS.
 
 ## Live deployment (2026-10-05)
 
-- URL: https://187-77-178-30.sslip.io (Hostinger VPS, Ubuntu 26.04, 1 vCPU, 3.8 GB RAM). `sslip.io` maps the hostname to the IP so Caddy can get a certificate. Swap in a real subdomain by changing `/etc/caddy/Caddyfile`.
-- Mode: DevNet, shared hackathon login, access code required for actions. Visitors can read every role and the Proof page.
-- Runs without Docker, next to the Sleeve and Nightbook workers already on the box: system user `draw`, code in `/opt/draw/app`, session in `/opt/draw/state`, `.env` mode 600 owned by `draw`, systemd unit `draw.service` (`ProtectSystem=strict`, writes only under `/opt/draw`), listening on `127.0.0.1:4173`. Caddy on 80/443 proxies to it.
-- Update: `rsync` the same file list again, then `systemctl restart draw`. Logs: `journalctl -u draw`.
+| Part | Where | Notes |
+|---|---|---|
+| Web | https://draw.timjosh507.workers.dev | Worker `draw`. `DRAW_API_URL` in `web/wrangler.jsonc`, `DRAW_SERVICE_TOKEN` as a worker secret |
+| API | Hostinger VPS, `https://187-77-178-30.sslip.io` behind Caddy | systemd `draw.service`, user `draw`, code in `/opt/draw/app`, session in `/opt/draw/state`. Answers 403 without the token |
+
+Mode: DevNet with the shared hackathon login. Visitors can read every seat and the proof page. Actions need the access code (`DRAW_ACCESS_CODE` on the API), which the app asks for once.
+
+The live journey (onboard, issue, LP pays, another LP is refused, settle, verified funded) passed against the deployed site: `evidence/devnet/browser/web-20261005003221/`.
+
+## Web on Cloudflare
+
+```sh
+cd web
+npm ci
+npm run cf:deploy
+```
+
+`scripts/cloudflare.mjs` builds with every non-public variable from the repository's `.env` files blanked, empties the env module OpenNext copies into the worker, scans the whole output for each secret value, deploys, and then stores `DRAW_SERVICE_TOKEN` (read from `.env`) with `wrangler secret bulk`. Only `npm run cf:deploy` should deploy; a bare `wrangler deploy` skips those checks.
+
+For local development, `web/.env.local` sets `DRAW_API_URL` (for example `http://localhost:4173`), then `npm run dev` serves on port 3100.
+
+## API on a VPS
+
+1. Copy the repository (or `rsync` `app/`, `scripts/`, `contracts/dist/`, `contracts/daml/daml.yaml`, `evidence/`, `claims.yaml`, `docs/`) to the server.
+2. Create `.env` (mode 600) from `.env.example`: the network block, the party ids, `DRAW_ACCESS_CODE`, `DRAW_SERVICE_TOKEN` (the same value the worker holds), `DRAW_STATE_DIR`, `PORT=4173`.
+3. Run `node app/server.mjs` under systemd, or `docker compose -f deploy/docker-compose.yml up -d --build`. It listens on `127.0.0.1:4173`.
+4. Put Caddy in front for HTTPS (`deploy/Caddyfile`) and set that origin as `DRAW_API_URL` in `web/wrangler.jsonc`.
+
+To update the VPS: `rsync` the changed files, then `systemctl restart draw`. Logs: `journalctl -u draw`.
+
+## Modes
+
+| Mode | Ledger | Who signs |
+|---|---|---|
+| DevNet, shared login | HackCanton node | the API, with the team's hackathon login. NODERS does not allow teams to create external parties yet |
+| LocalNet, browser keys (`DRAW_PARTY_MODE=external`) | LocalNet | each person's browser, with its own key. Needs about 10 GB RAM for LocalNet, so it is not on the 4 GB VPS |

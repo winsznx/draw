@@ -1,0 +1,15 @@
+// Deploy only with `npm run cf:deploy`. It blanks secrets during the build,
+// checks the output for leaks, then stores DRAW_SERVICE_TOKEN as a secret.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "draw",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "workers_dev": true,
+  // The DRAW API on the VPS. Every /api and /evidence request is proxied there
+  // with the service token, so the API refuses anyone who is not this worker.
+  "vars": { "DRAW_API_URL": "https://187-77-178-30.sslip.io" },
+  "observability": { "enabled": true }
+}

@@ -1,0 +1,5 @@
+{"at":"2026-10-05T00:37:26.491Z","action":"fund","fundId":"FUND-20261005003719","fundName":"Example Ventures I"}
+{"at":"2026-10-05T00:37:29.510Z","action":"onboard","role":"lpA","party":"draw-lpA-20261005003719::1220fc67e28ff24f9bf1cb0df26029a1303f423b45366d56c034d98258e0ad96259c","fingerprint":"1220fc67e28ff24f9bf1cb0df26029a1303f423b45366d56c034d98258e0ad96259c"}
+{"at":"2026-10-05T00:37:30.941Z","action":"faucet","role":"lpA","updateId":"122044eae409fe98d98e454e515f94278681dda7b2cd7d259cb6824365a76bb005b9"}
+{"at":"2026-10-05T00:37:33.697Z","action":"onboard","role":"lpB","party":"draw-lpB-20261005003719::1220c46546b0ea60e58ba725c921d6e21bf292d757bb54e4ef29e2dc348260b31ff2","fingerprint":"1220c46546b0ea60e58ba725c921d6e21bf292d757bb54e4ef29e2dc348260b31ff2"}
+{"at":"2026-10-05T00:37:34.999Z","action":"faucet","role":"lpB","updateId":"1220bba40aaae681ac0fbd14073410a5a452553f53622e15e8f7d99f944f4fa3d8ba"}
