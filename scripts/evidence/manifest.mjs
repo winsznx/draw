@@ -19,6 +19,7 @@ const COMMANDS = {
   ablation: { test: 'node scripts/eval/ablation.mjs', verifier: 'same attacks against node:sqlite and against the ledger' },
   browser: { test: 'npm run e2e in web (app/web for runs before 2026-10-05)', verifier: 'Playwright against the running app and ledger' },
   app: { test: 'node app/server.mjs (actions taken in the UI)', verifier: 'scripts/demo/lib/verifier.mjs' },
+  probes: { test: 'node scripts/demo/probe.mjs', verifier: 'each probe states the outcome it expects, and the run compares' },
 };
 
 const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
@@ -82,7 +83,10 @@ for (const environment of readdirSync(EVIDENCE).filter((d) => statSync(join(EVID
         runId,
         path,
         commit: result?.commit ?? null,
-        verdict: result?.verdict ?? (result?.gates ? Object.entries(result.gates).map(([g, v]) => `${g}=${v}`).join(' ') : null) ?? null,
+        verdict: result?.verdict
+          ?? (result?.gates ? Object.entries(result.gates).map(([g, v]) => `${g}=${v}`).join(' ') : null)
+          // Probe runs compare each outcome with the one they expected.
+          ?? (typeof result?.asExpected === 'boolean' ? (result.asExpected ? 'AS_EXPECTED' : 'NOT_AS_EXPECTED') : null),
         damlSdk: damlSdkVersion(),
         canton: result?.canton ?? null,
         packageIds: [result?.packageId].filter(Boolean),

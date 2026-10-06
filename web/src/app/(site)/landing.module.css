@@ -81,6 +81,12 @@
   color: #c8ded5;
 }
 
+.heroNote {
+  font-size: 14px;
+  color: #c8ded5;
+  max-width: 46ch;
+}
+
 .accessCode code {
   margin-left: 4px;
   padding: 3px 9px;

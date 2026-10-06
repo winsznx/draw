@@ -166,6 +166,8 @@ export interface SiteConfig {
   accessCode: string | null;
   // Set when an LP can sign in with its own HackCanton login.
   signIn: SignInConfig | null;
+  // The DRAW package the API submits with.
+  release?: { version: string; packageId: string };
 }
 
 export interface SignInConfig {
@@ -280,6 +282,8 @@ export interface Proof {
     } | null;
     negative: { id: string; ok: boolean }[];
   } | null;
+  // The newest run of each browser journey on this network, with its steps and screenshots.
+  browser?: BrowserRun[];
   campaign: { path: string; seed: number; verdict: string; commit: string; metrics: Record<string, number> } | null;
   ablation: { path: string; verdict: string; comparison: { attack: string; counterfactualA: string; treatment: string }[] } | null;
   damlCore: { path: string; verdict: string; packageId: string; tests: { name: string; result: string }[] } | null;
@@ -288,3 +292,15 @@ export interface Proof {
 }
 
 export type Suites = Pick<Proof, 'campaign' | 'ablation' | 'damlCore' | 'mutation'>;
+
+export interface BrowserRun {
+  journey: string;
+  runId: string;
+  path: string;
+  test: string;
+  site: string | null;
+  verdict: string;
+  steps: string[];
+  expectedSteps: number;
+  shots: string[];
+}

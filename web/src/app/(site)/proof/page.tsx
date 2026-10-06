@@ -44,7 +44,23 @@ const METRIC_NAME: Record<string, string> = {
   errors: 'Errors',
 };
 
+// Browser journeys, in the order a visitor would try them.
+const JOURNEY_ORDER = ['journey', 'hackcanton-wallet', 'hackcanton', 'browser-keys'];
+const JOURNEY_NAME: Record<string, string> = {
+  journey: 'A capital call on the demo seats',
+  'hackcanton-wallet': 'An LP with its own HackCanton login approves the call in its Canton Coin wallet',
+  hackcanton: 'An LP with its own HackCanton login pays from its wallet in DRAW',
+  'browser-keys': 'Every person signs with a key made in the browser',
+};
+
 const file = (path: string, name: string) => `/${path}/${name}`;
+
+// "05-lpb-cannot-read.png" reads "LP B cannot read".
+const SHOT_WORD: Record<string, string> = { lp: 'LP', lpa: 'LP A', lpb: 'LP B', lpc: 'LP C' };
+function caption(shot: string): string {
+  const text = shot.replace(/^\d+-|\.png$/g, '').split('-').map((word) => SHOT_WORD[word] ?? word).join(' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
 const short = (id: string, n = 14) => `${id.slice(0, n)}…`;
 
 function Section({ id, title, env, lead, children }: { id: string; title: string; env: string; lead?: ReactNode; children: ReactNode }) {
@@ -218,6 +234,40 @@ export default async function ProofPage() {
             </ul>
           </Section>
         </>
+      )}
+
+      {proof.browser && proof.browser.length > 0 && (
+        <Section
+          id="browser"
+          title="In a browser, on the live site"
+          env={proof.network}
+          lead="A real browser clicks through the deployed site against the ledger. Each journey wrote its own steps and screenshots as it ran. This is the newest run of each."
+        >
+          <div className="stack-4">
+            {[...proof.browser].sort((a, b) => JOURNEY_ORDER.indexOf(a.journey) - JOURNEY_ORDER.indexOf(b.journey)).map((run) => (
+              <div key={run.journey} className={`sheet sheet-pad stack-4 ${styles.journey}`}>
+                <div className="row between">
+                  <p className="t-h3">{JOURNEY_NAME[run.journey] ?? run.test}</p>
+                  <span className={run.verdict === 'PASS' ? 'mark mark-good' : 'mark mark-bad'}>{run.verdict} {run.steps.length}/{run.expectedSteps}</span>
+                </div>
+                <ol className={styles.steps}>
+                  {run.steps.map((step) => <li key={step}>{step}</li>)}
+                </ol>
+                {run.shots.length > 0 && (
+                  <div className={styles.shots}>
+                    {run.shots.map((shot) => (
+                      <a key={shot} href={file(run.path, shot)} className={styles.shot} target="_blank" rel="noreferrer">
+                        <span className={styles.shotFrame}><img src={file(run.path, shot)} alt="" loading="lazy" /></span>
+                        <span className={styles.shotLabel}>{caption(shot)}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+                <p className="t-sm"><a className="link" href={file(run.path, 'result.json')}>{run.runId}</a>{run.site ? <span className="muted"> against {run.site}</span> : null}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
       )}
 
       <SuiteSections suites={proof} env={proof.network} />

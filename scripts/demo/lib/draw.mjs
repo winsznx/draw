@@ -48,7 +48,7 @@ function packageIdFromManifest() {
 
 export function packageInfo() {
   const darSha256 = createHash('sha256').update(readFileSync(DAR)).digest('hex');
-  return { packageId: packageIdFromManifest(), darSha256 };
+  return { packageId: packageIdFromManifest(), darSha256, version: darVersion };
 }
 
 const firstCreated = (transaction) => transactionEvents(transaction).find((e) => e.kind === 'created');

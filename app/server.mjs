@@ -103,6 +103,8 @@ const signIn = (() => {
   }
   return { ...settings, templates: TEMPLATES, interfaces: INTERFACES };
 })();
+// The DRAW package this server submits with.
+const RELEASE = (({ version, packageId }) => ({ version, packageId }))(packageInfo());
 // A Canton party id: a hint, "::", and the namespace's SHA-256 fingerprint.
 const isPartyId = (value) => typeof value === 'string' && /^[\w:.-]{1,185}::1220[0-9a-f]{64}$/.test(value);
 
@@ -249,6 +251,7 @@ const config = () => ({
   accessCodeRequired: Boolean(ACCESS_CODE),
   accessCode: PUBLIC_ACCESS_CODE,
   signIn,
+  release: RELEASE,
 });
 
 // Which seat a party is in this tour: a provisioned role, or the LP that
@@ -920,6 +923,32 @@ function custodyRun() {
   return { path: evidencePath(join(dir, id)), runId: id, gate: result.gates.CUSTODY, passed: result.passed, failed: result.failed };
 }
 
+// The newest run of each browser journey on this network, passed or not, with
+// the steps it recorded and the screenshots it took.
+function browserRuns(base) {
+  const dir = join(base, 'browser');
+  if (!existsSync(dir)) return [];
+  const newest = new Map();
+  for (const id of readdirSync(dir).sort()) {
+    const journey = id.match(/^web-([a-z-]+)-\d{14}$/)?.[1];
+    if (journey && existsSync(join(dir, id, 'result.json'))) newest.set(journey, id);
+  }
+  return [...newest].map(([journey, id]) => {
+    const result = JSON.parse(readFileSync(join(dir, id, 'result.json'), 'utf8'));
+    return {
+      journey,
+      runId: id,
+      path: evidencePath(join(dir, id)),
+      test: result.test,
+      site: result.site ?? null,
+      verdict: result.verdict,
+      steps: result.steps.map((s) => s.step),
+      expectedSteps: result.expectedSteps,
+      shots: readdirSync(join(dir, id)).filter((name) => name.endsWith('.png')).sort(),
+    };
+  });
+}
+
 function proof() {
   const base = join(EVIDENCE, NETWORK_DIR);
   const run = latest(join(base, 'runs'));
@@ -947,6 +976,7 @@ function proof() {
       totals: runFile('totals.json'),
       negative: run.result.checks.filter((c) => /^(negative|deadline|unpaid|authority|credential)/.test(c.id)).map((c) => ({ id: c.id, ok: c.ok })),
     },
+    browser: browserRuns(base),
     ...suites(base),
     // LocalNet evidence, shown separately and labelled as LocalNet when the
     // app runs on another network.
