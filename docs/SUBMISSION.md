@@ -1,76 +1,76 @@
 # Submission
 
-Draft answers for the AppsFactory project page, updated 2026-10-06. Keep them inside `claims.yaml`. DevNet claims carry the label that DRAW's backend login signs for every demo seat, and LocalNet claims stay separate.
+This hackathon process record holds the draft answers for the HackCanton project page, the links, the six materials and the compliance checklist, updated 2026-10-06. The product is in the [README](../README.md) and [PRODUCT.md](PRODUCT.md), and the proof in [PROOF.md](PROOF.md). Every answer stays inside [claims.yaml](../claims.yaml), and DevNet and LocalNet facts stay apart. HackCanton runs on AppsFactory, whose project dashboard gates a submission on Mana, the platform's points, which an account earns through daily activity and burns toward a project.
 
 ## Answers
 
 Project name: DRAW
 
-Track: Track 3, Investment Infrastructure (pending owner confirmation). Its wishlist asks for "A Daml workflow for the full lifecycle of private fund subscriptions, capital calls, distributions and redemptions", and DRAW covers the capital-call part. Fallback: Track 1, Real-World Assets and Business Workflows.
+Track: Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, pending the owner's confirmation. Its wishlist asks for "A Daml workflow for the full lifecycle of private fund subscriptions, capital calls, distributions and redemptions", and DRAW covers the capital-call part. Fallback: Track 1, Real-World Assets (RWA) & Business Workflows.
 
-One-line description: Private capital calls on Canton. Each investor sees and pays only its own notice, and the fund counts money as deployable only after the settlement is read back from the ledger.
+One-line description: Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger.
 
-Problem: When a fund calls capital, each LP pays by wire and fund software attributes the wires in batches from bank exports, with partial, split, and wrong-name payments handled by hand. Money counts as in only once it clears and is reconciled, and fake capital-call notices with swapped payment details are a known fraud pattern.
+Problem: When a fund calls capital, each LP gets a notice for its share and pays by wire. Our hypothesis, from 12 public sources: fund software attributes the wires to LPs, at least one administrator in batches from a bank export the client provides, and partial, split and wrong-name payments are worked by hand. One vendor guide advises counting money only once it has cleared, and Luxembourg's Financial Intelligence Unit reports scams using fake capital call notices, which funds fight with procedures. 2 of the sources argue against, and 3 show fiat tools already handle notices and matching. No conversation with someone who runs capital calls has happened yet.
 
-Solution: DRAW issues one private obligation per LP on Canton. LPs pay with a Token Standard allocation that carries the obligation's reference. The fund's settle step checks the reference, payer, amount, and asset, moves the money, and marks the obligation funded in one transaction. A separate read-back step confirms each settlement before the dashboard counts it. Unpaid obligations stay explicit: overdue, in review, or waived with a note.
+Solution: DRAW issues one notice per LP on Canton, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. The LP pays with a Token Standard allocation that locks the exact amount. The payment carries the notice's reference, and the notice turns funded in the same transaction that moves the money, once the ledger has checked the reference, payer, amount and asset. A separate read-back step confirms each settlement before the dashboard counts it as deployable. Notices that aren't paid stay on an explicit unresolved list: overdue, in review, or waived with a note.
 
-Target customer: Emerging fund managers and the outsourced fund administrators who run their calls.
+Target customer: Our hypothesis is the fund COO or operations lead at an emerging manager, reached first through an outsourced fund administrator who runs calls for several managers. Nobody has agreed to a pilot.
 
-Business model: Hypothesis: a per-fund subscription for managers, per-call pricing for administrators. Not validated.
+Business model: A hypothesis. Managers would pay a subscription per fund, and administrators a price per call. No pricing conversation has happened and no price is set.
 
-Why Canton: On LocalNet we ran the same call on an operator database with a paid flag and tried five attacks on both. Four succeeded on the database (marking an unpaid LP funded, reading another LP's obligation, reusing a payment, counting a payment row as money). None succeeded on DRAW. Canton puts privacy below the application and makes funded a consequence of the token moving.
+Why Canton: On LocalNet we ran the same call on an operator database with a paid flag and role filtering in the app, and tried five attacks on both. Four got through the database (marking an unpaid LP funded, reading another LP's notice, reusing a payment, counting a payment row as money) and none got through DRAW. The database attacker had write access, as an operator or a compromised app server would. On Canton, privacy sits below the app, funded follows the money, and a settled payment can't be reused.
 
-Technical architecture: Daml package `draw` 0.3.0 (Fund, CapitalCall, InvestorCommitment, CapitalCallObligation, and a PaymentRequest per LP that implements the CIP-0056 AllocationRequest interface), CIP-0056 Allocation V1 through the Splice token registry, a Node API on a VPS that reads and acts as each demo party and answers only the web app, and a Next.js web app on Cloudflare Workers. An LP with its own HackCanton login can sign in on the node's Keycloak from the browser (authorization code with PKCE), and its browser then reads the ledger and pays from its own Canton wallet with its own token, while the API receives only its party id. On the shared DevNet node a backend client that NODERS issued for DRAW acts for every demo seat, and the node reports it holds rights on those five parties and nothing else. A read-back step reads every settlement from the ledger before it counts. On LocalNet it has its own read-only login. On DevNet the scripted run gave it a client of its own, which the ledger refused as the fund but which isn't read-only, and the live site reads back with the backend client.
+Technical architecture: Daml package `draw` 0.3.0, with Fund, CapitalCall, InvestorCommitment, CapitalCallObligation, and a PaymentRequest per LP that implements the CIP-0056 AllocationRequest interface. Settlement goes through CIP-0056 Allocation V1 and the Splice token registry. A Node API runs on a VPS and a Next.js web app on Cloudflare Workers. An LP with its own HackCanton login can sign in from the browser, read its notices and pay from its own Canton wallet with its own token, and DRAW's server never receives that token. Who signs for each party on each network is in [ARCHITECTURE.md](ARCHITECTURE.md) and [LIMITATIONS.md](LIMITATIONS.md).
 
-Working demo: Live on the HackCanton DevNet node at https://draw.timjosh507.workers.dev, settling in Canton Coin from the DevNet faucet, with DRAW's backend client signing for every demo seat. The scripted DevNet run on package 0.3.0 passed 82 of 82 checks. In it each LP's call also reached it as a CIP-0056 AllocationRequest, which other LPs and outsiders couldn't see, and LP A paid by creating the allocation from that request, the same factory call a wallet makes, through the backend client. On the live site an LP with its own HackCanton login can also join a demo fund as itself: it signs in on the node's Keycloak, its browser reads its notices with its own token, it accepts with that login, and it pays from its own Canton wallet, either from DRAW or by pressing Accept on the request in the node's Canton Coin wallet. DRAW's server never receives its token, and in the newest runs it held nothing that could act for the LP's party. Every run of that used the team's own login as the LP. On Splice LocalNet, each party has its own login, and in a separate run each party signs with its own key (76 of 76). LocalNet also ran 100 generated calls with no false funding or privacy leaks, and an ablation against a database with a paid flag. See `docs/PROOF.md`.
+Working demo: Live at https://draw.timjosh507.workers.dev. DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat. Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario. [The scripted DevNet run](../evidence/devnet/runs/20261006T131900Z) on package 0.3.0 passed 82 of 82 checks, plus one credential check skipped with its reason recorded. On the live site an LP can also sign in with its own HackCanton login and pay from its own Canton wallet, and every run of that used the team's own login as the LP. On LocalNet, in a run where each party signs with its own key, 76 of 76 checks passed, and with a separate ledger login per party 100 seeded calls ran with 0 false fundings and 0 privacy violations. The proof is in [PROOF.md](PROOF.md) and the limits in [LIMITATIONS.md](LIMITATIONS.md).
 
 AI use: DRAW was built with AI-assisted tools (Claude Code) for code, tests and documentation. The author directed the work and is responsible for all of it.
 
-Pilot plan: Shadow one real call with an administrator, then a controlled test settlement with two or three LPs, then the integrations a real pilot needs (`docs/PILOT_PLAN.md`).
+Pilot plan: Shadow one real call with no money moving, then a small test settlement with two or three LPs, then the integrations a real pilot needs ([PILOT_PLAN.md](PILOT_PLAN.md)). Nobody has agreed to a pilot yet.
 
-Post-hackathon plan: On DevNet, a read-only login for the read-back step and LPs that hold their own keys, both through the node operator, and a sign-in run with a second person's login. TestNet with USDCx, which needs Tokenomics Committee approval. Sign-in for every seat, so the server holds no seat's credentials, automatic settlement on a matching payment, and conversations with fund administrators to test the problem.
+Post-hackathon plan: Conversations and usability tests first, then the shadow pilot of one real call. On DevNet, a read-only read-back client, a sign-in run with a second person's login, and LP-held keys, which need NODERS or a second person. Sign-in for every seat, the fund manager included. Automatic settlement on a matching payment. TestNet with USDCx, which needs Tokenomics Committee approval, then MainNet. Export to the administrator's system, and a scheduler for overdue.
 
 ## Links
 
-| Item | Where |
+| Item | Status on 2026-10-06 |
 |---|---|
 | Live demo, DevNet | https://draw.timjosh507.workers.dev |
 | Proof page | https://draw.timjosh507.workers.dev/proof |
-| Repository | Public URL added when the repository is published |
-| Demo video | Link added at submission |
-| Deck | v1 draft at [`docs/pitch/DRAW-deck.pdf`](pitch/DRAW-deck.pdf), not yet reviewed |
-| Demo access code | Printed on the live site's landing page and filled in whenever the site asks for it |
+| Repository | Not public yet, and the repository has no git remote. The URL goes here once it's published |
+| Demo video | Not recorded yet. The link goes here at submission |
+| Deck | A v1 draft, not linked yet. Its source, [deck.html](pitch/deck.html), needs these fixes, each checked against [claims.yaml](../claims.yaml). Slide 8 still shows the older DevNet run's timing figures (lines 785 and 792). Slide 2 names a vendor (line 513) and says funds treat money as in only once it has cleared and been reconciled (line 520), which its one vendor source doesn't support. The slide 1 headline, "Capital calls only the right investor can read." (line 466), leaves out the fund and the node operator, who can read every notice. Slide 3 says "In most small funds, operations issues the call itself" (line 560), which no source on file supports. Slide 7 states as fact that the Canton Coin leg shows up in Scan (line 740), which claims.yaml says is inferred from the docs and unchecked. Suggested text: slide 1 "Each LP reads and pays only its own notice.", slide 3 "Our assumption: at a small fund, operations issues the call itself.", slide 7 "Per the Scan docs, the Canton Coin leg shows up in Scan under a random reference (not checked against Scan)." Then the PDF gets re-exported, and only then linked |
+| Demo access code | The site doesn't print it. Its `/api/config` returned no code on 2026-10-06. Open decision: set `DRAW_ACCESS_CODE_PUBLIC=true` on the API so the landing page prints it, or give the code in the submission form. The code itself never goes in a tracked file |
 
 ## The six materials
 
-The project dashboard asks for six uploads: Value, ICP, Metrics, GTM, Demo and Pitch. Each matches one judging criterion. Drafts of all six are in `docs/pitch/materials/` and haven't been reviewed yet.
+The project dashboard asks for six uploads: Value, ICP, Metrics, GTM, Demo and Pitch. Each matches one judging criterion. Drafts of all six are in [docs/pitch/materials/](pitch/materials) and haven't been reviewed yet.
 
 | Material | Criterion | What judges look for | File |
 |---|---|---|---|
-| Value | Value / Problem Statement | Clarity of the problem, why it matters and why now | [`docs/pitch/materials/value.md`](pitch/materials/value.md) |
-| ICP | ICP / Audience | Specificity and understanding of the target user | [`docs/pitch/materials/icp.md`](pitch/materials/icp.md) |
-| Metrics | Metrics / Validation | Evidence from user research, interviews, tests and key metrics | [`docs/pitch/materials/metrics.md`](pitch/materials/metrics.md) |
-| GTM | GTM Materials | Plausibility of the distribution strategy and audience fit | [`docs/pitch/materials/gtm.md`](pitch/materials/gtm.md) |
-| Demo | MVP Materials | Working prototype, code quality and depth of Canton integration | [`docs/pitch/materials/demo.md`](pitch/materials/demo.md) |
-| Pitch | Pitch Materials | Quality and conciseness of the overall presentation | [`docs/pitch/materials/pitch.md`](pitch/materials/pitch.md), with the deck and the video |
+| Value | Value / Problem Statement | Clarity of the problem, why it matters and why now | [value.md](pitch/materials/value.md) |
+| ICP | ICP / Audience | Specificity and understanding of the target user | [icp.md](pitch/materials/icp.md) |
+| Metrics | Metrics / Validation | Evidence from user research, interviews, tests and key metrics | [metrics.md](pitch/materials/metrics.md) |
+| GTM | GTM Materials | Plausibility of the distribution strategy and audience fit | [gtm.md](pitch/materials/gtm.md) |
+| Demo | MVP Materials | Working prototype, code quality and depth of Canton integration | [demo.md](pitch/materials/demo.md) |
+| Pitch | Pitch Materials | Quality and conciseness of the overall presentation | [pitch.md](pitch/materials/pitch.md), with the deck and the video |
 
 ## Compliance checklist
 
-From the Season 3 rules and the plan's eligibility workstream. Status as of 2026-10-06.
+From the Season 3 rules.
 
-| Requirement | Status | Owner |
-|---|---|---|
-| Submitted by 2026-10-09 23:59 UTC. Aim for 18:00 UTC. Nothing changed after the deadline counts | Open | Owner |
-| Public repository with all code and a README describing the project | README drafted. Not published yet. On 2026-10-06 gitleaks 8.30.1 and a check for every `.env` value found nothing in the 45 commits up to `94ffc14`. The files not yet committed, including `docs/pitch/`, have to be committed, and the scan re-run on the release commit at the freeze, with its id and date recorded in `SECURITY.md`. A license still has to be chosen | Owner approves, agent pushes |
-| Demo: working prototype, live demo or recorded video, at most 5 minutes | Live site works. Video not recorded | Owner records, agent edits |
-| Pitch materials: problem and why it matters, solution and how Canton is used, target users and go-to-market, key metrics or validation | Deck v1 draft at `docs/pitch/DRAW-deck.pdf`, not yet reviewed. Drafts of the six materials in `docs/pitch/materials/`. The README links the deck once it passes the `claims.yaml` parity check and `docs/pitch/` is committed | Agent drafts, owner reviews |
-| One track, selected at submission | Track 3 proposed, pending owner confirmation | Owner |
-| 1,000 Mana burned toward the project | 100 of 1,000 on 2026-10-04. Ask AppsFactory whether bought Mana counts (plan question Q1) before buying any | Owner |
-| Completed project profile: description, team information, track | Open | Owner |
-| Non-empty journal, ideally an entry every day | One entry as of 2026-10-04. Plan: one a day from 2026-10-06 | Owner posts, agent drafts |
-| Everything public: no private links, "request access" pages or files judges can't open | The live site is open to read. Actions need the access code, and the README says the site prints it. That is true only once the API runs with `DRAW_ACCESS_CODE_PUBLIC=true`, so check the landing page in a private window after deploying. Plan question Q2 asks AppsFactory whether a printed code still counts as a "request access" page. Check every link in a private window before submitting | Owner |
-| Meaningful Canton integration | DevNet run 82 of 82 on package 0.3.0, live web app, CIP-0056 settlement, a CIP-0056 AllocationRequest per LP, and an LP signed in on the node's Keycloak paying from its own Canton wallet | Done |
-| AI-assisted tools used transparently | Disclosed in the README and above | Done |
-| No inflated activity or Mana | No Mana bought before AppsFactory answers | Owner |
-| Teammates only if registered by 2026-09-17 | Single author | Done |
-| LocalNet and DevNet claims labelled separately, nothing beyond `claims.yaml` | README, docs and claims synced 2026-10-06. Deck, materials, video and web copy still to check at the freeze | Agent |
+| Requirement | Status on 2026-10-06 |
+|---|---|
+| Submitted by 2026-10-09 23:59 UTC. Aim for 18:00 UTC. Nothing changed after the deadline counts | Open |
+| Public repository with all code and a README describing the project | Open. Not published yet, with no git remote and no LICENSE file, so a license still has to be chosen. On 2026-10-06 gitleaks 8.30.1 and a check for every `.env` value found nothing in the 45 commits up to `94ffc14`. The repository now has 68 commits, up to `515569d`, so both scans have to be re-run on the release commit at the freeze, with its id and date recorded in [SECURITY.md](SECURITY.md) |
+| Demo: working prototype, live demo or recorded video, at most 5 minutes | The live site works. The video isn't recorded yet |
+| Pitch materials: problem and why it matters, solution and how Canton is used, target users and go-to-market, key metrics or validation | Drafts of the six materials, not yet reviewed. The deck draft needs the fixes listed under Links and a check against [claims.yaml](../claims.yaml) before the README links it |
+| One track, selected at submission | Track 3 proposed, pending the owner's confirmation |
+| 1,000 Mana burned toward the project | 100 of 1,000 on 2026-10-04. The rules add that 1,000 Mana "requires at least 10 days of daily activity on the platform", and the deadline is 2026-10-09, so this is an eligibility risk. The account's days of activity aren't recorded here and need checking on the dashboard. Before buying any Mana, ask AppsFactory about the 10-day condition and whether bought Mana counts |
+| Completed project profile: description, team information, track | Open |
+| Non-empty journal, ideally an entry every day | One entry as of 2026-10-04. The plan is one a day from 2026-10-06 |
+| Everything public: no private links, "request access" pages or files judges can't open | Open. The live site and the proof page are open to read, and actions need the access code (see Links). Question for AppsFactory: does an access code that the site prints still count as a "request access" page? Check every link in a private window before submitting |
+| Meaningful Canton integration | Done. The scripted DevNet run passed 82 of 82 on package 0.3.0, the live web app settles through CIP-0056, each LP gets a CIP-0056 AllocationRequest, and an LP signed in on the node's Keycloak paid from its own Canton wallet, with the team's own login |
+| AI-assisted tools used transparently | Done. Disclosed in the README, in the AI use answer above and in [HACKATHON_DELTA.md](HACKATHON_DELTA.md) |
+| No inflated activity or Mana | No Mana bought before AppsFactory answers |
+| Teammates only if registered by 2026-09-17 | Done. Single author |
+| LocalNet and DevNet claims labeled separately, nothing beyond claims.yaml | README, docs and [claims.yaml](../claims.yaml) synced on 2026-10-06. The deck, the materials, the video and the web copy still need the same check at the freeze. Five web lines on the live landing page are already known. The headline "Capital calls only the right investor can read." leaves out the fund and the node operator. The privacy tile "A notice is a contract only the fund and that LP can read" leaves out the node operator. Step 05's actor is labeled "Verifier", one of the failure words in [JUDGE_NOTE.md](JUDGE_NOTE.md). The FAQ answer to "Can I pay from a real Canton wallet?", "On DevNet, yes.", has no team-login caveat. The FAQ says notices "don't appear in the network's Scan service" as fact, which claims.yaml marks as inferred from the docs and unchecked. The deck's fixes are listed under Links |

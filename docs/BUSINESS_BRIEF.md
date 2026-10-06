@@ -1,62 +1,99 @@
 # Business brief
 
-DRAW: private capital calls on Canton. Each investor sees and funds only its own obligation. The fund sees how much called capital is actually deployable, and what is still unresolved.
+Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger.
+
+This is the one-page business case, written for fund people and for judges scoring value, audience and go-to-market. The product itself, step by step, is in [PRODUCT.md](PRODUCT.md), and the words are defined in [the glossary](README.md#words-used-in-these-docs).
 
 ## Problem
 
-A fund calls capital from its investors (LPs). Each LP gets a notice for its own share and pays by wire. Today's fund software attributes those wires to investors, but in batches from bank exports, with partial, split, and wrong-name payments handled by hand. Funds count money as in only once it has cleared and been reconciled, and fake capital-call notices with swapped payment details are a known fraud pattern that funds fight with procedures, because the payment itself carries no check. Existing tools (Carta, Juniper Square, Finologee) cover notices and attribution on bank rails. The gaps are batch matching, manual exceptions, and payment instructions that can be forged.
+When a fund calls capital, each LP gets a notice for its share and pays by wire, and the fund matches each wire to an LP and a call. At least one fund administration vendor matches payments in batches from bank exports the client provides [10]. Partial, split and wrong-name payments are reconciled by hand [9, 11]. One vendor guide, partly marketing, advises counting money only once it has cleared: "Admit only when the sheet says cleared" [9]. Fake capital call notices are a known fraud, and funds fight it with procedures such as dual approval and daily reconciliation, outside the payment itself [6, 7, 8].
 
-DRAW makes the obligation and the payment the same record: the payment carries the obligation's reference in a field the ledger checks, and the obligation becomes funded in the transaction that moves the money.
+Fund administration software already issues notices and attributes payments on bank rails [10, 11, 12]. The gaps DRAW goes after are batch matching, manual exceptions, and payment instructions that can be forged.
 
-This is a hypothesis built from public process descriptions (`PROBLEM_EVIDENCE.md`). No fund operator has confirmed it to us yet.
+This is a hypothesis built from 12 public sources. No fund operator has confirmed it yet. Numbers in brackets are sources in [PROBLEM_EVIDENCE.md](PROBLEM_EVIDENCE.md), which also lists the 2 sources that argue against it.
 
-## Who it is for
+## Who it's for
 
-- User: the fund COO or operations lead of an emerging manager, or an outsourced fund administrator running calls for several managers.
-- Counterparty: each LP, who gets a private notice and a clear answer on whether its payment counted.
-- Payer: the manager or the administrator. The manager pays for an accurate deployable figure. The administrator pays for less matching work across clients.
+- User: we built DRAW for the fund COO or operations lead at an emerging manager, a newer and smaller fund manager. This person issues the call, matches wires to LPs, chases late payers and reports funded versus outstanding. We also built it for an outsourced fund administrator that runs calls for several emerging managers. That this is the right first user is our hypothesis, from public sources.
+- Counterparty: each LP. It gets a private notice and a clear answer: verified funded with a 14-check receipt, or refused with a reason.
+- Payer, a hypothesis: the manager, as a subscription per fund, for a deployable figure tied to verified settlement and an explicit unresolved list. Or the administrator, per call, for less matching work across its clients. User and payer differ when an administrator runs the call.
+- First customer, a hypothesis: one emerging manager, or one administrator running calls for a manager, with 2 to 5 LPs. Nobody has agreed to a pilot.
+- Not a fit yet, also a hypothesis: funds whose LPs can't hold a Canton party or tokenized cash, which is the real cold-start cost ([FIRST_UNIT_VALUE.md](FIRST_UNIT_VALUE.md)), and anyone shopping for accounting, NAV, KYC or investor reporting.
 
-## Current workflow
-
-Notice from a spreadsheet or admin system, email, wire, manual matching, a spreadsheet update, email follow-up, and a report of funded versus outstanding.
+We don't set an LP-count band, calls per year or a market size yet. The interviews will supply the inputs, and the sizing method is in [pitch/materials/icp.md](pitch/materials/icp.md).
 
 ## What DRAW does
 
-One call creates one private obligation per LP. The LP pays with a Canton token allocation that carries the obligation's reference. The fund's settle step moves the money and marks the obligation funded in the same transaction, refusing anything that doesn't match exactly. A separate read-back step confirms each settlement before it counts. On LocalNet it runs with its own read-only login. On the shared DevNet node the scripted run gave it a login of its own, which the ledger refused as the fund but which isn't read-only, and the live site runs it with the same backend login as the demo seats. Unpaid obligations stay visible as overdue, in review, or waived with a note.
+The fund issues a call once, and each LP gets its own notice, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. The LP pays from its Canton wallet by locking the exact amount in a Token Standard allocation that carries the notice's reference. When the fund settles, the ledger checks the payment against the notice and refuses anything that doesn't match exactly. The payment carries the notice's reference, and the notice turns funded in the same transaction that moves the money. A separate read-back step then confirms the settlement on the ledger with 14 checks, and only then does the dashboard count the money as deployable. Anything unpaid stays on an explicit unresolved list until it's paid or waived, and the fund can mark it overdue after the due time or send it to review with a note.
+
+An LP needs a Canton party, holdings in the settlement asset and a wallet whose validator has vetted DRAW's package. An LP that pays by wire still gets a private notice, but nothing in DRAW can mark a wire funded, so that notice stays unresolved or goes to review. [PRODUCT.md](PRODUCT.md) walks through each step from both sides.
 
 ## Why now
 
-Canton's Token Standard (CIP-0056) gives a common way to lock a payment for a specific settlement, with the reference inside the payment. USDCx, which represents USDC deposited with Circle's xReserve, is a CIP-0056 token on Canton, and its registry lists the same allocation API DRAW settles through. That makes a dollar settlement rail that funds and LPs could plausibly share. DRAW hasn't run with USDCx yet.
+- Canton's Token Standard (CIP-0056) gives a common way to lock a payment for one settlement with the reference inside it. DRAW settles through its allocation API.
+- USDCx represents USDC deposited into Circle's xReserve, and is a CIP-0056 token documented for TestNet and MainNet. Its MainNet registry metadata lists `splice-api-token-allocation-v1`, the allocation API DRAW settles through. DRAW hasn't run with USDCx. Our hypothesis is that this could give funds and LPs a dollar rail they share.
+- The industry is standardizing what a notice contains. ILPA released v2.0 of its capital call and distribution template in September 2025 [1, 2].
 
 ## Why Canton
 
-Two things a normal database with a paid flag can't give, both shown in our ablation run on LocalNet:
+On LocalNet we ran the same $1,000,000 scenario call twice, once on an operator database with a paid flag and role filtering in the app, and once on DRAW, and tried five attacks on both. The database attacker had write access, as an operator or a compromised app server would. 4 of 5 attacks got through the database and 0 of 5 got through DRAW. The four were marking an unpaid LP funded, reading another LP's notice, reusing one payment for another notice, and counting a payment row as money. Both systems stopped an LP from changing its own notice, and on the honest path both reported $750,000 funded and $250,000 unresolved.
 
-1. LP A's own ledger view can't return LP B's obligation, whatever the application code does.
-2. An obligation becomes funded only when the money moves, and a payment can't be reused.
+A database does some of this just as well. It shows the fund every notice, computes totals when nobody misbehaves, and keeps LPs from writing.
 
-On a fully public ledger every LP would see every other LP's commitment share and payment status.
+What Canton changes is narrow. A query run as LP A never returns LP B's notice, even by contract id, so a missing filter in a read path that runs as LP A can't leak it. That was shown on LocalNet with a separate ledger login per party. On DevNet the demo seats share one backend client, so there the app picks which party to read as, and the DevNet runs show party-scoped reads and transaction streams that hold only each party's own records. The notice turns funded only in the transaction that moves the token, and that transfer needs the LP's prior consent, since the LP creates the payment. A settled payment is consumed, so it can't be reused.
+
+On a public chain with USDC, every participant, other LPs included, would get each LP's address, which ties together all of that LP's calls, with its amount due, commitment share, due date and paid or overdue state. That's the LP book. We read those fields off DRAW's own notice contract and didn't run that comparison.
+
+Canton doesn't hide LPs from their own fund. Today one node operator hosts every LP, on DevNet and on LocalNet, and can read them all, so production needs each LP on its own validator or with a provider it trusts. [CANTON_ABLATION.md](CANTON_ABLATION.md) has the full comparison.
 
 ## Working today
 
-- On the HackCanton DevNet node, with Canton Coin from the DevNet faucet: the full call in a scripted run (82 of 82 checks on package 0.3.0), with per-party reads and transaction streams that hold only each party's own records, bad payments refused, the unpaid LP overdue, and totals that match the coin received. A backend client that NODERS issued for DRAW acts for every demo party there, and the node reports it holds rights on those five parties and nothing else.
-- Each LP's call also reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation. On DevNet, LP A paid by creating the allocation from that request, the same factory call a wallet makes, through the backend client in the newest run and the shared login before it.
-- A live web app on that node: take a seat, issue a call, pay, see that another LP gets nothing from your notice link, settle, and see it verified. Each browser gets its own demo fund.
-- An LP with its own HackCanton login can join as itself. It signs in on the node's Keycloak from the browser, reads its notices with its own token, accepts with that login, and pays from its own Canton wallet, either from DRAW or with Accept in the node's Canton Coin wallet. DRAW's server never receives its token, and in the newest runs it held nothing that could act for the LP's party. Every run used the team's own login as the LP.
-- On Splice LocalNet with Amulet: the same lifecycle with a separate login per party, a run where every party signs with its own key (76 of 76 checks), 100 generated calls with no false funding or leaks, and the ablation.
+The DevNet items below carry the label "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat." They settle in Canton Coin from the DevNet faucet. Dollar figures are the scenario, and neither Canton Coin nor LocalNet's Amulet has monetary value.
 
-## Roadmap
+- DevNet, scripted run: the full call on package 0.3.0 passed 82 of 82 checks, plus 1 credential check skipped with its reason recorded. Two LPs settled, bad payments were refused, the unpaid LP went overdue after the due time, and the fund's totals matched the coin it received.
+- DevNet, the live site at https://draw.timjosh507.workers.dev: take a seat, issue a call, pay, see that another LP's ledger returns nothing for your notice link, settle, and see it verified funded. Each browser gets its own demo fund.
+- DevNet, sign-in: an LP signs in with its own HackCanton login, reads its notices with its own token, and pays from its own Canton wallet, from DRAW or with Accept in the node's Canton Coin wallet. DRAW's server never receives its token. Every run used the team's own login as the LP.
+- LocalNet: the same lifecycle with a separate ledger login per party and a read-back login that can't submit, 100 seeded calls with 0 false fundings and 0 privacy violations, and the database comparison. In a separate run each party signed with its own key, 76 of 76 checks. Every LocalNet run used package 0.2.0 or earlier.
 
-On DevNet, a read-only login for the read-back step and LPs holding their own keys, both of which need the node operator, and a sign-in run with a second person's login. NODERS has been asked to take the team's personal party off the read-back client. Then TestNet with USDCx, which needs Tokenomics Committee approval. Sign-in for every seat, so the app server holds no seat's credentials. Automatic settlement when a matching payment arrives. Export to the administrator's existing system.
+Every caveat, by network, is in [LIMITATIONS.md](LIMITATIONS.md).
+
+## Pilot and first channel
+
+Our first channel is one outsourced fund administrator serving several emerging managers, since one relationship reaches several funds. Then the COO or operations lead at managers who run their own calls. Later, LPs that already hold Canton assets, and nobody knows yet how many exist. All of this is a hypothesis we're testing.
+
+The channels we'll test:
+
+- Direct outreach to fund operations people and administrators, asking for 20 minutes about their last call, with no pitch.
+- Introductions, where we can get them, to whoever runs a fund's calls.
+- Canton ecosystem events, and institutions already on the network.
+- The live demo, sent only after a conversation.
+
+Every interview ends with one question: what would you need to try DRAW on one real call, with no money moving? [pitch/materials/gtm.md](pitch/materials/gtm.md) has the full plan.
+
+The first step is stage 1 of [PILOT_PLAN.md](PILOT_PLAN.md): shadow one real call with no money moving, with wires still matched by hand and recorded in DRAW with a note, and continue only if the operations lead would run the next call from DRAW and at least one LP says it would pay a call on Canton. Stage 1 needs no LP to hold a Canton party.
 
 ## Pricing hypothesis
 
-Unvalidated. A per-fund subscription for managers, with per-call pricing for administrators who serve many small funds. No pricing conversation has happened.
+Unvalidated. A subscription per fund for managers, and a price per call for administrators who serve many small funds. No pricing conversation has happened, and no price is set.
 
-## Initial distribution
+On network cost, CIP-0078 eliminated transfer and lock fees for Canton Coin. Traffic and holding fees remain, and DRAW hasn't measured traffic cost.
 
-One outsourced fund administrator serving several emerging managers, since one relationship reaches several funds. The first step is a shadow run of one real call with no money moving (`PILOT_PLAN.md`).
+## Roadmap
+
+In this order:
+
+1. Conversations with people who run capital calls, and usability tests on the live site.
+2. The shadow pilot of one real call.
+3. On DevNet, a read-only read-back client, a sign-in run with a second person's login, and LPs holding their own keys. These need NODERS or a second person.
+4. Sign-in for every seat, the fund manager included.
+5. Automatic settlement when a matching payment arrives.
+6. TestNet with USDCx, then MainNet.
+7. Export to the administrator's system.
+8. A scheduler for overdue.
+9. Opaque party ids for new parties.
+
+The ask: an introduction to someone who'd shadow one real call, and help getting onto TestNet.
 
 ## Not claimed
 
-No customers, no pilots, no partnerships, no real money moved, nothing on MainNet, no settlement in USDCx.
+No customers, pilots, partners or letters of intent. No real money moved, nothing on MainNet, no settlement in USDCx. No conversation with a fund operator and no usability test with an outside person is on file yet.

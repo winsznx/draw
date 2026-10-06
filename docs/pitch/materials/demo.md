@@ -1,45 +1,59 @@
 # Demo
 
+The Demo material, for the MVP criterion. It's for judges who want to use DRAW on the live site and then check what they saw against the evidence. DRAW is private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger.
+
 ## Links
 
 | | |
 |---|---|
 | Live demo | https://draw.timjosh507.workers.dev |
 | Proof page | https://draw.timjosh507.workers.dev/proof |
-| Video | To add once it's published |
-| Repository | To add once the public GitHub repo exists |
-| Deck | [`docs/pitch/DRAW-deck.pdf`](../DRAW-deck.pdf) |
+| The product, step by step | [PRODUCT.md](../../PRODUCT.md) |
+| How to check each claim | [PROOF.md](../../PROOF.md) |
+| Every claim, with its network and limits | [claims.yaml](../../../claims.yaml) |
+| Pitch and deck | [pitch.md](pitch.md) |
+
+The video and the public repository link are added at submission, and [SUBMISSION.md](../../SUBMISSION.md) tracks both.
 
 ## What you're looking at
 
 - DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat.
 - Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.
 
-The live site runs on the HackCanton DevNet node. Every screen reads the ledger as the seat you chose, and the seat card in the bottom left shows that party. A backend client that NODERS issued for DRAW signs for every demo seat. If you have a HackCanton login, you can also join as an LP yourself (see below). A separate login per party, and a key held by each party, are shown on LocalNet (see the last section).
+The live site runs on the HackCanton DevNet node. You take a seat as the fund manager or as one of three LPs, and every screen reads the ledger as that seat's party. The seat card in the bottom left shows which party it is. A backend client that NODERS issued for DRAW signs for every demo seat. If you have a HackCanton login, you can also join as an LP yourself, as the section on sign-in below describes. A separate login per party, and a key held by each party, are shown on LocalNet.
 
-Anyone can read the site. Issuing, paying and settling need the demo access code. Where to find it: to add before submission, on the landing page or in the submission text.
+Each browser gets its own demo fund. The demo funds share the same five parties, the fund, three LPs and an unrelated party, so keeping one browser out of another's fund is the app's doing, and keeping each LP out of the others' records is the ledger's.
 
-## The 3-minute tour
+Every action, starting with "Create the demo fund", needs the demo access code, which the site asks for once. The site doesn't print the code, so without it a new browser can't start a demo fund and its seats stay empty. Reading needs no code: the proof page, which shows the newest run of the core of this tour step by step with screenshots, and every seat of a demo fund the browser has already started.
 
-Each browser gets its own demo fund, so you never share one with another visitor. If an LP's balance is short at any point, "Add test CC" on its seat card taps the DevNet faucet.
+## The tour
 
-1. Open https://draw.timjosh507.workers.dev and click "Take a seat in the demo fund". If the page says this browser has no demo fund yet, click "Create the demo fund" and wait about a minute. Choose LP A, enter the access code, open the app, and click "Accept commitment".
-2. Click "Switch seat" and choose Fund manager. Click "Create capital call". LP A comes prefilled at $400,000, paid as 40 CC. Only LPs that have accepted appear, so accept LP B and LP C from their own seats first if you want the full $1,000,000 call. Click "Issue capital call".
-3. Switch seat to LP A. Open the notice for your call and click Pay. Copy the page address.
-4. Switch seat to LP B and open LP A's notice address. LP B's own ledger query returns nothing, so the page says "Not on your ledger".
-5. Switch seat back to Fund manager, open the call and click Settle. Once the read-back step agrees, the notice shows Funded, and LP A's notice says "Verified funded" with 14 of 14 checks.
+1. Open https://draw.timjosh507.workers.dev and click "Take a seat in the demo fund". If this browser has no demo fund yet, click "Create the demo fund", enter the access code when asked, and wait about a minute while it funds each LP with test Canton Coin and sends the invitations.
+2. Choose LP A, click Continue, enter the access code if the site asks for it, click "Open the app", then "Accept commitment". Click "Switch seat" and do the same as LP B and as LP C. The call form lists only LPs that have accepted.
+3. Switch seat to Fund manager and click "Create capital call". A new fund's first call comes prefilled: LP A $400,000 as 40 CC, LP B $350,000 as 35 CC, LP C $250,000 as 25 CC. The due time defaults to 10 minutes ahead. Click "Issue capital call".
+4. Switch seat to LP A, open the notice under "Your notices" and click "Pay 40 CC". The notice says the payment is locked for the fund. Copy the page address.
+5. Switch seat to LP B and open LP A's address. The ledger query made as LP B returns nothing, so the page says "Not on your ledger". Then open LP B's own notice and pay it. Optional: first click "Pay a different amount" and pay 30. The notice says it doesn't match, and the fund gets no Settle button for it. Click Withdraw, then "Pay 35 CC".
+6. Switch seat to Fund manager, open Calls, then the call, and click "Settle 40 CC" and "Settle 35 CC". Once the read-back step agrees, the notices show Funded, LP A's notice says "Verified funded" with 14 of 14 checks, Deployable now counts both payments, and LP C's $250,000 stays unresolved.
+7. Optional: once the due time has passed, LP C shows under "Needs your attention". Click "Mark overdue".
+8. Optional, with a HackCanton login whose party is onboarded in the node's Canton Coin wallet (open that wallet once): click "Sign in with HackCanton", then "Join as an LP" and "Accept commitment". As Fund manager, issue the HackCanton LP a call. Back as that LP, pay from DRAW, or press Accept on the request under Allocations in the node's Canton Coin wallet. As Fund manager, settle. The notice shows "Verified funded". Every run of this used the team's own login as the LP. The sign-in section below has the exact buttons and what the server can and can't see.
+
+"Add test CC" on a seat card taps the DevNet faucet when a balance is short. By default the site starts at most 3 new demo funds per visitor per hour and 20 overall. If it can't start one, the proof page shows the newest run of this journey, step by step with screenshots, and needs no code.
 
 ## What each step shows
 
-| Step | What it proves | Backed by |
+| Step | What it shows | Evidence |
 |---|---|---|
-| Issue | One action creates a separate notice per LP, each a contract that other LPs can't read | `web-journey-devnet` in `claims.yaml` |
-| Pay | The LP locks the exact amount in a Token Standard allocation carrying the notice's reference. Nothing has moved yet | same |
-| LP B opens LP A's link | LP B's ledger query returns nothing for LP A's notice | DevNet run: party-scoped reads and transaction streams, `evidence/devnet/runs/20261006T131900Z/streams.json` |
-| Settle | The coin moves and the notice turns funded in one transaction | `evidence/devnet/runs/20261006T131900Z/receipt-lpA.json` |
-| Verified funded | A separate read-back step checked the settlement (14 checks) before it counted. On the live site it reads with the same backend login. In the scripted DevNet run it used a client of its own, which the ledger refused when it tried to act as the fund | same receipt |
+| Issue | One action creates a separate notice per LP, a contract between the fund and that LP that no other LP or unrelated party can read | `web-journey-devnet` in [claims.yaml](../../../claims.yaml), [screenshot](../../../evidence/devnet/browser/web-journey-20261006132858/03-call-issued.png) |
+| Pay | The LP locks the exact amount in a Token Standard allocation carrying the notice's reference. Nothing has moved yet, and it doesn't count | [screenshot](../../../evidence/devnet/browser/web-journey-20261006132858/04-lp-paid.png) |
+| LP B opens LP A's link | The ledger query made as LP B returns nothing for LP A's notice. The demo seats share one backend client, so the app picks which party to read as, and the ledger answers only for that party. A separate login per party was tested on LocalNet | [screenshot](../../../evidence/devnet/browser/web-journey-20261006132858/05-lpb-cannot-read.png), and the party-scoped reads and transaction streams in [the scripted DevNet run](../../../evidence/devnet/runs/20261006T131900Z/streams.json) |
+| A wrong amount, optional | Only the exact amount settles. The app gives the fund no Settle button, and when the scripted DevNet run tried anyway the ledger refused with "allocation amount does not equal amount due" | the `negative` checks in [the scripted DevNet run](../../../evidence/devnet/runs/20261006T131900Z/result.json) |
+| Settle | In one transaction the ledger checks the reference, leg id, executor, payer, receiver, instrument and exact amount, moves the coin to the fund, and marks the notice funded | [screenshot](../../../evidence/devnet/browser/web-journey-20261006132858/06-settled.png), [LP A's receipt from the scripted DevNet run](../../../evidence/devnet/runs/20261006T131900Z/receipt-lpA.json) |
+| Verified funded | A separate read-back step read the settlement and the fund's holdings and ran 14 checks before the money counted. On the live site it reads with the same backend client as the seats. In the scripted DevNet run it used a client of its own, which the ledger refused when it tried to act as the fund | [screenshot](../../../evidence/devnet/browser/web-journey-20261006132858/07-lp-verified.png), the same receipt |
+| Mark overdue, optional | Before the due time the ledger refuses with "obligation is not yet due". After it the fund marks LP C overdue, and LP C stays unresolved | the `deadline` and `unpaid` checks in [the scripted DevNet run](../../../evidence/devnet/runs/20261006T131900Z/result.json) |
 
-The same journey passed in a scripted browser against the live site on 2026-10-06, 10 of 10 steps, including a second browser that gets its own demo fund: `evidence/devnet/browser/web-journey-20261006091011/result.json`, again on the release with sign-in: `evidence/devnet/browser/web-journey-20261006101224/result.json`, and again with the demo seats on the backend client: `evidence/devnet/browser/web-journey-20261006132858/result.json`. It passed 8 of 8 steps on 2026-10-05, before each browser had its own fund.
+The screenshots are from the live-site browser run on 2026-10-06, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat. The network note shows in each screen.
+
+A script has run the core of this journey (issue, LP A pays, LP B gets nothing from LP A's link, settle, verified funded) in a real browser against the live site nine times. Five passed, and four failed on test bugs, each kept with a note and listed in [GATES.md](../../GATES.md#failed-and-aborted-runs). The optional wrong-amount and overdue steps haven't run in a browser on DevNet. The newest pass, [10 of 10 steps with the demo seats on the backend client](../../../evidence/devnet/browser/web-journey-20261006132858/result.json), includes a second browser that starts without a demo fund. Before it, on the shared hackathon login: [10 of 10 with a demo fund per browser](../../../evidence/devnet/browser/web-journey-20261006091011/result.json) and [10 of 10 on the release with sign-in](../../../evidence/devnet/browser/web-journey-20261006101224/result.json) on 2026-10-06, [8 of 8 on the redesigned app](../../../evidence/devnet/browser/web-journey-20261005214111/result.json) and [the first run](../../../evidence/devnet/browser/web-20261005003221/result.json) on 2026-10-05.
 
 ## Have a HackCanton login? Join as an LP yourself
 
@@ -50,34 +64,41 @@ Your login's party has to be onboarded in the node's Canton Coin wallet first, w
 3. Back on the seat screen, click "Continue as HackCanton LP" and open the notice. Pay it from DRAW, which asks your own Canton wallet to lock the coin, or click "Approve it in your Canton wallet" and press Accept on the capital call under Allocations.
 4. As Fund manager, settle it. Your notice then shows "Verified funded".
 
-DRAW's server only learns your party id and never receives your token, which stays in that browser tab. In the newest runs the server's only ledger credential was the backend client, which has rights on the five demo parties and nothing else, so nothing the server held could act for the LP's party. Every run of this used the team's own login as the LP. The newest are `evidence/devnet/browser/web-hackcanton-20261006132613/result.json` (paid from DRAW, 7 of 7 steps) and `evidence/devnet/browser/web-hackcanton-wallet-20261006132730/result.json` (Accept in the Canton Coin wallet, 9 of 9). The earlier ones ran while the server also held the team's login.
+DRAW's server only learns your party id and never receives your token, which stays in that browser tab's session storage. The site loads no third-party scripts. In the newest runs the server's only ledger credential was the backend client, which has rights on the five demo parties and nothing else, so nothing the server held could act for the LP's party. Every run of this used the team's own login as the LP. The newest are [paid from DRAW, 7 of 7 steps](../../../evidence/devnet/browser/web-hackcanton-20261006132613/result.json) and [paid with Accept in the Canton Coin wallet, 9 of 9 steps](../../../evidence/devnet/browser/web-hackcanton-wallet-20261006132730/result.json). The [wallet listing the capital call](../../../evidence/devnet/browser/web-hackcanton-wallet-20261006132730/04-wallet-request.png) is a screenshot from that run. The earlier runs ran while the server also held the team's login.
+
+The LP's party has to sit on the same NODERS participant as the fund, which has DRAW's package vetted. The node's own Canton Coin wallet is the only wallet shown listing and approving a DRAW request.
 
 ## What the tour doesn't show, and where to see it
 
-| Not in the tour | Where it's proven |
+| Not in the tour | Where it's shown |
 |---|---|
-| Wrong amount, wrong payer, wrong reference and replay refused. The unpaid LP overdue only after the due time | DevNet run `evidence/devnet/runs/20261006T131900Z/result.json`, 82 of 82 checks on package 0.3.0 |
-| Each LP's call also reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation. Other LPs and outsiders can't see it. LP A paid by creating the allocation from that request, and the request closed when the call settled | The `wallet` checks in the same DevNet run, where the run script did it through the backend client, and in the 79-check run before it (`evidence/devnet/runs/20261006T091531Z`), which used the shared login. The node's Canton Coin wallet listing a request and paying it with Accept is in `evidence/devnet/browser/web-hackcanton-wallet-20261006132730` |
-| The read-back step on a client of its own, which the ledger refused when it tried to submit as the fund. That client can still act for the team's personal party, so it isn't read-only, and the live site doesn't use it | The `credential` and `settlement` checks in the same DevNet run, and probe `evidence/devnet/probes/20261006T133219Z/result.json` |
-| A fund can name a verifier party that reads the fund, every call and every obligation, and is refused when it acts | Daml Script only, `test_verifier` in `evidence/local/daml_core/20261006T081605Z/result.json` |
-| A separate login per party, and a read-only verifier login that can't submit | LocalNet runs under `evidence/local/runs/` |
-| Each party signing with its own key | LocalNet. Each party signs with its own key. `evidence/local/runs/20261004T183146Z/result.json` (76 of 76) and `evidence/local/browser/web-browser-keys-20261005005304/result.json` |
-| 100 generated calls, and the database comparison | LocalNet, `evidence/local/campaign/20261002T193724Z`, `evidence/local/ablation/20261002T193830Z` |
+| Wrong payer, wrong reference and a replayed payment refused, and the unpaid LP overdue only after the due time | DevNet, [the scripted DevNet run](../../../evidence/devnet/runs/20261006T131900Z/result.json), 82 of 82 checks on package 0.3.0. Wrong executor, wrong call and wrong instrument are refused in Daml Script only |
+| Each LP's call also reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation. Other LPs and unrelated parties can't see it. LP A paid by creating the allocation from that request, and the request closed when the call settled | The `wallet` checks in the same DevNet run, where the run script did it through the backend client, and in [the shared-login run before it](../../../evidence/devnet/runs/20261006T091531Z/result.json). The node's Canton Coin wallet listing a request and paying it with Accept is in [the wallet run](../../../evidence/devnet/browser/web-hackcanton-wallet-20261006132730/result.json) |
+| The read-back step on a client of its own, which the ledger refused when it tried to submit as the fund. That client can still act for the team's personal party, so it isn't read-only, and the live site doesn't use it | The `credential` and `settlement` checks in the same DevNet run, and [the probe of the NODERS clients](../../../evidence/devnet/probes/20261006T133219Z/result.json) |
+| Review, reopen and waive, each with a note. A waived notice leaves the unresolved total | How the Daml model works, tested in `test_review_paths` in [the Daml tests](../../../evidence/local/daml_core/20261006T081605Z/result.json). No claims.yaml entry |
+| A fund can name a verifier party that reads the fund, every call and every obligation, and is refused when it acts | Daml Script only, `test_verifier` in [the same Daml tests](../../../evidence/local/daml_core/20261006T081605Z/result.json) |
+| A separate login per party, and a read-only read-back login that can't submit | LocalNet, a separate ledger login per party. [The LocalNet canonical run](../../../evidence/local/runs/20261001T162427Z/result.json) and its [receipt](../../../evidence/local/runs/20261001T162427Z/receipt-lpA.json) |
+| Each party signing with its own key | LocalNet. Each party signs with its own key. [The custody run](../../../evidence/local/runs/20261004T183146Z/result.json), 76 of 76, and [the browser-key journey](../../../evidence/local/browser/web-browser-keys-20261005005304/result.json) |
+| 100 generated calls, and the database comparison | LocalNet, [the campaign](../../../evidence/local/campaign/20261002T193724Z/result.json) and [the ablation](../../../evidence/local/ablation/20261002T193830Z/result.json) |
+
+Package 0.3.0 has run only in Daml Script and on DevNet. Every LocalNet run used package 0.2.0 or earlier.
 
 ## How to check the evidence
 
 1. Open the proof page. It renders the DevNet run and the LocalNet suites from the result files and links to each one, and shows the newest run of each live browser journey with its steps, its screenshots and how the site signed when it ran, including the two sign-in journeys.
-2. Read the files. Every `result.json`, receipt and log under `evidence/` was written by a script, and failed runs are kept with a note. [`docs/PROOF.md`](../../PROOF.md) explains each check, and `evidence/manifest.json` lists every run with file hashes.
-3. Run them again. The commands are in the README under "How to verify". The Daml tests and unit tests need no ledger. The scripted call runs on LocalNet, or on DevNet with a HackCanton login.
+2. Read the files. Every result file, receipt and log in the evidence folder was written by a script, and failed runs are kept with a note. [PROOF.md](../../PROOF.md) explains each check, and [evidence/manifest.json](../../../evidence/manifest.json) lists every run with file hashes.
+3. Run them again. The commands are in the README under [How to verify](../../../README.md#how-to-verify). The Daml tests and unit tests need no ledger. The scripted call runs on LocalNet, or on DevNet with credentials for the HackCanton node.
 
 ## Run it locally with LocalNet
 
-LocalNet is where each party gets its own login, or its own key in the browser. It needs Docker with about 10 GB of RAM. The steps are in the README under "Run it locally". Start the API with `DRAW_PARTY_MODE=external` for browser keys: each person creates a key in the browser, backs it up, and approves every action in a Sign dialog.
+LocalNet is where each party gets its own login, or its own key in the browser. It needs Docker with about 10 GB of RAM. The steps are in the README under [Run it locally](../../../README.md#run-it-locally). Start the API with `DRAW_PARTY_MODE=external` for browser keys: each person creates a key in the browser, backs it up, and approves every action in a Sign dialog. That flow has passed on LocalNet on the web app before the 2026-10-05 redesign. The redesigned flow hasn't run on LocalNet yet.
 
 ## Known limits of the demo
 
-- On DevNet one backend client acts for every demo seat, so LP-from-LP credential separation is shown on LocalNet only. On the live site the read-back step uses that same client. Every sign-in run used the team's own login as the LP, so a second person's login hasn't been shown on DevNet.
-- All parties share one participant, so its operator can read them all.
+- On DevNet one backend client acts for every demo seat, so LP-from-LP credential separation is shown on LocalNet only, and the DevNet run skipped that check with its reason recorded. On the live site the read-back step uses that same client. Every sign-in run used the team's own login as the LP, so a second person's login hasn't been shown on DevNet.
+- On DevNet every party sits on one participant, and on LocalNet every LP does, so that operator can read every party it hosts.
 - The demo server holds the backend client that acts for every demo seat. It never receives the token of an LP that signs in with HackCanton, and holds nothing that can act for that LP's party.
-- The Canton Coin leg of each payment is visible in Scan, with a random reference. The notices themselves don't appear there.
-- No MainNet, no real money, no USDCx. The full list is in [`docs/LIMITATIONS.md`](../../LIMITATIONS.md).
+- The read-back step runs in the same process as the submitter, in the scripts and in the app.
+- Per the Splice Scan API docs, the Canton Coin leg of each payment appears in Scan with its random reference and the party ids, whose hints such as `draw-lpa` are readable, and the notices don't. We inferred this from the docs and haven't checked it against Scan.
+- No partial payments, notifications, onboarding or KYC, and no scheduler for overdue. DevNet resets about every three months, which would delete every party and contract on the node.
+- No MainNet, no real money, no USDCx. The full list is in [LIMITATIONS.md](../../LIMITATIONS.md).

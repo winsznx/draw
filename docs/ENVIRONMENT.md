@@ -1,6 +1,8 @@
 # Environment
 
-Recorded 2026-10-01 on the build machine. No secrets are stored here.
+This is a hackathon process record of the build machine's tool versions, for anyone reproducing the build. The product is described in [PRODUCT.md](PRODUCT.md) and the proof in [PROOF.md](PROOF.md). The commands to build and run DRAW are in the README's [Run it locally](../README.md#run-it-locally) section, and a reproduction from a fresh clone is in [CLEAN_ROOM.md](CLEAN_ROOM.md). No secrets are stored here.
+
+## The build machine on 2026-10-01
 
 | Item | Value |
 |---|---|
@@ -10,9 +12,9 @@ Recorded 2026-10-01 on the build machine. No secrets are stored here.
 | Docker | Docker Desktop 29.7.2, Compose 5.4.0, about 12.5 GB RAM allotted to the VM |
 | Node | 24.19.0, npm 11.17.0, pnpm available |
 | Splice LocalNet | 0.8.4 (released 2026-09-25, Canton 3.5.19), bundle under `localnet/` (gitignored), images native arm64, about 5.5 GB |
-| AppsFactory starter | none in repo |
-| NODERS material | none in repo |
-| DevNet credentials | none present. `BLOCKED_ON_HUMAN` |
+| AppsFactory starter | none in the repository |
+| NODERS material | none yet on 2026-10-01 |
+| DevNet credentials | none yet on 2026-10-01. They arrived on 2026-10-04 (next table) |
 | Network | docs.digitalasset.com, get.digitalasset.com, GitHub reachable |
 
 ## Changes since 2026-10-01
@@ -20,22 +22,22 @@ Recorded 2026-10-01 on the build machine. No secrets are stored here.
 | Item | Value |
 |---|---|
 | DevNet credentials | A HackCanton login in `.env` since 2026-10-04, and the backend and verifier client secrets NODERS issued for DRAW since 2026-10-06. None of them committed |
-| NODERS material | The HackCanton DevNet quickstart, shared by the organizers on 2026-10-04 (`DEVNET_DEPLOYMENT.md`) |
+| NODERS material | The HackCanton DevNet quickstart, shared by the organizers on 2026-10-04 ([DEVNET_DEPLOYMENT.md](DEVNET_DEPLOYMENT.md)) |
 | Web app | Next.js 15.5 on Cloudflare Workers through `@opennextjs/cloudflare` 1.20 and Wrangler 4.147, since 2026-10-05 |
-| Hosting | Cloudflare Workers for the web, a Hostinger VPS with 4 GB of RAM behind Caddy for the API (`DEPLOY.md`) |
+| Hosting | Cloudflare Workers for the web, a Hostinger VPS with 4 GB of RAM behind Caddy for the API ([DEPLOY.md](DEPLOY.md)) |
 | LocalNet | Re-pulled on 2026-10-04 and used through 2026-10-05. Not running on 2026-10-06 for lack of disk |
 
-## Constraints seen
+## Disk
 
-- Host disk ran out mid-session (13 GB free at start, 0 after the SDK install and Docker growth). The human freed space and about 34 GB is free now. LocalNet needs several GB of images, so disk stays a watch item.
-- Two unrelated Supabase stacks auto-start with Docker and use about 3.5 GB of the VM's RAM. They are left running. If LocalNet hits memory limits, ask before stopping them.
+Disk is the constraint to plan for. On 2026-10-01 the build machine went from 13 GB free to none after the SDK install and Docker's growth. LocalNet needs several GB of images, so leave room for it before pulling the bundle.
 
-## Commands
+## Daml Script tests
+
+The README's commands build the contracts and run the gate scripts. To run the Daml Script suites directly, after building the contracts as the README shows, from the repository root:
 
 ```sh
 export PATH="$HOME/.dpm/bin:$PATH" JAVA_HOME=/opt/homebrew/opt/openjdk@21
-cd contracts && dpm build --all          # draw + draw-tests
-cd contracts/tests && dpm test           # Daml Script suites
-scripts/gates/daml_core.sh               # DAML_CORE gate, writes evidence/local/daml_core/<run>/
-scripts/gates/mutation_check.sh          # guard mutants, writes evidence/local/mutation/<run>/
+(cd contracts/tests && dpm test)
 ```
+
+[scripts/gates/daml_core.sh](../scripts/gates/daml_core.sh) runs the same suites and writes the result to `evidence/local/daml_core/<run>/`.

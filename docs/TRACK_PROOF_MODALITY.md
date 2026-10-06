@@ -1,43 +1,19 @@
 # Track proof modality
 
-Primary track: Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools (pending owner confirmation). Fallback: Track 1, Real-World Assets (RWA) & Business Workflows.
+This hackathon process record covers the track DRAW enters and what would undercut the entry. The product is in [PRODUCT.md](PRODUCT.md) and the proof in [PROOF.md](PROOF.md).
 
-Modality: FINANCIAL / BUSINESS WORKFLOW.
+## The track
 
-## What the track expects
+Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, pending the owner's confirmation at submission. The fallback is Track 1, Real-World Assets (RWA) & Business Workflows.
 
-Track 3's expected output, from the Season 3 rules: "An MVP for fund management, DAO governance or capital coordination", "Role-based workflows (e.g., managers, investors, voters)", "A demonstration of transparency, auditability and operational logic", and "A brief describing the target users and operational use case". The directive's earlier reading asked for the same shape: a workflow that creates something, updates its state, transfers or fulfils it, and can be audited, plus a role-aware UI, a business brief, and a pilot plan. `RUBRIC_ARTIFACT_MAP.md` maps each item.
+What Track 3 expects, item by item, and what DRAW offers for each is in [RUBRIC_ARTIFACT_MAP.md](RUBRIC_ARTIFACT_MAP.md#track-3-expected-output). The proof chain, from an issued call to the unpaid notice that stays unresolved, is in [PROOF.md](PROOF.md#the-proof-chain).
 
-## The proof, end to end
+## What would undercut this entry
 
-`call issued → private LP obligation → real supported settlement → settlement read back separately → obligation truth updated → admin deployable-capital view recomputed → unpaid obligation stays explicitly unresolved`
+Each bullet names something that would weaken the entry, then says where DRAW stands on it today.
 
-| Step | What binds it | Evidence |
-|---|---|---|
-| Call issued | `Fund_IssueCall` creates one obligation per LP and an admin-only call header | `evidence/local/runs/<run>/steps.jsonl`, `capital call issued` |
-| Private LP obligation | Each party's own ledger user reads the ACS. Leak check over everything it can see | `visibility-after-issue.json`, `visibility-final.json` |
-| Real supported settlement | Allocation (CIP-0056 Allocation V1) created by the LP, executed inside `Obligation_Settle`. Canton Coin on DevNet, Amulet on LocalNet | `receipt-lpA.json`, `receipt-lpB.json` |
-| Observed by a separate read-back | The verifier re-reads the update and the admin's holdings. On LocalNet it is a read-only user that can't submit. On DevNet the canonical run gave it a client of its own, which the ledger refused as the fund but which isn't read-only, and the live site uses the backend client the seats use | same receipts, `checks`, `verifierUser` |
-| Obligation truth updated | Obligation recreated as `Funded` in the same transaction as the transfer | receipts `stateBefore`, `stateAfter` |
-| Deployable capital recomputed | Sum of verified-funded obligations compared with the call total and the admin's Amulet balance | `totals.json` |
-| Unpaid stays unresolved | LP C: overdue refused before due time, set after it, never funded | `result.json` checks `deadline`, `unpaid` |
-
-Judge-visible artifacts:
-
-| Required | Where |
-|---|---|
-| One canonical end-to-end run | `evidence/devnet/runs/20261006T131900Z` (package 0.3.0), `evidence/local/runs/20261004T183146Z` (package 0.2.0), the `/proof` page |
-| One actual supported token movement | Canton Coin on DevNet, Amulet on LocalNet, receipts |
-| One role-privacy proof | visibility matrix and leak check |
-| One settlement read-back | verifier receipts: a separate read-only login on LocalNet, the verifier client's own ledger user on DevNet |
-| One non-happy-path result | wrong amount, wrong payer, wrong reference, replay, LP C overdue |
-| Business brief | `docs/BUSINESS_BRIEF.md` |
-| Pilot path | `docs/PILOT_PLAN.md` |
-
-## What would make this modality invalid
-
-- The proof shrinks to "the tests passed" with no business consequence shown.
-- FUNDED is shown on any path other than a verifier receipt.
-- The only token movement is on a test implementation (the `draw-tests` package) instead of Amulet.
-- The README or UI says DevNet before a DevNet run exists.
-- Privacy is demonstrated by filtering one admin dataset in the app.
+- The proof shrinks to "the tests passed" and never shows what changes for the fund. The README opens with the product and the problem, and the demo opens on the fund's question of how much of the call it can deploy.
+- A notice shows as funded without a read-back receipt that passed all 14 checks. The app counts a notice as funded only with that receipt, and shows "Settled, verification pending" until it exists.
+- The only payment that moves is the test token in the `draw-tests` package. That package never leaves Daml Script, and the ledger runs settle in Amulet on LocalNet and Canton Coin on DevNet.
+- The README or the app says DevNet before a DevNet run exists. The DevNet runs are in [evidence/devnet/runs](../evidence/devnet/runs).
+- Privacy rests on the app filtering one dataset the fund can see. Every query runs as the seat's own party, so the ledger decides what each LP gets back. On DevNet one backend client acts for every demo seat, so LP-from-LP credential separation is shown on LocalNet only.
