@@ -15,6 +15,16 @@ Recorded 2026-10-01 on the build machine. No secrets are stored here.
 | DevNet credentials | none present. `BLOCKED_ON_HUMAN` |
 | Network | docs.digitalasset.com, get.digitalasset.com, GitHub reachable |
 
+## Changes since 2026-10-01
+
+| Item | Value |
+|---|---|
+| DevNet credentials | A HackCanton login in `.env` since 2026-10-04, never committed |
+| NODERS material | The HackCanton DevNet quickstart, shared by the organizers on 2026-10-04 (`DEVNET_DEPLOYMENT.md`) |
+| Web app | Next.js 15.5 on Cloudflare Workers through `@opennextjs/cloudflare` 1.20 and Wrangler 4.147, since 2026-10-05 |
+| Hosting | Cloudflare Workers for the web, a Hostinger VPS with 4 GB of RAM behind Caddy for the API (`DEPLOY.md`) |
+| LocalNet | Re-pulled on 2026-10-04 and used through 2026-10-05. Not running on 2026-10-06 for lack of disk |
+
 ## Constraints seen
 
 - Host disk ran out mid-session (13 GB free at start, 0 after the SDK install and Docker growth). The human freed space and about 34 GB is free now. LocalNet needs several GB of images, so disk stays a watch item.

@@ -18,5 +18,6 @@ Empirical check: the ablation run shows `paid=true` lands "funded with no asset 
 ## Where the integration is still thin
 
 - The admin clicks Settle. A production deployment could settle automatically when a matching allocation appears, but someone still has to hold the admin's submission rights.
-- Only Amulet on LocalNet so far. No DevNet token and no USDCx.
+- Amulet on LocalNet and Canton Coin on DevNet so far. No USDCx: its registry lists the same allocation API, but DRAW hasn't run with it.
 - The allocation is created through the registry's factory with disclosed contracts from Scan. If the registry is down, no payment can be made, which is correct but means no fallback.
+- Since package 0.3.0 each LP's call also reaches it as a CIP-0056 AllocationRequest, and on DevNet LP A paid from it with the shared login. No wallet app has been shown listing or approving a DRAW request yet.

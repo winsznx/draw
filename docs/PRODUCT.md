@@ -6,7 +6,7 @@ DRAW is a capital-call application. A fund requests capital from its investors, 
 
 "How much of this capital call is deployable right now, and what amount remains unresolved?"
 
-The dashboard opens on that number. Deployable means funded and independently verified. Unresolved is everything called that is not verified funded and not waived.
+The dashboard opens on that number. Deployable means funded and confirmed by the read-back step. Unresolved is everything called that is not verified funded and not waived.
 
 ## Product object
 

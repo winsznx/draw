@@ -2,27 +2,29 @@
 
 ## Ordering note
 
-The matrix below was designed before the templates were written (it is the Phase 0 report's proposed matrix). It is checked in here after `contracts/daml/daml/Draw/CapitalCall.daml` existed. Every Y/N cell for DRAW templates is asserted by `test_visibility` and `test_settlement_lifecycle`. Cells marked UNVERIFIED have not been run on a participant.
+The matrix below was designed before the templates were written (it is the Phase 0 report's proposed matrix). It is checked in here after `contracts/daml/daml/Draw/CapitalCall.daml` existed. Every Y/N cell for DRAW templates is asserted by `test_visibility`, `test_settlement_lifecycle` and, for payment requests, `test_payment_request`. Cells marked UNVERIFIED have not been run on a participant. The tables describe package 0.3.0, a Smart Contract Upgrade of 0.2.0 that adds `PaymentRequest` and the optional verifier party.
 
 ## Actors
 
 | Actor | Daml party | Notes |
 |---|---|---|
 | Admin | `admin` | fund administrator, executor and receiver of every settlement |
-| LP A, LP B, LP C | `lpA`, `lpB`, `lpC` | one party each, each with its own credential on LocalNet |
+| LP A, LP B, LP C | `lpA`, `lpB`, `lpC` | one party each, each with its own credential on LocalNet. On the DevNet node one hackathon login acts for all parties |
 | Unrelated | `outsider` | allocated on the same network, no relationship |
-| Registry admin | DSO on LocalNet, `registrar` in tests | token infrastructure, sees token contracts only |
+| Verifier (optional, 0.3.0) | `verifier` | named on a fund when it is created, and an observer of that fund, its calls and its obligations. Daml Script only so far |
+| Registry admin | DSO on LocalNet and DevNet, `registrar` in tests | token infrastructure, sees token contracts only |
 
 ## Templates
 
 | Template | Signatories | Observers | Created by | Choices (controller) | Archived on | Holds |
 |---|---|---|---|---|---|---|
-| `Fund` | admin | none | admin | `Fund_InviteInvestor` (admin, nonconsuming), `Fund_IssueCall` (admin, nonconsuming) | never | fund id and name. No LP roster |
+| `Fund` | admin | verifier, if named | admin | `Fund_InviteInvestor` (admin, nonconsuming), `Fund_IssueCall` (admin, nonconsuming) | never | fund id and name, the optional verifier. No LP roster |
 | `CommitmentInvitation` | admin | lp | `Fund_InviteInvestor` | `Invitation_Accept` (lp), `Invitation_Decline` (lp), `Invitation_Withdraw` (admin) | any choice | one LP's commitment offer |
 | `InvestorCommitment` | admin, lp | none | `Invitation_Accept` | `Commitment_IssueObligation` (admin) | each call, recreated with new called amount | one LP's committed and called amounts |
-| `CapitalCall` | admin | none | `Fund_IssueCall` | none | never | call id, due date, obligation refs, totals. No LP parties or per-LP amounts |
-| `CapitalCallObligation` | admin, lp | none | `Commitment_IssueObligation` | `Obligation_MarkPaymentPending`, `Obligation_Settle`, `Obligation_MarkOverdue`, `Obligation_FlagManualReview`, `Obligation_Waive` (all admin) | every state change, recreated | one LP's amount due, reference, state, settlement record |
-| Token `Allocation` (Amulet on LocalNet) | registry admin, sender (Amulet: UNVERIFIED) | executor, receiver | LP through `AllocationFactory_Allocate` | `Allocation_ExecuteTransfer` (executor + sender + receiver) | on execution | one LP's locked payment for one obligation reference |
+| `CapitalCall` | admin | verifier, if named | `Fund_IssueCall` | none | never | call id, due date, obligation refs, totals. No LP parties or per-LP amounts |
+| `CapitalCallObligation` | admin, lp | verifier, if named | `Commitment_IssueObligation` | `Obligation_MarkPaymentPending`, `Obligation_Settle`, `Obligation_MarkOverdue`, `Obligation_FlagManualReview`, `Obligation_ReleasePending`, `Obligation_Reopen`, `Obligation_Waive` (all admin). `Obligation_Settle` and `Obligation_Waive` take an optional `paymentRequestCid` and archive that request | every state change, recreated | one LP's amount due, reference, state, settlement record, issue time |
+| `PaymentRequest` (0.3.0), implements CIP-0056 `AllocationRequest` V1 | admin | lp | `Commitment_IssueObligation`, next to each obligation | `AllocationRequest_Reject` (the LP only, checked in the choice), `AllocationRequest_Withdraw` (the executor, which is the admin) | reject, withdraw, or the settle or waive of its obligation when its id is passed | the request the LP reads as an AllocationRequest: settlement (executor admin, reference the obligation ref, requested at issue, allocate before the due time, settle before the due time plus 7 days) and one transfer leg keyed by the obligation ref, LP to admin, for the amount and instrument due |
+| Token `Allocation` (Amulet on LocalNet) | registry admin, sender (Amulet: UNVERIFIED) | executor, receiver | LP through `AllocationFactory_Allocate`, either from its payment request's settlement and leg or with the reference set directly | `Allocation_ExecuteTransfer` (executor + sender + receiver) | on execution | one LP's locked payment for one obligation reference |
 
 ## Visibility matrix
 
@@ -37,23 +39,29 @@ The matrix below was designed before the templates were written (it is the Phase
 | LP B obligation | Y | N | Y | N | N | same |
 | LP C obligation | Y | N | N | Y | N | same |
 | LP A obligation after settlement | Y | Y | N | N | N | `test_settlement_lifecycle` |
+| LP A payment request | Y | Y | N | N | N | `test_payment_request`. On DevNet: the run's `wallet` checks |
+| LP B payment request | Y | N | Y | N | N | same |
+| LP C payment request | Y | N | N | Y | N | same |
 | LP A allocation | Y | Y | N | N | N | test token only. Amulet: UNVERIFIED |
 | Admin's received holding | Y | N | N | N | N | test token only. Amulet: UNVERIFIED |
+
+A named verifier party sees the fund, every call and every obligation, including the settlement record, and no commitment, invitation or payment request (`test_verifier`). A fund that names no verifier shows it nothing (`test_no_verifier`). It can't act on what it sees: flagging an obligation for review and inviting an investor both fail authorization.
 
 ## What each exercise discloses
 
 | Transaction | Root | What each LP's projection contains | What the unrelated party learns |
 |---|---|---|---|
-| Issue call | `Fund_IssueCall` on admin-only `Fund` | its own `Commitment_IssueObligation` exercise, its recreated commitment, its new obligation. Not the root, not the `CapitalCall` create, not other LPs' subtrees | nothing |
+| Issue call | `Fund_IssueCall` on `Fund`, which no LP can see | its own `Commitment_IssueObligation` exercise, its recreated commitment, its new obligation and its payment request. Not the root, not the `CapitalCall` create, not other LPs' subtrees | nothing |
 | Mark pending | `Obligation_MarkPaymentPending` on one obligation | that LP: the exercise, the fetch of its own allocation, the new obligation. Other LPs: nothing | nothing |
-| Settle | `Obligation_Settle` on one obligation | that LP: the exercise and everything under it, including `Allocation_ExecuteTransfer` and the admin's received holding create (the LP is a witness of its own payment). Other LPs: nothing | nothing |
+| Settle | `Obligation_Settle` on one obligation | that LP: the exercise and everything under it, including the archive of its payment request when its id is given, `Allocation_ExecuteTransfer` and the admin's received holding create (the LP is a witness of its own payment). Other LPs: nothing | nothing |
 | Overdue, review, waive | choice on one obligation | that LP only | nothing |
 
-The registry admin (DSO on LocalNet) is a stakeholder of the allocation and holdings, so it witnesses the `Allocation_ExecuteTransfer` subtree. It is not a stakeholder of the obligation and does not see the parent exercise or the obligation reference outside the allocation's own fields. The allocation's `settlementRef.id` is visible to the DSO. References therefore must not encode LP names or amounts in production. UNVERIFIED on LocalNet until the privacy campaign reads the DSO's view.
+The registry admin (DSO on LocalNet) is a stakeholder of the allocation and holdings, so it witnesses the `Allocation_ExecuteTransfer` subtree. It is not a stakeholder of the obligation and does not see the parent exercise or the obligation reference outside the allocation's own fields. The allocation's `settlementRef.id` is visible to the DSO. References therefore must not encode LP names or amounts in production. All of this is UNVERIFIED on both networks, since no run has read the DSO's view. Scan serves what the DSO observes, which per the Splice Scan API docs includes Canton Coin transfers and excludes most other things. So the Canton Coin leg of each DevNet payment should appear in Scan and the obligation shouldn't. That is inferred from the docs and hasn't been checked against Scan.
 
 ## Settlement lifecycle
 
 ```text
+Issue: one obligation and one PaymentRequest per LP. The LP reads the request as a CIP-0056 AllocationRequest
 LP: AllocationFactory_Allocate (settlementRef.id = transferLegId = obligation ref,
     executor = receiver = admin, amount = amountDue)          -> Allocation (ACTION_REQUESTED -> ACKNOWLEDGED)
 Admin client, own token: read Allocation from admin ACS       -> Obligation_MarkPaymentPending   (PAYMENT_PENDING)
@@ -64,6 +72,10 @@ Admin: Obligation_Settle                                        (one transaction
   recreates obligation as Funded with SettlementRecord     -> contract state Funded (TRANSFER_EXECUTED, CLAIMED_FUNDED)
 Second reader, separate token: read update by id + admin holdings -> evidence VERIFIED_FUNDED
 ```
+
+On the DevNet node the second reader uses the same shared hackathon login as every other step, so there the read-back is a separate step with the same credential. When a fund names a verifier party, the second reader reads through that party instead of the admin. The verifier party's view is tested in Daml Script only, and no ledger run has read back through it yet.
+
+The payment request's settlement and leg are exactly what `Obligation_Settle` checks, so an allocation created from the request passes unchanged (`test_payment_request`). On DevNet, LP A paid that way in run `20261006T091531Z`, through the run script with the shared login, using the same factory call a wallet makes. No wallet app has been shown doing it.
 
 The UI may show FUNDED only for obligations whose evidence is `VERIFIED_FUNDED`.
 
@@ -81,7 +93,9 @@ Replay: `Allocation_ExecuteTransfer` is consuming, so the same allocation cannot
 | Issued, PaymentPending, Overdue, ManualReview | Funded | `Obligation_Settle` | allocation matches, transfer executes, received holdings sum to amount due |
 | Issued, PaymentPending | Overdue | `Obligation_MarkOverdue` | ledger time >= due |
 | Issued, PaymentPending, Overdue | ManualReview | `Obligation_FlagManualReview` | none beyond state |
-| Overdue, ManualReview | Waived | `Obligation_Waive` | none beyond state |
+| PaymentPending | Issued | `Obligation_ReleasePending` | none beyond state, with a note |
+| ManualReview | Issued | `Obligation_Reopen` | none beyond state, with a note |
+| Overdue, ManualReview | Waived | `Obligation_Waive` | none beyond state. A payment request passed with it must be this obligation's |
 
 Overdue is materialized by an admin action after the deadline. There is no scheduler.
 

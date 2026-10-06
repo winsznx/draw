@@ -27,16 +27,18 @@ Canonical call with three investors, two paying and one not: 7 setup, 1 issue, 6
 | Payment locked → admin sees it in its own ACS | 28 |
 | Seen → matched (PAYMENT_PENDING) | 454 |
 | Matched → transfer executed and obligation funded | 481 |
-| Executed → independent verifier confirms | 84 |
+| Executed → the read-only verifier login confirms | 84 |
 | Payment locked → verified funded | 1,047 |
 
 LP B: 1,037 ms end to end. Issuing a call to three investors: 461 ms.
+
+On the HackCanton DevNet node, in run `20261006T091531Z` on package 0.3.0, the read-back receipts are stamped 6.8 seconds (LP A) and 4.5 seconds (LP B) after the settlements' record times (`receipt-lpA.json` and `receipt-lpB.json`, `recordTime` against `verifiedAt`, so the verifier's clock against the ledger's record time). That is the only DevNet timing measured, and it comes from one run.
 
 The 100-case campaign drove 191 obligations, about 400 ledger transactions plus reads and verifications, in 238 seconds.
 
 ## Manual interventions left
 
-- The admin clicks Settle for each matching payment. Automatic settlement on a matching allocation is possible but not built.
+- The admin clicks Settle for each matching payment. Automatic settlement on a matching allocation is written behind `DRAW_AUTO_SETTLE=true` and hasn't run against a ledger yet.
 - The admin marks overdue after the due time. There is no scheduler.
 - An LP withdraws a refused payment itself.
 - Review and waive decisions are human by design.

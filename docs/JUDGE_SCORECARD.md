@@ -1,21 +1,14 @@
 # Judge scorecard
 
-Scored on evidence that exists today (2026-10-04), not on what is planned. 1 is weak, 5 is strong.
+Scored against the six published Season 3 criteria, on evidence that exists on 2026-10-06. Plans don't count. 1 is weak, 5 is strong. These are our own scores.
 
-| Section | Score | Why | Next action |
+| Criterion | Score | Why | Next action |
 |---|---|---|---|
-| Problem clarity | 3 | The job and consequence are stated plainly. Support is public process descriptions, not a practitioner | One conversation with someone who has run capital calls |
-| Named user | 3 | Fund COO or outsourced administrator, with an actor map | Same conversation |
-| Named payer | 2 | Manager or administrator, hypothesis only | Ask the practitioner what they pay for today |
-| Working end-to-end workflow | 4 | Full lifecycle on LocalNet with real Amulet, in scripts and in the app | DevNet run |
-| Canton integration depth | 4 | CIP-0056 allocation executed inside the obligation choice, registry factory, disclosed contracts, per-party users | Same flow on DevNet |
-| Multi-party privacy proof | 4 | Per-party logins on LocalNet, cross-run leak check, 100-case campaign with 0 violations | Transaction-stream check, DevNet party-scoped run |
-| Real settlement proof | 4 | Amulet moved, receipts with 14 checks, balances reconcile | Real Canton Coin on DevNet |
-| Technical execution | 4 | 5 Daml suites, 10 of 10 mutants caught, campaign, ablation, clean room offline | Clean room with ledger, browser journey |
-| UX | 3 | Role-aware React app, plain-language states, mobile layout. Browser journey not yet passing | Browser journey, recorded demo |
-| Business path | 2 | Brief and pilot written. No outside contact | Practitioner conversation |
-| Post-hackathon pilot | 2 | Three stages, concrete needs, nobody signed up | Find one administrator willing to shadow a call |
-| Evidence density | 5 | Every claim maps to script-written files with hashes in a manifest | Keep it current after DevNet |
-| Submission completeness | 3 | README, brief, pilot, demo script, proof page. No video, no DevNet | DevNet run, video |
+| Value / Problem Statement | 3 | The job and its consequence are stated plainly, with 12 public sources including ones against. Why now: CIP-0056 allocations carry the reference inside the payment, and USDCx is a CIP-0056 token. No practitioner has confirmed the problem | 3 to 5 conversations with people who run capital calls or pay into them |
+| ICP / Audience | 3 | Fund COO or outsourced administrator, with an actor map and a named payer, all from public sources | The same conversations |
+| Metrics / Validation | 2 | Strong test evidence: 79 of 79 on DevNet on package 0.3.0, the live-site journey, 76 of 76 with a key per party on LocalNet, and 100 seeded calls and the ablation, also on LocalNet. No interviews and no usability tests yet | Conversations, and 2 to 3 usability tests on the live site |
+| GTM Materials | 2 | One administrator serving several managers as the first channel, a shadow-run pilot, a pricing hypothesis. No outreach results | Outreach, with the pricing question in every interview |
+| MVP Materials | 4 | Live web app on the HackCanton DevNet node, CIP-0056 settlement executed inside the obligation choice, each LP's call also reaching it as a CIP-0056 AllocationRequest, per-party reads and transaction streams, browser journeys on both networks, keys held by each party on LocalNet. One hackathon login acts for every party on DevNet, and no wallet app has been shown paying a DRAW request | A read-only verifier login and external parties from NODERS. A clean-room run of the current web app |
+| Pitch Materials | 1 | README with a judge header and a three-minute tour. Deck v1 draft at `docs/pitch/DRAW-deck.pdf`, not yet reviewed, and drafts of the six platform materials. No video | Video, and reviews of the deck and the materials |
 
-Weakest: market evidence (problem, payer, pilot). Strongest: mechanism evidence. The DevNet run and a recorded demo move the most points in the time left.
+Weakest: validation with real people (Metrics, ICP, GTM). Strongest: the working product and its evidence (MVP). Five of the six criteria are about the business and the pitch, so conversations, the deck and the video move the most points in the time left.

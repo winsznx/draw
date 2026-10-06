@@ -6,9 +6,9 @@ Evidence: `evidence/local/ablation/20261002T193830Z/result.json`, written by `no
 
 The same $1,000,000 call (LP A $400k paid, LP B $350k paid, LP C $250k unpaid) on three systems:
 
-- **Full system**: DRAW on a LocalNet participant. Party-scoped Daml contracts, Amulet settlement through a CIP-0056 allocation executed inside `Obligation_Settle`.
-- **Ablation A (centralized database)**: `node:sqlite` with an obligations table, a payments table, a `paid` flag, and role filtering in the application's queries. It is a reasonable design, not a broken one.
-- **Ablation B (transparent shared ledger)**: every obligation replicated to every participant. Not run as software. The exposed fields are read off DRAW's own obligation contract.
+- Full system: DRAW on a LocalNet participant. Party-scoped Daml contracts, Amulet settlement through a CIP-0056 allocation executed inside `Obligation_Settle`.
+- Ablation A, a centralized database: `node:sqlite` with an obligations table, a payments table, a `paid` flag, and role filtering in the application's queries. It is a reasonable design, not a broken one.
+- Ablation B, a transparent shared ledger: every obligation replicated to every participant. Not run as software. The exposed fields are read off DRAW's own obligation contract.
 
 Then the same five attacks against each.
 
@@ -32,9 +32,9 @@ Honest-path totals are identical on both: $750,000 funded, $250,000 unresolved.
 
 ## What Canton changes, narrowly
 
-1. **The privacy boundary sits below the application.** LP A's own credential cannot obtain LP B's record through any query, because the ledger does not return it to LP A. A missing filter or a new read path that runs as LP A cannot change that. In the database, privacy is one `WHERE` clause per query. What Canton does not stop: anyone holding the fund admin's credential, or operating the participant that hosts several LPs, can read what those parties can read.
-2. **Funded is a consequence of moving the asset.** The obligation flips to `Funded` only in the same transaction that executes the token transfer, and the transfer needs the LP's prior authority. In the database, `paid` is a column anyone with write access can set, and a payments row is a claim about money, not money.
-3. **Evidence cannot be reused.** A settled allocation is consumed. In the database, replay protection is whatever the application remembered to check.
+1. The privacy boundary sits below the application. LP A's own credential cannot obtain LP B's record through any query, because the ledger does not return it to LP A. A missing filter or a new read path that runs as LP A cannot change that. In the database, privacy is one `WHERE` clause per query. What Canton does not stop: anyone holding the fund admin's credential, or operating the participant that hosts several LPs, can read what those parties can read.
+2. Funded is a consequence of moving the asset. The obligation flips to `Funded` only in the same transaction that executes the token transfer, and the transfer needs the LP's prior authority. In the database, `paid` is a column anyone with write access can set, and a payments row is a claim about money, not money.
+3. Evidence cannot be reused. A settled allocation is consumed. In the database, replay protection is whatever the application remembered to check.
 
 ## Ablation B: a globally visible ledger
 

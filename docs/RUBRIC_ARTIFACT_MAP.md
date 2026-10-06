@@ -1,22 +1,40 @@
 # Rubric to artifact map
 
-The exact Season 3 judging text could not be retrieved (the Tracks and Judging tabs need a login). The rows below use the track expectation from the directive and judge questions found in search-indexed copies of the HackCanton page, which are UNCONFIRMED and may be from Season 2. Replace them with the exact text when available.
+The six judging criteria below are quoted word for word from the HackCanton Season 3 rules (https://api.appsfactory.cc/api/hackathons/season-3, "Judging Criteria", read 2026-10-06). Each row says what DRAW offers for that criterion, where a judge finds it, the machine evidence behind it, and what is still missing. `claims.yaml` is the ceiling for every line.
 
-| Criterion or judge question | Claim | Live demo moment | Repository artifact | Machine evidence | Fallback | Status |
-|---|---|---|---|---|---|---|
-| Who is the user? | Fund COO or outsourced administrator | Dashboard opens on "Deployable now" | `docs/PRODUCT.md` | n/a | `docs/BUSINESS_BRIEF.md` | Ready. No practitioner interview |
-| What workflow is broken today? | Notices, payments, matching, and follow-up are fragmented, so funded capital lags | Script opening line | `docs/PROBLEM_EVIDENCE.md` | n/a | brief | Public sources only |
-| Which parties are involved? | Fund admin, three LPs, unrelated party, token registry | Viewing-as switcher | `docs/ARCHITECTURE.md` | run `parties` | diagram | Ready |
-| What should each party see? | Each LP only its own records, admin all, outsider nothing | LP A sees one notice. LP B gets "Not visible to you" on LP A's notice. Outsider gets nothing | `docs/ARCHITECTURE.md` matrix | `visibility-final.json`, campaign privacy 0 | Proof tab matrix | LocalNet ready. DevNet single-credential pending |
-| Who can approve or reject actions? | Admin settles, resolves, waives with a note. LP pays and withdraws. Nobody else acts | Settle, Send to review, Waive | `docs/SECURITY.md` | Daml `test_authority`, `test_review_paths` | mutation results | Ready |
-| What settles atomically? | Transfer and funded flip in one transaction | Settle click, receipt | `CapitalCall.daml` `Obligation_Settle` | receipts, 14 checks | `SPONSOR_ABLATION.md` | Ready |
-| What is auditable? | Every settlement has a receipt. Every decision has a note and a ledger update | Call detail, Details, timeline | `docs/PROOF.md` | receipts, app `actions.jsonl` | Proof tab | Ready |
-| Why is Canton the right choice? | Privacy below the app, funded only when money moves, no reuse | Closing line, ablation | `docs/CANTON_ABLATION.md` | ablation `result.json` | `SPONSOR_TRANSFORMATION.md` | Ready |
-| Track: create, update state, transfer or fulfil, audit or report | Issue call, settle, review or waive, receipt and totals | Full demo | `docs/TRACK_PROOF_MODALITY.md` | canonical run | `/proof` | Ready on LocalNet |
-| Track: role-aware UI | Same pages read with each party's own login | Seat chosen at onboarding | `web/` | browser journey | screenshots | Browser journey blocked on LocalNet |
-| Track: business brief and pilot plan | One-page brief, three-stage pilot | n/a | `BUSINESS_BRIEF.md`, `PILOT_PLAN.md` | n/a | n/a | Ready |
-| Technical execution | Daml model, tests, mutation, campaign, clean room | n/a | `docs/EVAL_CAMPAIGN.md` | manifest | `docs/CLEAN_ROOM.md` | Ready, DevNet pending |
-| Canton integration depth | CIP-0056 allocations executed inside the obligation choice, registry factory, disclosed contracts | Settle | `docs/SPONSOR_FINDINGS.md` | receipts | | Ready on LocalNet |
-| Uses real assets on the season's network (S2 recap emphasis) | Real Canton Coin on DevNet | | `docs/DEVNET_DEPLOYMENT.md` | `evidence/devnet/runs/` | LocalNet Amulet | Pending, needs login |
+## The six criteria
 
-Owner for every row: the builder. Update status after the DevNet run and the browser journey.
+| Criterion | What judges look for | DRAW's answer | Where to look | Machine evidence | Missing |
+|---|---|---|---|---|---|
+| Value / Problem Statement | Clarity of the problem, why it matters and why now | Funds attribute capital-call wires in batches from bank exports, handle partial, split and wrong-name payments by hand, and count money only after reconciliation, while fake notices with swapped payment details are a known fraud pattern. DRAW makes the obligation and the payment one record. Why now: CIP-0056 allocations carry the reference inside the payment, and USDCx is a CIP-0056 token whose registry lists the same allocation API | [`BUSINESS_BRIEF.md`](BUSINESS_BRIEF.md), [`PROBLEM_EVIDENCE.md`](PROBLEM_EVIDENCE.md) (12 public sources, including ones against), [`pitch/materials/value.md`](pitch/materials/value.md) | n/a, public sources | A practitioner confirming the problem. No fund operator has been interviewed yet |
+| ICP / Audience | Specificity and understanding of the target user | The fund COO or operations lead of an emerging manager, or an outsourced fund administrator running calls for several managers. Each LP is the counterparty. The manager or the administrator pays | [`PRODUCT.md`](PRODUCT.md) (actor map), [`BUSINESS_BRIEF.md`](BUSINESS_BRIEF.md), [`pitch/materials/icp.md`](pitch/materials/icp.md) | n/a | Conversations with that person. Today the profile comes from public sources |
+| Metrics / Validation | Evidence from user research, interviews, tests and key metrics | Tests and key metrics: 79 of 79 checks on DevNet on package 0.3.0, the live-site journey, 76 of 76 with a key per party on LocalNet, 100 seeded calls on LocalNet with 0 false fundings and 0 privacy violations, 4 of 5 attacks through a database against 0 through DRAW on LocalNet, 15 of 15 broken guards caught in the Daml tests, DevNet read-back receipts stamped 6.8 seconds (LP A) and 4.5 seconds (LP B) after the record times | [`pitch/materials/metrics.md`](pitch/materials/metrics.md), [`EVAL_CAMPAIGN.md`](EVAL_CAMPAIGN.md), [`WORKLOAD_ECONOMICS.md`](WORKLOAD_ECONOMICS.md), [`CANTON_ABLATION.md`](CANTON_ABLATION.md), [`GATES.md`](GATES.md), the proof page | `evidence/devnet/runs/20261006T091531Z`, `evidence/devnet/browser/web-journey-20261006091011`, `evidence/local/runs/20261004T183146Z`, `evidence/local/campaign/20261002T193724Z`, `evidence/local/ablation/20261002T193830Z`, `evidence/local/mutation/20261006T081625Z` | User research, interviews and usability tests. None is on file yet |
+| GTM Materials | Plausibility of the distribution strategy and audience fit | First channel: one outsourced fund administrator who serves several emerging managers, starting with a shadow run of one real call where no money moves. Pricing hypothesis: a per-fund subscription for managers and per-call pricing for administrators. Path: TestNet with USDCx, which needs Tokenomics Committee approval | [`PILOT_PLAN.md`](PILOT_PLAN.md), [`BUSINESS_BRIEF.md`](BUSINESS_BRIEF.md), [`pitch/materials/gtm.md`](pitch/materials/gtm.md) | n/a | Outreach results and any pricing conversation. Nobody has agreed to a pilot |
+| MVP Materials | Working prototype, code quality and depth of Canton integration | A live web app on the HackCanton DevNet node. A Daml model where each obligation is co-signed by the fund and one LP, and a CIP-0056 Allocation V1 is executed inside `Obligation_Settle`. Each LP's call also reaches it as a CIP-0056 AllocationRequest V1, and on DevNet LP A paid by creating its allocation from that request, with the shared login. A fund can name a verifier party that reads every call and obligation and can't act (Daml Script). Registry factory and choice contexts through the scan proxy, paged party-scoped reads and transaction streams, external parties that sign with their own keys on LocalNet. Daml, mutation, unit, campaign, browser and clean-room tests | [`README.md`](../README.md), [`contracts/daml/daml/Draw/CapitalCall.daml`](../contracts/daml/daml/Draw/CapitalCall.daml), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SPONSOR_FINDINGS.md`](SPONSOR_FINDINGS.md), [`DEVNET_DEPLOYMENT.md`](DEVNET_DEPLOYMENT.md), [`DEMO_SCRIPT.md`](DEMO_SCRIPT.md), [`pitch/materials/demo.md`](pitch/materials/demo.md), https://draw.timjosh507.workers.dev | DevNet run and browser runs, `evidence/local/runs/20261004T183146Z`, `evidence/local/daml_core/20261006T081605Z`, `evidence/local/clean_room/20261004T195643Z` | Separate credentials per party on DevNet, where one hackathon login acts for every party. A wallet app listing or approving a DRAW payment request. A clean-room run of the current web app. A review of the Demo material draft, which is the platform's upload for this criterion |
+| Pitch Materials | Quality and conciseness of the overall presentation | A 10-slide deck (v1 draft, not yet reviewed), a demo video under five minutes (not recorded yet), and this repository's README, which opens with the live link and a three-minute tour | [`pitch/DRAW-deck.pdf`](pitch/DRAW-deck.pdf), [`pitch/materials/pitch.md`](pitch/materials/pitch.md), [`README.md`](../README.md), [`JUDGE_NOTE.md`](JUDGE_NOTE.md), video link added at submission | n/a | The video. Reviews of the deck and the Pitch material draft |
+
+## What the rules ask the pitch to cover
+
+The submission rules ask for a concise presentation covering four things. Where DRAW covers each:
+
+| Topic in the rules | Where |
+|---|---|
+| the problem and why it matters | [`BUSINESS_BRIEF.md`](BUSINESS_BRIEF.md), [`pitch/materials/value.md`](pitch/materials/value.md), the deck |
+| the solution and how Canton Network is used | [`README.md`](../README.md), [`CANTON_ABLATION.md`](CANTON_ABLATION.md), [`SPONSOR_FINDINGS.md`](SPONSOR_FINDINGS.md), the deck |
+| target users and go-to-market thinking | [`pitch/materials/icp.md`](pitch/materials/icp.md), [`pitch/materials/gtm.md`](pitch/materials/gtm.md), [`PILOT_PLAN.md`](PILOT_PLAN.md) |
+| key metrics or validation evidence | [`pitch/materials/metrics.md`](pitch/materials/metrics.md), [`GATES.md`](GATES.md), the proof page |
+
+## Track 3 expected output
+
+Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools. The expected output is quoted from the same rules page.
+
+| Expected output | DRAW |
+|---|---|
+| An MVP for fund management, DAO governance or capital coordination | The capital-call lifecycle for one fund: commitments, calls, payment, settlement, overdue, review and waive |
+| Role-based workflows (e.g., managers, investors, voters) | A fund manager seat and three LP seats, each reading the ledger as its own party, plus an unrelated party that sees nothing |
+| A demonstration of transparency, auditability and operational logic | Settlement receipts with 14 checks, a note on every review, waive and reopen, the call timeline, and the proof page that links each result file |
+| A brief describing the target users and operational use case | [`BUSINESS_BRIEF.md`](BUSINESS_BRIEF.md) |
+
+The Track 3 wishlist asks for "A Daml workflow for the full lifecycle of private fund subscriptions, capital calls, distributions and redemptions with on-ledger NAV records". DRAW covers the capital-call part of that lifecycle, with commitment acceptance in front of it. Distributions, redemptions and NAV records aren't built.
+
+Owner for every row: the builder. Update the Missing column when conversations, usability tests, the video or new runs land.

@@ -1,8 +1,8 @@
 # Sponsor findings
 
-What DRAW calls, where the fact came from, and whether we have run it. All sources read 2026-10-01.
+What DRAW calls, where the fact came from, and whether we have run it. The first sections were read on 2026-10-01, the DevNet node section on 2026-10-04, and the sources at the end on 2026-10-06. The AllocationRequest rows, the paging, sign-in and user rows on the DevNet node, and the saved probes were added on 2026-10-06 for draw 0.3.0.
 
-Labels: `UNVERIFIED` (read, not run), `LOCAL_VERIFIED` (ran on LocalNet), `DEVNET_VERIFIED` (ran on DevNet). Daml Script results under `dpm test` are recorded as `SCRIPT_VERIFIED`, which is weaker than `LOCAL_VERIFIED` because no participant or real token is involved.
+Labels: `UNVERIFIED` (read, not run), `LOCAL_VERIFIED` (ran on LocalNet), `DEVNET_VERIFIED` (ran on DevNet). Daml Script results under `dpm test` are recorded as `SCRIPT_VERIFIED`, which is weaker than `LOCAL_VERIFIED` because no participant or real token is involved. `DOC_VERIFIED` means the quoted text was checked at the source on the date given, and nothing was run. `NOT_USED` means read, and DRAW doesn't call it. `OBSERVED` means seen once by hand on the DevNet node, with no script and no evidence file, and not used by DRAW. `PROBED` means a one-off script of ours called the DevNet node, wrote no evidence file, and its output is kept outside the repository. `REPORTED` means a probe result written down from the session at the time, with no saved output.
 
 ## Toolchain
 
@@ -24,13 +24,14 @@ Labels: `UNVERIFIED` (read, not run), `LOCAL_VERIFIED` (ran on LocalNet), `DEVNE
 
 ## CIP-0056 Token Standard (V1)
 
-DARs pinned from `hyperledger-labs/splice` tag `0.8.4`, `daml/dars/`:
+DARs pinned from `hyperledger-labs/splice` tag `0.8.4`, `daml/dars/`. The allocation-request DAR was added on 2026-10-06 for draw 0.3.0, from the same 0.8.4 release. Its package id is the `Main-Dalf` in the DAR's manifest:
 
 | DAR | sha256 | package id |
 |---|---|---|
 | splice-api-token-metadata-v1-1.0.0 | 455eb160cb5abd4ae9918a6fbb9dad471f721adda39f0e5c76feef08d05637fc | 4ded6b668cb3b64f7a88a30874cd41c75829f5e064b3fbbadf41ec7e8363354f |
 | splice-api-token-holding-v1-1.0.0 | ef75f8eb41a65810221784fdb78bb9dfac7cb22245aba14fa7cb7f69c34e0175 | 718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b |
 | splice-api-token-allocation-v1-1.0.0 | c3f3b447142577ea4fa7d912ca11cd6821de7588e324e8877425932a02fccaa1 | 93c942ae2b4c2ba674fb152fe38473c507bda4e82b4e4c5da55a552a9d8cce1d |
+| splice-api-token-allocation-request-v1-1.0.0 | 5aed3f7e69a2c84b2be9d2033c07029fcde375d5041db264e58f44c8c7538303 | 6fe848530b2404017c4a12874c956ad7d5c8a419ee9b040f96b5c13172d2e193 |
 
 | Primitive | Source | Use | Status |
 |---|---|---|---|
@@ -40,6 +41,8 @@ DARs pinned from `hyperledger-labs/splice` tag `0.8.4`, `daml/dars/`:
 | Amulet implements Allocation V1 | cn-quickstart `quickstart/daml/licensing/daml/Licensing/License.daml`, registry `/metadata/v1/instruments` lists `splice-api-token-allocation-v1` for Amulet | real settlement path | LOCAL_VERIFIED (run 20261001T162427Z) |
 | `POST /registry/allocation-instruction/v1/allocation-factory`, `POST /registry/allocations/v1/{id}/choice-contexts/execute-transfer`, `.../withdraw` | `token-standard/*/openapi/*.yaml` at 0.8.4, reached at `http://scan.localhost:4000/registry` | factory, choice context, disclosed contracts (AmuletRules, OpenMiningRound, ExternalPartyConfigState, ExternalPartyAmuletRules) | LOCAL_VERIFIED (run 20261001T162427Z) |
 | Amulet instrument id `{admin = DSO party, id = "Amulet"}` | `GET /registry/metadata/v1/info` (`adminId`) and `/instruments` | obligation instrument | LOCAL_VERIFIED (run 20261001T162427Z) |
+| AllocationRequest V1: `AllocationRequestView{settlement, transferLegs, meta}`, `AllocationRequest_Reject`, `AllocationRequest_Withdraw` | https://docs.dev.sync.global/app_dev/api/splice-api-token-allocation-request-v1/Splice-Api-Token-AllocationRequestV1.html. An interface that apps implement to ask users for specific allocations when settling DvP or payment workflows. Implementations should let any sender of a transfer leg reject the request, and the executor withdraws it | `PaymentRequest`, created for each LP with its obligation when a call is issued. Its view names the settlement (executor the fund's party, reference the obligation reference, allocateBefore the due time, settleBefore the due time plus 7 days) and one transfer leg, LP to fund, for the amount and instrument due. The LP can reject it, the fund's party can withdraw it, and `Obligation_Settle` and `Obligation_Waive` archive it when given its id | DEVNET_VERIFIED for DRAW's use (run 20261006T091531Z, the `wallet` checks, with LP A's allocation created from the request by the run script and the shared login). SCRIPT_VERIFIED by `test_payment_request` |
+| AllocationRequest V2 | https://docs.dev.sync.global/app_dev/api/splice-api-token-allocation-request-v2/Splice-Api-Token-AllocationRequestV2.html. Adds an `AllocationRequest_Accept` choice, and says users can view and respond to requests through Token Standard wallets or through Ledger API automation | not used. DRAW implements V1 only | NOT_USED |
 | V2 token standard | `TOKEN_STANDARD_V2_DEVNET.md` | not used, experimental DevNet only | n/a |
 
 ## LocalNet and Ledger API
@@ -53,26 +56,78 @@ DARs pinned from `hyperledger-labs/splice` tag `0.8.4`, `daml/dars/`:
 
 ## AppsFactory and NODERS
 
-No starter, DevNet endpoint, or credential is present in the repo or environment. DevNet path is `BLOCKED_ON_HUMAN`.
+NODERS provided the HackCanton DevNet node on 2026-10-04. See the next section. No AppsFactory starter code is used.
 
 ## Grofty and BitSafe
 
 Out of scope for this pass. See `docs/DECISIONS.md`.
 
-## HackCanton DevNet node (added 2026-10-04)
+## HackCanton DevNet node (added 2026-10-04, statuses updated 2026-10-06)
 
-Source: NODERS "Canton DevNet Quickstart — HackCanton shared node" (hackmd.io/@IzUWaelHTRa_fG1NRW376w/HkBpCR5YGx), shared by the organizers on 2026-10-04.
+Source: NODERS "Canton DevNet Quickstart: HackCanton shared node" (hackmd.io/@IzUWaelHTRa_fG1NRW376w/HkBpCR5YGx), shared by the organizers on 2026-10-04. The DevNet runs are `evidence/devnet/runs/20261004T120110Z` (package 0.2.0) and `evidence/devnet/runs/20261006T091531Z` (package 0.3.0). The paging, user and sign-in rows come from the node itself, not from the quickstart.
 
 | Primitive | Use | Status |
 |---|---|---|
-| Keycloak password grant and refresh token, client `web-app-ui-hackcanton-01-devnet`, audience `https://hackcanton-01.devnet.naas.noders.services` | Ledger API login | Endpoint and client checked with fake credentials (`invalid_grant`). Real login UNVERIFIED |
-| JSON Ledger API v2 on the shared participant | All reads and commands | `/livez` 200. Commands UNVERIFIED |
+| Keycloak password grant and refresh token, client `web-app-ui-hackcanton-01-devnet`, audience `https://hackcanton-01.devnet.naas.noders.services` | Ledger API login | DEVNET_VERIFIED (runs 20261004T120110Z and 20261006T091531Z, `authMode: password`). One login is one ledger user that acts for every party the team creates |
+| JSON Ledger API v2 on the shared participant | All reads and commands, per-party transaction streams | DEVNET_VERIFIED (runs 20261004T120110Z and 20261006T091531Z), Canton 3.5.19 |
+| JSON Ledger API `POST /v2/state/active-contracts-page`, with `maxPageSize`, `pageToken` and one fixed `activeAtOffset` for every page | Every ACS read in the run script and the API, so a party's list still reads in full past the JSON API's list limit (200 by default in Canton 3.5). The client falls back to `POST /v2/state/active-contracts` on HTTP 404 | DEVNET_VERIFIED (in use since run 20261006T084934Z, and in run 20261006T091531Z) |
+| JSON Ledger API `/v2/authenticated-user` | Exists on the node's JSON Ledger API and returns the signed-in user's record. DRAW reads the shared ledger user id from the token's `sub` instead | NOT_USED |
+| Keycloak authorization code flow with PKCE, realm `noders-appsfactory`, public client `web-app-ui-hackcanton-01-devnet` | A browser sign-in for the web app | OBSERVED on 2026-10-05: a browser login completed the flow and returned to https://draw.timjosh507.workers.dev, and requests from that origin passed CORS on the Keycloak token endpoint, the JSON Ledger API and the validator API. Not used by the app yet |
 | Validator `/api/validator/version` | Version check | 0.8.4, same as our LocalNet |
-| Scan proxy GET `amulet-rules`, `open-and-issuing-mining-rounds` | Disclosed contracts for the tap | Paths from Splice 0.8.4 `scan-proxy.yaml`. Requires a token (401 without). UNVERIFIED with a token |
-| Token Standard registry through the scan proxy, `/api/validator/v0/scan-proxy/registry/...` | Allocation factory and choice contexts | From Splice release notes ("Expose token-standard endpoints on the validator scan-proxy"). UNVERIFIED on this node |
-| Console party creation and DAR upload | Parties and package | Manual, web UI |
-| Error responses with a trace id only | Refusal checks | The run accepts a trace-id refusal and marks the reason hidden |
+| Scan proxy GET `amulet-rules`, `open-and-issuing-mining-rounds` | Disclosed contracts for `AmuletRules_DevNet_Tap` | DEVNET_VERIFIED (runs 20261004T120110Z and 20261006T091531Z each tapped 100 Amulet for each LP) |
+| Token Standard registry through the scan proxy, `/api/validator/v0/scan-proxy/registry/...` | Allocation factory and choice contexts | DEVNET_VERIFIED (runs 20261004T120110Z and 20261006T091531Z, the LP A and LP B receipts `VERIFIED_FUNDED` in each) |
+| Console party creation and DAR upload | Parties and package | Done by hand in the web Console. Package `draw` 0.2.0 (`a006197e…7496`) on 2026-10-04 and its upgrade 0.3.0 (`733ba37d…d534`) on 2026-10-06, each the same package as the committed DAR in `contracts/dist/` |
+| Error responses | Refusal checks | Daml refusals came back with their full reason in both DevNet runs (`reasonsHidden` is empty). Per the NODERS quickstart, security-sensitive refusals, such as the 403s in the probes below, return only a trace id, and the cause is in the node's Grafana logs |
+
+## DevNet probes of our own
+
+Scripts run with our team login against `hackcanton-01`. The first three below wrote no evidence file. On 2026-10-06 `scripts/demo/probe.mjs` repeated the checks that matter with read-only or prepare-only calls and saved the results in `evidence/devnet/probes/20261006T091205Z/result.json` (`asExpected: true`). The `non-custodial` limits in `claims.yaml` cite that file.
+
+| Date | Probe | Result | Status |
+|---|---|---|---|
+| 2026-10-04 | External party for a key we hold: `POST /v2/parties/external/generate-topology`, then `POST /v2/parties/external/allocate` with `userId` set to our own ledger user | Reported at the time: `generate-topology` succeeded, and `allocate` returned HTTP 403 with only a trace id. That output wasn't saved. The saved probe on 2026-10-06 got the same 403. The cause hasn't been read from the node's logs | REPORTED |
+| 2026-10-06 | `POST /v2/parties/external/generate-topology` for five parties, to build signed allocation requests for NODERS. Nothing was allocated | Each call returned a topology transaction and a party id. The responses and the signed request bodies are kept outside the repository, in the gitignored `internal/` folder | PROBED |
+| 2026-10-06 | `POST /v2/interactive-submission/prepare` as the fund party, for a `Fund` create. Prepare only, nothing executed or committed | Reported to succeed for our team login. That output wasn't saved. The saved probe below prepared a `PaymentRequest` create instead | REPORTED |
+| 2026-10-06 | `GET /v2/packages/{packageId}/status` for draw 0.3.0 | `PACKAGE_STATUS_REGISTERED` | DEVNET_VERIFIED (probe 20261006T091205Z) |
+| 2026-10-06 | `POST /v2/interactive-submission/prepare` as the fund party, for a `PaymentRequest` create, a template that exists only in 0.3.0. Prepare only, never signed or executed | Succeeded for the tenant: a prepared transaction hash came back, hashing scheme `HASHING_SCHEME_VERSION_V2` | DEVNET_VERIFIED (probe 20261006T091205Z) |
+| 2026-10-06 | `POST /v2/parties/external/generate-topology` for a fresh key | Succeeded: one topology transaction and a party id | DEVNET_VERIFIED (probe 20261006T091205Z) |
+| 2026-10-06 | `POST /v2/parties/external/allocate` with that topology, signed, and `userId` set to our own ledger user | Refused with HTTP 403 and only a trace id (gRPC code 7, permission denied). This was the expected outcome | DEVNET_VERIFIED (probe 20261006T091205Z) |
+| 2026-10-06 | `GET /v2/parties?pageSize=1` | Refused with HTTP 403 for a tenant, as expected | DEVNET_VERIFIED (probe 20261006T091205Z) |
+
+What follows from the sources below: allocating an external party takes a participant admin, an identity provider admin, or the user itself through the self path, and the self path's quota (`max-self-allocated-parties`) defaults to 0 in Canton 3.5. The saved 403 fits that, though its cause hasn't been read from the node's logs. So an LP that signs with its own key on this node needs NODERS to allocate the party, or to raise the quota, which very likely needs a node restart.
+
+## Sources checked 2026-10-06
+
+Official Canton, Splice, Digital Asset, Circle and NODERS material only. Each quote was checked at the source on 2026-10-06. Status is `DOC_VERIFIED` unless a DRAW run also exercised it.
+
+| Source | What it confirmed | Status |
+|---|---|---|
+| NODERS HackCanton quickstart, https://hackmd.io/@IzUWaelHTRa_fG1NRW376w/HkBpCR5YGx | "Validators and user management are hidden for tenant accounts." The node returns a trace id, and "The log entry shows the actual cause of the error" in its Grafana | DOC_VERIFIED |
+| Canton 3.5 `party_management_service.proto`, https://raw.githubusercontent.com/digital-asset/canton/release-line-3.5/community/ledger-api-proto/src/main/protobuf/com/daml/ledger/api/v2/admin/party_management_service.proto | Allocating a party, and allocating an external party, needs "HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id) OR IsAuthenticatedUser(user_id)" | DOC_VERIFIED. Consistent with the 403 our tenant login gets (probe 20261006T091205Z) |
+| Canton 3.5.1 release notes, https://docs.canton.network/global-synchronizer/release-notes/canton-releases/3-5-1.md | Users in self-administration mode can allocate external parties up to `max-self-allocated-parties`, and "By default the value of this parameter is 0." | DOC_VERIFIED |
+| Canton 3.5 `ApiServices.scala`, https://raw.githubusercontent.com/digital-asset/canton/release-line-3.5/community/ledger/ledger-api-core/src/main/scala/com/digitalasset/canton/platform/apiserver/ApiServices.scala | The quota is read from static config when the Ledger API starts (`partyManagementServiceConfig.maxSelfAllocatedParties`), so raising it very likely needs a restart | DOC_VERIFIED |
+| Canton 3.5 `IdentityProviderManagementConfig.scala` and `ApiUserManagementService.scala`, same repository | At most 16 identity providers per node (`MaxIdentityProviders: Int = 16`). Rights are filtered to parties in the provider's own record store (`filterPartiesExistingInPartyRecordStore`), so DRAW's existing parties would stay in the default provider | DOC_VERIFIED |
+| NODERS Console, managing users, https://docs.console.naas.noders.services/managing-users.html | The operator console grants rights by type: "Select the right type (CanActAs or CanReadAs)", so a read-only verifier login is possible for NODERS to create | DOC_VERIFIED |
+| Canton external parties, https://docs.canton.network/overview/reference/external-party.md | "external parties explicitly sign each transaction submission with their private key." A malicious confirming node is still a risk unless several confirming nodes with a threshold above one host the party | DOC_VERIFIED. The signing model matches the LocalNet custody run (LOCAL_VERIFIED, `20261004T183146Z`) |
+| CIP-0103, https://raw.githubusercontent.com/canton-foundation/cips/main/cip-0103/cip-0103.md | "The dApp API does not currently expose topology-related capabilities, such as party allocation, directly to dApps." | DOC_VERIFIED |
+| Smart contract upgrade deep dive, https://docs.canton.network/appdev/deep-dives/smart-contract-upgrade.md | "Participants that confirm and observe a certain transaction must have vetted the package version that is preferred by the submitting participant." A wallet's validator would have to vet DRAW before its LP party could co-sign a DRAW obligation | DOC_VERIFIED |
+| Splice `AllocationV1.daml` on `main`, https://raw.githubusercontent.com/hyperledger-labs/splice/main/token-standard/splice-api-token-allocation-v1/daml/Splice/Api/Token/AllocationV1.daml | `Allocation_ExecuteTransfer` is controlled by "[allocation.settlement.executor, allocation.transferLeg.sender, allocation.transferLeg.receiver]" | DOC_VERIFIED on `main`. The same rule at tag 0.8.4 is SCRIPT_VERIFIED, LOCAL_VERIFIED and DEVNET_VERIFIED above |
+| Wallet Gateway overview, https://docs.canton.network/integrations/wallet-gateway/overview.md | "The Wallet Gateway is a self-hosted component", so DRAW would have to run one | DOC_VERIFIED |
+| Canton wallet repository, https://raw.githubusercontent.com/canton-network/wallet/main/sdk/dapp-sdk/src/gateways.json and its README | The dApp SDK's only built-in remote gateway is "Wallet Gateway (localhost, dev)". The browser extension is marked "[NOT IMPLEMENTED YET]" | DOC_VERIFIED |
+| Wallet Gateway user API, https://raw.githubusercontent.com/canton-network/wallet/main/wallet-gateway/remote/src/user-api/controller.ts | The gateway throws "No admin auth configured" without an admin auth block | DOC_VERIFIED |
+| Wallet Gateway signing providers, https://docs.canton.network/integrations/wallet-gateway/operate/signing-providers.md | For the DFNS driver, "Only `Canton` and `CantonTestnet` network wallets are supported." | DOC_VERIFIED |
+| Validator onboarding process, https://docs.canton.network/global-synchronizer/deployment/onboarding-process.md | DevNet "gets reset every 3 months". IP allowlisting "usually takes between 2-7 days". "MainNet requires everything TestNet requires, so approval by the Tokenomics committee, an IP on the allowlist, and an onboarding secret from your SV sponsor." | DOC_VERIFIED |
+| Validator hardware requirements, https://docs.dev.sync.global/validator_operator/validator_hardware_requirements.html | Experiments on a laptop or minimal VM: 1 CPU and 6 GB of RAM. A production validator with little activity: 2 CPUs and 8 GB | DOC_VERIFIED |
+| NODERS NaaS onboarding, https://docs.naas.noders.services/onboarding.html | Provisioning needs the onboarding secret "Provided by the Canton Network for validator registration", and the timeline "assumes all required information is provided upfront" | DOC_VERIFIED |
+| USDCx overview, https://docs.digitalasset.com/usdcx-xreserve/overview.md | USDCx "represents USDC deposited into a Circle xReserve smart contract" and "is in the form of a Canton Network Standard Token (CIP-0056)" | DOC_VERIFIED |
+| USDCx technical setup, https://docs.digitalasset.com/usdcx-xreserve/technical-setup.md | Documented for MainNet, with "When deploying to TestNet, substitute the following". Nothing for DevNet | DOC_VERIFIED |
+| USDCx MainNet registry metadata, https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/decentralized-usdc-interchain-rep::12208115f1e168dd7e792320be9c4ca720c751a02a3053c7606e1c1cd3dad9bf60ef/registry/metadata/v1/info | `supportedApis` includes `"splice-api-token-allocation-v1":1`, the API DRAW settles through, and the V2 allocation APIs | DOC_VERIFIED (public endpoint, read 2026-10-06). DRAW has not run with USDCx |
+| Circle xReserve tutorial, https://developers.circle.com/xreserve/tutorials/deposit-usdc-on-ethereum-for-usdcx-on-canton | TestNet USDCx comes from USDC deposited on Ethereum Sepolia: "Use Console Wallet or Bron for your Canton TestNet wallet." | DOC_VERIFIED |
+| Splice Scan API, https://docs.canton.network/sdks-tools/api-reference/splice-scan-api.md | Scan observes what involves the DSO party: "This includes CC (Canton Coin) transfers and governance operations but excludes most other things." Per these docs, DRAW's Canton Coin leg appears in Scan and its obligation contracts don't. That is inferred, not checked against Scan | DOC_VERIFIED for the quote. The DRAW inference is UNVERIFIED |
+| Canton Coin tokenomics, https://docs.canton.network/overview/reference/canton-coin-tokenomics.md | "CIP-0078 eliminated almost all fees for CC transfers and locks." "On DevNet, you can self-feature your application for testing without going through the formal process." | DOC_VERIFIED |
+| Validator network resets, https://docs.dev.sync.global/validator_operator/validator_network_resets.html | "A reset requires a full redeployment of your node and loses any data you had on the node." | DOC_VERIFIED |
+| Canton 3.6 `UNRELEASED.md`, https://raw.githubusercontent.com/digital-asset/canton/release-line-3.6/UNRELEASED.md | Party JWT login ("`type = party-jwt`") arrives in Canton 3.6. The HackCanton node runs 3.5.19 | DOC_VERIFIED |
 
 ## Token Standard V2 (CIP-0112)
 
-CIP-0112, "Canton Network Token Standard V2 - Improvements for Privacy, Performance and Traditional Accounting", status Approved, created 2026-03-31. Per a summary of the CIP (not read in full): backward compatible with CIP-0056, adds committed allocations for prefunded workflows, account structures beyond single-party holdings, and batch settlement. Our LocalNet registry listed `splice-api-token-allocation-v2` support for Amulet. DRAW uses V1 allocations. Committed allocations could let an LP prefund a call before it is due. Not used, UNVERIFIED.
+CIP-0112, "Canton Network Token Standard V2 - Improvements for Privacy, Performance and Traditional Accounting", status Approved, created 2026-03-31. Per a summary of the CIP (not read in full): backward compatible with CIP-0056, adds committed allocations for prefunded workflows, account structures beyond single-party holdings, and batch settlement. Our LocalNet registry listed `splice-api-token-allocation-v2` support for Amulet. DRAW uses V1 allocations. Committed allocations could let an LP prefund a call before it is due. Not used, UNVERIFIED. DRAW's payment request implements AllocationRequest V1 only.

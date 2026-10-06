@@ -1,75 +1,104 @@
 # Demo script
 
-About three minutes. It opens on the fund, not on Canton. Click paths match the app as built (`node app/server.mjs`, http://localhost:4173). Prepare by creating the demo fund and having all three LPs accept, so the recording starts at the call.
+About three and a half minutes on the live DevNet site, https://draw.timjosh507.workers.dev, then a short LocalNet segment. It opens on the fund's question and gets to Canton later. Click paths follow the web app at commit `688cdbc` (2026-10-06), which gives each browser its own demo fund. Check them against the site on the day you record, since the site is still changing.
 
-## 0:00 The job
+Use these labels on screen and in the narration. The deck and the video use the same words, and `claims.yaml` is their ceiling.
 
-Screen: fund admin dashboard, no call yet.
+- DevNet: "DevNet, HackCanton shared node. One hackathon login signs for every seat."
+- LocalNet: "LocalNet. Each party signs with its own key."
+- Asset: "Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario."
+- Production asset: "Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx."
 
-> A fund is about to call a million dollars from three investors. The question the fund cares about afterwards is simple: how much of it can we actually deploy, and what's still outstanding?
+## Before recording
 
-Click **Create capital call**. Amounts are prefilled: LP A $400,000, LP B $350,000, LP C $250,000, settled as 40, 35 and 25 Amulet. Due in 3 minutes. Click **Issue capital call**.
+- Use a clean browser profile. Once the API runs with `DRAW_ACCESS_CODE_PUBLIC=true`, the site prints the access code and fills it in. Before that, have the code ready.
+- Start from a fresh fund, so the first call comes prefilled. If the seat page offers "Create the demo fund", click it. Otherwise, as Fund manager, open Investors, then Start over, "Start a new demo fund", and back on the seat page click "Create the demo fund". It funds each LP with test Canton Coin and sends the invitations.
+- Take each LP's seat once and click "Accept commitment", so all three LPs are in the first call.
+- If you'll show the overdue step, plan for the call's due time to pass during the recording. The form defaults to 10 minutes ahead, and you can set 3.
 
-> One action, three private notices.
+## 0:00 The question the fund has
 
-## 0:25 One investor, one notice
+Screen: the landing page, "Capital calls only the right investor can read."
 
-Switch **Viewing as** to **LP A** and open **My notices**. One notice, $400,000.
+> A fund is calling a million dollars from three investors. Afterwards it needs one number: how much of that can it actually deploy, and what's still outstanding?
 
-> This is LP A's own ledger login. It sees its notice. It can't see that LP B or LP C exist.
+Click "Take a seat in the demo fund".
 
-Open the notice. Point at the three steps: payment locked, settled by the fund, independently verified. Click **Pay 40 Amulet**.
+## 0:20 Take a seat
 
-> The payment locks 40 Amulet for the fund, carrying this notice's reference. Nothing has moved yet, so it isn't funded.
+Screen: "Who are you in this fund?" Choose Fund manager. The next screen, "Your party on DevNet", shows the party id and a box called "How signing works here". Point at it.
 
-## 0:55 The fund settles
+> Each seat is its own Canton party, and every screen after this is read from the ledger as that party. On this shared DevNet node one hackathon login signs for every seat. At the end, LocalNet gives each party its own key.
 
-Switch to **Fund admin** and open **Calls**. Under Needs attention: "LP A paid 40 Amulet for Call 1". Click **Settle**.
+Click Continue, enter the access code, then "Open the app".
 
-> Settling moves the money and flips the obligation in the same transaction. A separate read-only check then confirms it. Only now does it count.
+## 0:45 Issue the call
 
-Deployable now shows $400,000.
+Screen: the fund's overview, with "Deployable now" at $0. Click "Create capital call". The first call is prefilled: LP A $400,000 paid as 40 CC, LP B $350,000 as 35 CC, LP C $250,000 as 25 CC. Click "Issue capital call".
 
-## 1:20 A payment that doesn't match
+> One action, three private notices. The dollar figures are the scenario. Each LP pays in Canton Coin from the DevNet faucet.
 
-Switch to **LP B**, **My notices**, open the notice, **Pay a different amount**, 30, **Pay this amount**. The notice says the payment doesn't match.
+## 1:05 LP A pays its notice
 
-Switch to **Fund admin**, **Payments** tab: "Wrong amount", no Settle button.
+Click "Switch seat" and choose LP A. Under "Your notices", open Call 1: $400,000, pay 40 CC. Click "Pay 40 CC". The notice now says the payment is locked for the fund. Copy the page address.
 
-> The ledger only accepts the exact amount. This doesn't get counted as close enough.
+> This is LP A's own view, and it holds one notice. Paying locks 40 CC for the fund, with this notice's reference inside the payment. Nothing has moved yet, so it doesn't count.
 
-Switch to **LP B**, **My notices**, open the notice, **Withdraw it**, then **Pay 35 Amulet**. Back to **Fund admin**, **Calls**, **Settle**. Deployable now: $750,000.
+## 1:35 LP B opens LP A's link
 
-## 1:55 Privacy, quickly
+Switch seat to LP B and paste LP A's notice address. The page says "Not on your ledger".
 
-Switch to **LP A** and open its notice. Now switch **Viewing as** to **LP B** without leaving the page: the same notice address, read with LP B's login, says "Not visible to you".
+> LP B opens LP A's exact link. Queried as LP B, the ledger returns nothing for it. On this shared node the same login could query as LP A, which is why we repeated this on LocalNet with a separate login per party, and the result was the same.
 
-Switch to **Unrelated party** and open **Home**: "The ledger returned nothing".
+Optional: on the seat page, "Sit as an unrelated party". Its ledger returns nothing about the fund.
 
-> Same network, no access. The app isn't hiding anything here: this party's own ledger login gets nothing back.
+## 2:00 A payment that doesn't match (optional, about 30 seconds)
 
-## 2:15 The investor who didn't pay
+Still as LP B, open its own notice from "Your notices". Click "Pay a different amount", enter 30, then "Pay this amount". The notice says the payment doesn't match. As Fund manager, the Payments tab shows "Wrong amount" with no Settle button. Back as LP B, click Withdraw, then "Pay 35 CC".
 
-Back to **Fund admin**. Once the due time passes, LP C shows under Needs attention. Click **Mark overdue**.
+> The ledger only settles the exact amount. Close enough doesn't count.
 
-> Before the due time, the ledger refuses this. After it, LP C is overdue, not quietly missing.
+## 2:30 The fund settles, and the read-back confirms it
 
-Final screen: Deployable now $750,000, Unresolved $250,000.
+Switch seat to Fund manager and open Calls, then Call 1. Click "Settle 40 CC", and "Settle 35 CC" if LP B paid. The obligations show Funded and "Deployable now" goes up. Switch seat to LP A and open the notice: "Verified funded", with the receipt.
 
-## 2:35 Why Canton
+> Settling moves the coin and marks the notice funded in one transaction. A separate read-back step then reads that settlement and the fund's holdings from the ledger, here with the same shared login, before the dollars count as deployable.
 
-Open **Call 1**, **Details** on LP A: the receipt and the timeline.
+## 3:00 The investor who didn't pay (optional)
 
-> We ran the same call on an ordinary database with a paid flag. Marking LP C paid, reading LP B's row, and reusing LP A's payment all worked there. On the ledger, all of them were refused. That's what Canton changes here: privacy below the application, and funded only when the money moves.
+Once the due time has passed, LP C shows under "Needs your attention" as Fund manager. Click "Mark overdue". "Unresolved" shows LP C's $250,000.
 
-## 2:55 Close
+> Before the due time the ledger refuses this. After it, LP C is on the record as overdue.
 
-> A fund called capital from three investors. Each saw and paid only their own obligation. One didn't pay, and the fund still knows exactly what it can deploy.
+## 3:15 LocalNet: each person holds a key
+
+Label on screen: "LocalNet. Each party signs with its own key." This part isn't on the live site. Record it against LocalNet with browser keys:
+
+```sh
+DRAW_ENV_FILE=none DRAW_PARTY_MODE=external node app/server.mjs
+(cd web && DRAW_API_URL=http://localhost:4173 npm run dev)    # http://localhost:3100
+```
+
+The browser-key flow passed on LocalNet only on the web app before the 2026-10-05 redesign. Before recording this segment on a later build, run `(cd web && DRAW_PARTY_MODE=external npm run e2e)` against LocalNet on that same build, and record only if it passes. Its evidence folder is then the one to cite.
+
+Show a seat being created: "Create key and party", then "Back up your key", "Download key backup", tick the box, Continue. Then one action, for example LP A's payment, and the "Sign with your key" dialog, then Sign.
+
+> On LocalNet each person creates a key in their own browser, and every action needs that key's signature. The node can't act for the party without it. In the scripted run another party's key was refused too, 76 checks out of 76.
+
+If LocalNet can't run (it needs about 10 GB of RAM), use the screenshots in `evidence/local/browser/web-browser-keys-20261005005304/` and say on screen that they show the earlier UI, before the 2026-10-05 redesign. That run saved no screenshot of the Sign dialog. The only ones are `evidence/local/browser/20261004T183631Z/screens/01-keys-admin-sign-fund.png` and `03-keys-lp-c-sign-dialog.png`, from the Vite UI that came before it, so label them as an earlier UI too.
+
+## 3:40 Why Canton, and the close
+
+> On LocalNet we ran the same call on a normal database with a paid flag. Four of five attacks got through there and none got through DRAW. One honest line: going by the Scan docs, the Canton Coin leg of each payment shows up in Scan, the network's explorer, and the obligations don't. In production the asset would be USDCx, whose registry supports the same allocation interface. We haven't run with USDCx yet.
+
+> A fund called capital from three investors. Each saw and paid only its own notice, and the fund knows exactly what it can deploy.
+
+End on the proof page, https://draw.timjosh507.workers.dev/proof, as where to check every number.
 
 ## Recording notes
 
-- Switching **Viewing as** keeps the current page and re-reads it with the new party's login. That is why an LP on an admin page sees "This page is for the fund admin". Use the tabs to go to each party's home.
-
-- Everything shown is LocalNet. Say so on screen ("LocalNet demo environment" is in the header). Do not say DevNet until a DevNet run exists.
-- Dollar amounts are the scenario. Amulet is what moved. The UI labels both.
-- Do not open the Proof tab in the first 30 seconds. Mention it at the end as where to check the evidence.
+- "Switch seat" signs out. The next seat reads the ledger as a different party, so say which seat you're in each time.
+- Don't open the proof page in the first 30 seconds.
+- Dollar amounts are the scenario. Canton Coin is what moves, and the UI labels both.
+- Never say LPs have their own logins or keys on DevNet, never say USDCx settled, and never say MainNet.
+- If an LP's balance is short, "Add test CC" on its seat card taps the faucet.

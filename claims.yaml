@@ -1,4 +1,5 @@
-# Ceiling for README, UI, video, and submission text. Statuses follow evidence.
+# Ceiling for README, UI, deck, video, materials, and submission text. Statuses follow evidence.
+# LocalNet and DevNet claims stay separate. On DevNet one hackathon login acts for every party.
 claims:
   - id: private-obligations
     text: "Each LP can read only its own capital-call obligation and commitment. Other LPs and unrelated parties cannot read it, even with its contract id."
@@ -9,17 +10,22 @@ claims:
       - evidence/local/runs/20261001T162427Z/visibility-after-issue.json
       - evidence/local/runs/20261001T162427Z/visibility-final.json
       - evidence/local/campaign/20261002T193724Z/result.json
-    limits: "All LPs share one participant on LocalNet. The participant operator can see all hosted parties. In production each LP would use its own validator." 
+    limits: "Checked here with a separate ledger login per party. All LPs share one participant on LocalNet, and the participant operator can see all hosted parties. In production each LP would use its own validator. The DevNet party-scoped reads and transaction streams are part of the devnet claim."
 
   - id: settlement-gates-funded
-    text: "An obligation becomes funded only in the transaction that executes a CIP-0056 allocation carrying its reference, from its LP, to the fund admin, for the exact amount and instrument."
+    text: "An obligation becomes funded only in the transaction that executes a CIP-0056 allocation carrying its reference, from its LP, to the fund admin, for the exact amount and instrument. Each settlement receipt records 14 checks. On package 0.3.0, each of 15 deliberately broken guards is caught by the Daml tests."
     status: local_verified
     environments: [daml-script, localnet]
     evidence:
       - evidence/local/daml_core/20261001T160054Z/result.json
       - evidence/local/mutation/20261001T160135Z/result.json
+      - evidence/local/daml_core/20261002T192910Z/result.json
+      - evidence/local/mutation/20261002T192939Z/result.json
+      - evidence/local/daml_core/20261006T081605Z/result.json
+      - evidence/local/mutation/20261006T081625Z/result.json
       - evidence/local/runs/20261001T162427Z/receipt-lpA.json
       - evidence/local/runs/20261001T162427Z/receipt-lpB.json
+    limits: "Run with Amulet on LocalNet. The DevNet settlement with Canton Coin is part of the devnet claim. The USDCx registry's public metadata lists the same allocation API (splice-api-token-allocation-v1), but DRAW has not run with USDCx."
 
   - id: negative-settlement
     text: "Wrong amount, wrong sender, wrong reference, wrong call, wrong executor, wrong instrument, and replay do not fund an obligation."
@@ -29,7 +35,7 @@ claims:
       - evidence/local/daml_core/20261001T160054Z/result.json
       - evidence/local/runs/20261001T162427Z/result.json
       - evidence/local/campaign/20261002T193724Z/result.json
-    limits: "LocalNet covers wrong amount, wrong payer, wrong reference, and replay. Wrong executor, wrong call, and wrong instrument are Daml Script only." 
+    limits: "LocalNet covers wrong amount, wrong payer, wrong reference, and replay. Wrong executor, wrong call, and wrong instrument are Daml Script only. The same four refusals on DevNet are part of the devnet claim."
 
   - id: unpaid-unresolved
     text: "An LP that does not pay stays unresolved, and can be marked overdue only after the due time."
@@ -38,7 +44,7 @@ claims:
     evidence:
       - evidence/local/daml_core/20261001T160054Z/result.json
       - evidence/local/runs/20261001T162427Z/result.json
-    limits: "Overdue is set by an admin action after the deadline. There is no scheduler." 
+    limits: "Overdue is set by an admin action after the deadline. There is no scheduler. The DevNet overdue checks are part of the devnet claim."
 
   - id: admin-totals
     text: "Admin funded and unresolved totals equal the sum of the underlying obligations and the admin's received holdings."
@@ -49,25 +55,42 @@ claims:
       - evidence/local/runs/20261001T162427Z/totals.json
 
   - id: real-token-settlement
-    text: "A real Amulet (Canton Coin on LocalNet) allocation settles an obligation, and a separate read-only verifier credential reads the result back before it counts as funded."
+    text: "On LocalNet, an Amulet allocation settles an obligation (Amulet is the Splice token implementation behind Canton Coin), and a separate read-only verifier login reads the result back before it counts as funded. In the run measured for timing, payment locked to verified funded took 1,047 ms for LP A and 1,037 ms for LP B, and the three-LP call took 15 ledger transactions including setup, with one transaction to issue the call to every LP."
     status: local_verified
     environments: [localnet]
     evidence:
       - evidence/local/runs/20261001T162427Z/receipt-lpA.json
       - evidence/local/runs/20261001T162427Z/receipt-lpB.json
-    limits: "LocalNet DevNet-tap Amulet, 40 and 35 units. Not DevNet, not MainNet." 
+      - evidence/local/workload/20261002T185353Z/result.json
+    limits: "LocalNet Amulet from the DevNet-style tap, 40 and 35 units. The 1,047 ms comes from single-machine LocalNet with a scripted admin acting at once, so it says nothing about production latency. The DevNet settlement is the devnet claim. Not MainNet, no real money."
 
   - id: devnet
-    text: "DRAW runs end-to-end on the HackCanton DevNet node: real Canton Coin settles two LPs' obligations with independent read-back, bad payments are refused, the unpaid LP goes overdue, and each party's view and transaction history contain only its own records."
+    text: "DRAW runs end to end on the HackCanton DevNet node, passing 79 of 79 checks on package 0.3.0. Canton Coin from the DevNet faucet settles two LPs' obligations, each in the transaction that executes its allocation, and a separate read-back step, run with the same shared login, confirms each settlement with a 14-check receipt before it counts. A wrong amount, wrong payer, wrong reference and replayed payment are refused, overdue is refused before the due time, and the unpaid LP goes overdue after it. The fund's totals match the coin it received, and each party's view and transaction history contain only its own records. The read-back receipts are stamped 6.8 seconds (LP A) and 4.5 seconds (LP B) after the settlements' record times."
     status: devnet_verified
     environments: [devnet]
     evidence:
-      - evidence/devnet/runs/20261004T120110Z/result.json
-      - evidence/devnet/runs/20261004T120110Z/receipt-lpA.json
-      - evidence/devnet/runs/20261004T120110Z/receipt-lpB.json
-      - evidence/devnet/runs/20261004T120110Z/streams.json
-      - evidence/devnet/runs/20261004T120110Z/totals.json
-    limits: "One hackathon account acts for all five parties on the shared node, so credential separation was not tested on DevNet (it was on LocalNet). Party-scoped visibility and real settlement were." 
+      - evidence/devnet/runs/20261006T091531Z/result.json
+      - evidence/devnet/runs/20261006T091531Z/receipt-lpA.json
+      - evidence/devnet/runs/20261006T091531Z/receipt-lpB.json
+      - evidence/devnet/runs/20261006T091531Z/streams.json
+      - evidence/devnet/runs/20261006T091531Z/totals.json
+    limits: "One hackathon login acts for all five parties and the verifier on the shared node, so credential separation was not tested on DevNet (it was on LocalNet) and the two credential checks were skipped with the reason recorded. Party-scoped reads, transaction streams, and settlement were tested. Wrong executor, wrong call, and wrong instrument were not run on DevNet. Canton Coin from the DevNet faucet has no monetary value, and the dollar figures are the scenario. Per the Splice Scan API docs, the Canton Coin leg of each payment involves the DSO and appears in Scan, with its random reference and the party ids, whose hints such as draw-lpa are readable, while the obligation contracts don't. That is inferred from the docs and has not been checked against Scan. The 6.8 and 4.5 seconds compare the verifier's clock with the ledger's record time. The first DevNet run, on package 0.2.0, passed 72 of 72 (evidence/devnet/runs/20261004T120110Z)."
+
+  - id: wallet-request
+    text: "Each LP's capital call also reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation, naming the settlement, payer, receiver, amount and instrument. Other LPs and outsiders can't see it. On DevNet, LP A's request matched its notice field by field, and LP A paid by creating the allocation from that request, the same factory call a wallet makes, and the request closed when the call settled."
+    status: devnet_verified
+    environments: [daml-script, devnet]
+    evidence:
+      - evidence/devnet/runs/20261006T091531Z/result.json
+      - evidence/local/daml_core/20261006T081605Z/result.json
+    limits: "The run script created LP A's allocation with the shared hackathon login. No wallet app has been shown listing or approving a DRAW request yet. LP B paid with a plain allocation carrying the reference, which settles the same way."
+
+  - id: verifier-party
+    text: "A fund can name a verifier party. It can read the fund, every call and every obligation, including the settled amount, and LP privacy is unchanged. When it tries to act on an obligation or the fund, the ledger refuses."
+    status: local_verified
+    environments: [daml-script]
+    evidence: [evidence/local/daml_core/20261006T081605Z/result.json]
+    limits: "Daml Script only. On DevNet the read-back step reads as the fund's own party with the shared login, until a separate verifier login exists."
 
   - id: grofty
     text: "An LP funds an obligation through Grofty on MainNet."
@@ -84,7 +107,7 @@ claims:
     limits: "One to three LPs per call. Expired allocations and mid-payment network failures not generated."
 
   - id: canton-load-bearing
-    text: "The same call on an operator database with a paid flag lets four of five attacks through. On DRAW the ledger refuses all five."
+    text: "On LocalNet, the same call on an operator database with a paid flag lets four of five attacks through. On DRAW the ledger refuses all five."
     status: local_verified
     environments: [localnet]
     evidence: [evidence/local/ablation/20261002T193830Z/result.json]
@@ -95,18 +118,18 @@ claims:
     status: local_verified
     environments: [localnet]
     evidence: [evidence/local/browser/20261004T183631Z, evidence/local/browser/20261004T184730Z, evidence/local/browser/web-journey-20261005003621/result.json, evidence/local/browser/web-browser-keys-20261005005304/result.json]
-    limits: "LocalNet. In the browser demo all roles' keys sit in the same browser so one person can play every role."
+    limits: "LocalNet. The wrong-amount and overdue steps ran in the 2026-10-04 runs on the earlier Vite web app. The two runs early on 2026-10-05 used the first Next.js web app, before that day's redesign, and cover issue, pay, the privacy check, settle, and verified funded. The redesigned onboarding and browser-key flow have not run on LocalNet. In the browser demo all roles' keys sit in the same browser so one person can play every role."
 
   - id: web-journey-devnet
-    text: "The deployed web app runs a capital call end to end on DevNet: each person takes a seat at onboarding, the fund manager issues a call, LP A pays its notice, LP B opening LP A's notice link gets nothing, the fund manager settles, and LP A sees it verified funded."
+    text: "The deployed web app runs a capital call end to end on DevNet: each person takes a seat at onboarding, the fund manager issues a call, LP A pays its notice, LP B opening LP A's notice link gets nothing, the fund manager settles, and LP A sees it verified funded. Each browser gets its own demo fund, so a second browser starts without one."
     status: devnet_verified
     environments: [devnet]
-    evidence: [evidence/devnet/browser/web-20261005003221/result.json]
-    limits: "Shared hackathon login on the NODERS node, so one credential acts for every demo party. Actions on the public site need an access code."
+    evidence: [evidence/devnet/browser/web-20261005003221/result.json, evidence/devnet/browser/web-journey-20261005214111/result.json, evidence/devnet/browser/web-journey-20261006091011/result.json]
+    limits: "Shared hackathon login on the NODERS node, so one credential acts for every demo party, and the read-back step uses that same login. Actions on the public site need an access code. The second run is on the redesigned web app, and the third adds a demo fund per browser. The demo funds share the same five parties, so keeping one browser out of another's fund is the app's doing, while keeping each LP out of the others' records is the ledger's."
 
   - id: non-custodial
-    text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused."
+    text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused. The scripted run passed 76 of 76 checks."
     status: local_verified
     environments: [localnet]
     evidence: [evidence/local/runs/20261004T183146Z/result.json]
-    limits: "LocalNet only. The HackCanton DevNet node refuses external-party allocation for team accounts (requested from NODERS 2026-10-04). Keys in the scripted run are held by the run itself, one per party. In the web app each person creates a key in the browser, backs it up, and signs every action (evidence/local/browser/web-browser-keys-20261005005304)."
+    limits: "LocalNet only. DevNet LPs don't hold their own keys. On the HackCanton DevNet node, allocating an external party takes a participant admin, an identity provider admin, or the self path, whose quota defaults to 0 in Canton 3.5. An allocate call with our team login was refused with HTTP 403 (evidence/devnet/probes/20261006T091205Z/result.json), while generate-topology and interactive prepare work for that login. Keys in the scripted run are held by the run itself, one per party. In the web app each person creates a key in the browser, backs it up, and signs every action (evidence/local/browser/web-browser-keys-20261005005304). The hosting participant still validates and confirms each transaction."

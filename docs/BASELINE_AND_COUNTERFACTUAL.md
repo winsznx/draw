@@ -6,9 +6,9 @@
 | REFERENCE | Deterministic expected state per behaviour and the expected aggregate | Yes: `EXPECTED_STATE` and `referenceAggregate` in `scripts/eval/campaign.mjs` |
 | COUNTERFACTUAL A | Operator database with a paid flag and app-level role filtering | Yes: `scripts/eval/ablation.mjs`, node:sqlite |
 | COUNTERFACTUAL B | Globally transparent ledger | Field exposure only, read from DRAW's contract |
-| TREATMENT | DRAW on Canton with party-scoped state and Token Standard settlement | Yes: LocalNet |
+| TREATMENT | DRAW on Canton with party-scoped state and Token Standard settlement | Yes: LocalNet and DevNet |
 
-## Measured, same scenario
+## Measured, same scenario, on LocalNet
 
 | Metric | Counterfactual A | Treatment | Source |
 |---|---|---|---|

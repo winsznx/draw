@@ -15,19 +15,19 @@ Needs from the fund: commitment amounts for one call, one operations person for 
 
 ## Stage 2: a controlled test settlement
 
-- Two or three LPs willing to hold a small amount of a Canton test asset (DevNet Amulet, or a test dollar token if one is available on the pilot network).
-- Run one small call with real parties on DevNet or TestNet. LPs pay from their own wallets or participants.
+- Two or three LPs willing to hold a small amount of a Canton test asset (DevNet Canton Coin, or TestNet USDCx if the pilot runs on TestNet).
+- Run one small call with real parties on DevNet or TestNet. Each LP signs its own payment, either with a key it holds while the fund's node hosts its party (DRAW's browser-key mode, run on LocalNet so far) or from its own participant with DRAW's package vetted.
 - Keep the real call on the existing rail. Run DRAW in parallel.
 
 Measure: time from an LP's payment to verified funded, payments refused and why, manual interventions, any LP who could see more than its own record.
 
-Needs: DevNet or TestNet parties for the fund and LPs, a wallet path each LP can use (for example a CIP-0103 wallet), and the fund's agreement that test transfers are fine.
+Needs: DevNet or TestNet parties for the fund and LPs, a way for each LP to sign as above, and the fund's agreement that test transfers are fine. A CIP-0103 wallet would only work if its validator vets DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. On the HackCanton node, LP parties with their own keys also need the node operator to allocate them.
 
 ## Stage 3: the integrations a genuine pilot requires
 
 Not available during the hackathon. Listed so nobody mistakes Stage 2 for production.
 
-- A settlement asset the fund and LPs already accept on Canton, likely a regulated tokenized dollar.
+- A settlement asset the fund and LPs already accept on Canton, likely USDCx. That needs a TestNet or MainNet participant, which needs Tokenomics Committee approval.
 - Each LP hosted on its own validator or a provider it trusts.
 - The fund's identity provider for admin sign-in, and LP sign-in that gives the app server no LP credentials.
 - Export of call status to the fund administrator's existing system.
