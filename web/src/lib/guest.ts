@@ -169,8 +169,10 @@ export async function payFromWallet(config: SignInConfig, obligation: Obligation
   const me = identity();
   if (!me) throw new SignedOut();
   if (!obligation.paymentRequest) throw new Error('This notice has no open payment request, so your wallet has nothing to fund.');
-  await walletAllocate(config, obligation.paymentRequest.view, me.party);
-  return `${obligation.units} CC locked for the fund from your Canton wallet. The fund manager settles it next.`;
+  const { allocationCid } = await walletAllocate(config, obligation.paymentRequest.view, me.party);
+  return allocationCid
+    ? `${obligation.units} CC locked for the fund from your Canton wallet. The fund manager settles it next.`
+    : 'Your wallet took the request but has not locked the coin yet. The payment shows on this notice once it has.';
 }
 
 export async function withdrawToWallet(config: SignInConfig, allocationCid: string): Promise<string> {

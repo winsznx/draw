@@ -19,6 +19,9 @@ interface Stored extends Identity {
   accessToken: string;
   refreshToken: string | null;
   expiresAt: number;
+  // Where, and as which client, signing out ends the Keycloak session.
+  logoutUrl: string;
+  clientId: string;
 }
 
 interface TokenReply {
@@ -31,6 +34,14 @@ interface TokenReply {
 export class SignedOut extends Error {
   constructor() {
     super('Your HackCanton sign-in has ended. Sign in again to continue.');
+  }
+}
+
+// The node or its login service did not answer. Nothing changed, and the
+// sign-in stays, so trying again later works.
+export class NodeUnreachable extends Error {
+  constructor() {
+    super('The HackCanton node did not answer. Try again in a moment.');
   }
 }
 
@@ -88,14 +99,33 @@ export function subscribeIdentity(notify: () => void): () => void {
   return () => listeners.delete(notify);
 }
 
-export const signOut = (): void => writeStored(null);
+// Forgets this tab's sign-in after the node refused it.
+const endSession = (): void => writeStored(null);
+
+// Ends this tab's sign-in and the Keycloak session behind it, so the next
+// "Sign in with HackCanton" in this browser asks for the password again, even
+// from another tab or after the last one closed.
+export function signOut(): void {
+  const stored = readStored();
+  endSession();
+  if (!stored?.refreshToken) return;
+  fetch(stored.logoutUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ client_id: stored.clientId, refresh_token: stored.refreshToken }),
+  }).catch((error: unknown) => {
+    // Every sign-in asks for the password anyway (prompt=login), so a missed
+    // logout leaves no one signed in by accident.
+    console.warn('Ending the HackCanton session failed', error);
+  });
+}
 
 // ---------------------------------------------------------------- sign-in
 const base64url = (bytes: Uint8Array): string =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const randomToken = (length: number): string => base64url(crypto.getRandomValues(new Uint8Array(length)));
 const redirectUri = (): string => `${window.location.origin}/auth/callback`;
-const endpoint = (config: SignInConfig, name: 'auth' | 'token'): string => `${config.issuer}/protocol/openid-connect/${name}`;
+const endpoint = (config: SignInConfig, name: 'auth' | 'token' | 'logout'): string => `${config.issuer}/protocol/openid-connect/${name}`;
 
 export async function startSignIn(config: SignInConfig, returnTo: string): Promise<void> {
   const verifier = randomToken(48);
@@ -111,16 +141,23 @@ export async function startSignIn(config: SignInConfig, returnTo: string): Promi
     code_challenge: challenge,
     code_challenge_method: 'S256',
     state,
+    // A shared browser must never sign the next person in as the last one.
+    prompt: 'login',
   }).toString();
   window.location.assign(url.toString());
 }
 
 async function requestToken(config: SignInConfig, body: Record<string, string>): Promise<TokenReply> {
-  const response = await fetch(endpoint(config, 'token'), {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ client_id: config.clientId, ...body }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(endpoint(config, 'token'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: config.clientId, ...body }),
+    });
+  } catch {
+    throw new NodeUnreachable();
+  }
   if (!response.ok) throw new NodeRefused(response.status, await response.text());
   return (await response.json()) as TokenReply;
 }
@@ -148,11 +185,34 @@ export async function finishSignIn(config: SignInConfig, params: URLSearchParams
     accessToken: token.access_token,
     refreshToken: token.refresh_token ?? null,
     expiresAt: Date.now() + token.expires_in * 1000,
+    logoutUrl: endpoint(config, 'logout'),
+    clientId: config.clientId,
   });
   return pending.returnTo;
 }
 
 let refreshing: Promise<string> | null = null;
+
+// Renews the access token. Only Keycloak refusing the refresh token ends the
+// sign-in. Anything else, such as a dropped connection, leaves it in place for
+// the next try.
+async function renew(config: SignInConfig, refreshToken: string): Promise<string> {
+  let token: TokenReply;
+  try {
+    token = await requestToken(config, { grant_type: 'refresh_token', refresh_token: refreshToken });
+  } catch (error) {
+    if (error instanceof NodeRefused && (error.status === 400 || error.status === 401)) {
+      endSession();
+      throw new SignedOut();
+    }
+    throw error instanceof NodeUnreachable ? error : new NodeUnreachable();
+  }
+  // A sign-out, or a new sign-in, while the refresh was on its way wins.
+  const current = readStored();
+  if (current?.refreshToken !== refreshToken) throw new SignedOut();
+  writeStored({ ...current, accessToken: token.access_token, refreshToken: token.refresh_token ?? refreshToken, expiresAt: Date.now() + token.expires_in * 1000 });
+  return token.access_token;
+}
 
 // A token that is valid for at least the refresh margin, renewed when needed.
 async function bearer(config: SignInConfig): Promise<string> {
@@ -160,32 +220,32 @@ async function bearer(config: SignInConfig): Promise<string> {
   if (!stored) throw new SignedOut();
   if (stored.expiresAt - Date.now() > REFRESH_MARGIN_MS) return stored.accessToken;
   if (!stored.refreshToken) {
-    signOut();
+    endSession();
     throw new SignedOut();
   }
-  refreshing ??= requestToken(config, { grant_type: 'refresh_token', refresh_token: stored.refreshToken })
-    .then((token) => {
-      writeStored({ ...stored, accessToken: token.access_token, refreshToken: token.refresh_token ?? stored.refreshToken, expiresAt: Date.now() + token.expires_in * 1000 });
-      return token.access_token;
-    })
-    .catch(() => {
-      signOut();
-      throw new SignedOut();
-    })
-    .finally(() => {
-      refreshing = null;
-    });
+  refreshing ??= renew(config, stored.refreshToken).finally(() => {
+    refreshing = null;
+  });
   return refreshing;
 }
 
-async function call<T>(config: SignInConfig, url: string, { method = 'GET', json }: { method?: string; json?: unknown } = {}): Promise<T> {
-  const response = await fetch(url, {
-    method,
-    headers: { authorization: `Bearer ${await bearer(config)}`, ...(json === undefined ? {} : { 'content-type': 'application/json' }) },
-    body: json === undefined ? undefined : JSON.stringify(json),
-  });
-  if (response.status === 401) {
-    signOut();
+// `ledger` calls go to the JSON Ledger API, where a 401 means the node no
+// longer accepts this sign-in. The wallet's API can answer 401 for its own
+// reasons, so there it is only a refusal.
+async function call<T>(config: SignInConfig, url: string, { method = 'GET', json, ledger = true }: { method?: string; json?: unknown; ledger?: boolean } = {}): Promise<T> {
+  const authorization = `Bearer ${await bearer(config)}`;
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers: { authorization, ...(json === undefined ? {} : { 'content-type': 'application/json' }) },
+      body: json === undefined ? undefined : JSON.stringify(json),
+    });
+  } catch {
+    throw new NodeUnreachable();
+  }
+  if (response.status === 401 && ledger) {
+    endSession();
     throw new SignedOut();
   }
   const text = await response.text();
@@ -254,16 +314,16 @@ export interface WalletBalance {
   effective_locked_qty: string;
 }
 
-export const walletBalance = (config: SignInConfig): Promise<WalletBalance> => call(config, `${config.validatorApi}/v0/wallet/balance`);
+export const walletBalance = (config: SignInConfig): Promise<WalletBalance> => call(config, `${config.validatorApi}/v0/wallet/balance`, { ledger: false });
 
 export const walletTap = (config: SignInConfig, amount: string): Promise<unknown> =>
-  call(config, `${config.validatorApi}/v0/wallet/tap`, { method: 'POST', json: { amount, command_id: `draw-tap-${crypto.randomUUID()}` } });
+  call(config, `${config.validatorApi}/v0/wallet/tap`, { method: 'POST', json: { amount, command_id: `draw-tap-${crypto.randomUUID()}` }, ledger: false });
 
 // How long a late payment's lock waits to be settled.
 const LATE_ALLOCATE_WINDOW_MS = 60 * 60_000;
 
 // The wallet API takes times as microseconds since the epoch.
-function micros(iso: string): number {
+export function micros(iso: string): number {
   const fraction = iso.match(/\.(\d+)Z$/)?.[1] ?? '';
   return Date.parse(iso) * 1000 + Number(fraction.padEnd(6, '0').slice(3, 6));
 }
@@ -285,6 +345,7 @@ export async function walletAllocate(config: SignInConfig, request: AllocationRe
   const settleBefore = Date.parse(settlement.settleBefore) > Date.parse(allocateBefore) ? settlement.settleBefore : new Date(Date.parse(allocateBefore) + LATE_ALLOCATE_WINDOW_MS).toISOString();
   const reply = await call<{ output?: { allocation_cid?: string } }>(config, `${config.validatorApi}/v0/allocations`, {
     method: 'POST',
+    ledger: false,
     json: {
       settlement: {
         executor: settlement.executor,
@@ -302,4 +363,4 @@ export async function walletAllocate(config: SignInConfig, request: AllocationRe
 }
 
 export const walletWithdraw = (config: SignInConfig, allocationCid: string): Promise<unknown> =>
-  call(config, `${config.validatorApi}/v0/allocations/${encodeURIComponent(allocationCid)}/withdraw`, { method: 'POST' });
+  call(config, `${config.validatorApi}/v0/allocations/${encodeURIComponent(allocationCid)}/withdraw`, { method: 'POST', ledger: false });

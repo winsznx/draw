@@ -108,12 +108,22 @@ function GuestSeatCard({ view }: { view: View }) {
           type="button"
           className={`btn btn-sm ${styles.seatBtnGhost}`}
           onClick={() => {
+            leaveSeat();
+            router.push('/onboard');
+          }}
+        >
+          <IconSwitch size={15} />Switch seat
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${styles.seatBtnGhost}`}
+          onClick={() => {
             signOut();
             leaveSeat();
             router.push('/onboard');
           }}
         >
-          <IconSwitch size={15} />Sign out
+          Sign out
         </button>
       </div>
     </div>

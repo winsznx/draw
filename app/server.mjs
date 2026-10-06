@@ -256,7 +256,7 @@ const config = () => ({
 
 // Which seat a party is in this tour: a provisioned role, or the LP that
 // signed in with its own login.
-const investorOf = (session, draw, party) => draw.roleOf(party) ?? (session.guest?.party === party ? 'guest' : undefined);
+const investorOf = (session, draw, party) => draw.roleOf(party) ?? (party !== undefined && session.guest?.party === party ? 'guest' : undefined);
 
 const receiptView = (receipt) => receipt && {
   verdict: receipt.verdict,
@@ -403,12 +403,14 @@ async function noticePlace({ session, draw }, role, ref) {
 const tourLabel = (id) => createHash('sha256').update(String(id)).digest('hex').slice(0, 8);
 
 // Withdraws what a discarded demo fund still has open: invitations nobody
-// accepted, which the fund manager withdraws, and payments nobody settled,
-// which each LP takes back into its balance, and its open payment requests,
-// so no LP's wallet keeps offering a notice of a closed demo fund. That keeps the shared parties'
-// lists from growing with funds nobody uses. Commitments and notices stay,
-// since the fund and the LP both signed them. Best effort: a step that fails
-// is recorded and the rest go ahead.
+// accepted and open payment requests, which the fund manager withdraws, so no
+// LP's wallet keeps offering a notice of a closed fund, and the demo seats'
+// unsettled payments, which each seat takes back into its balance. An LP that
+// signed in with its own login takes back its own payment in its wallet, since
+// only its login can. That keeps the shared parties' lists from growing with
+// funds nobody uses. Commitments and notices stay, since the fund and the LP
+// both signed them. Best effort: a step that fails is recorded and the rest go
+// ahead.
 async function closeFund(session, draw) {
   const closed = { invitations: 0, payments: 0, requests: 0, failures: [] };
   const attempt = async (what, step) => {

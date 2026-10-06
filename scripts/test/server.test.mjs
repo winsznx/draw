@@ -496,3 +496,19 @@ test('starting over withdraws the fund\'s open payment requests, so no LP\'s wal
   assert.deepEqual(fake.acs.filter((c) => c.templateId?.endsWith(':PaymentRequest')), [elsewhere], 'only the request of another fund stays');
   assert.equal(count(fake, 'CapitalCallObligation'), 1, 'the notice itself stays, signed by both');
 });
+
+test('a payment for no notice of this fund names no investor, with or without a signed-in LP', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake, SIGN_IN));
+  await setup(call);
+  fake.allocation({ sender: party('LPA'), receiver: party('ADMIN'), ref: 'DRAW-00000000000000a7', amount: '3.0' });
+  const unknown = (await call('/api/view?role=admin', { headers: tour() })).body.payments.find((p) => p.obligationRef === 'DRAW-00000000000000a7');
+  assert.equal(unknown.kind, 'unknown-reference');
+  assert.equal(unknown.investor, null);
+
+  await act(call, 'join', { body: { party: GUEST } });
+  const after = (await call('/api/view?role=admin', { headers: tour() })).body.payments.find((p) => p.obligationRef === 'DRAW-00000000000000a7');
+  assert.equal(after.investor, null);
+  assert.equal(after.from, 'lpA');
+});
