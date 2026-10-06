@@ -24,6 +24,11 @@ MUTANTS=(
   "lp-controls-flag|s/(choice Obligation_FlagManualReview : ContractId CapitalCallObligation\n      with\n        note : Text\n      controller) admin/\$1 lp/"
   'release-from-any-state|s/assertMsg "only a payment-pending obligation can be released" \(state == PaymentPending\)/pure ()/'
   'reopen-from-any-state|s/assertMsg "only an obligation in manual review can be reopened" \(state == ManualReview\)/pure ()/'
+  'close-any-payment-request|s/\(request\.obligationRef == obligation\.obligationRef && request\.admin == obligation\.admin && request\.lp == obligation\.lp\)/True/'
+  'anyone-rejects-request|s/assertMsg "only the LP who owes this payment can reject it" \(actor == lp\)/pure ()/'
+  'request-wrong-leg-id|s/\[ \(obligationRef, TransferLeg with/[ ("leg", TransferLeg with/'
+  'request-hidden-from-lp|s/    observer lp\n    ensure amountDue > 0\.0 && allocateBefore < settleBefore/    ensure amountDue > 0.0 \&\& allocateBefore < settleBefore/'
+  'verifier-not-observer|s/    observer optionalToList verifier\n    ensure amountDue > 0\.0 && scenarioAmount > 0\.0/    ensure amountDue > 0.0 \&\& scenarioAmount > 0.0/'
 )
 
 results=()

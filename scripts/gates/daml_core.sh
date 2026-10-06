@@ -11,7 +11,7 @@ RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="$ROOT/evidence/local/daml_core/$RUN_ID"
 mkdir -p "$OUT"
 
-REQUIRED_TESTS=(test_visibility test_authority test_settlement_lifecycle test_resolution_paths test_review_paths)
+REQUIRED_TESTS=(test_visibility test_authority test_settlement_lifecycle test_resolution_paths test_review_paths test_payment_request test_verifier test_no_verifier)
 
 (cd "$ROOT/contracts" && dpm build --all) >"$OUT/build.log" 2>&1
 BUILD_EXIT=$?

@@ -1,7 +1,7 @@
 // Network profile from the environment (and `.env` at the repo root when
 // present). LocalNet needs no configuration. DevNet is described entirely by
 // variables listed in `.env.example`.
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -67,16 +67,34 @@ function loadNetwork() {
   for (const key of [...ROLES.map(envKey), 'VERIFIER', 'OPERATOR']) {
     const userId = userIdFor(key);
     const clientId = env(`DRAW_${key}_CLIENT_ID`);
-    if (userId && clientId) registerOAuthClient(userId, { clientId, clientSecret: required(`DRAW_${key}_CLIENT_SECRET`) });
+    if (userId && clientId) registerOAuthClient(userId, { clientId, clientSecret: required(`DRAW_${key}_CLIENT_SECRET`), scope: env(`DRAW_${key}_SCOPE`) });
   }
+  // On a shared login, a verifier with its own client is still its own credential.
+  const separateVerifier = authMode === 'password' && Boolean(userIdFor('VERIFIER') && env('DRAW_VERIFIER_CLIENT_ID'));
 
+  const sharedOr = (role) => (role === 'verifier' && separateVerifier ? userIdFor('VERIFIER') : SHARED_USER);
   const provisioned = partyMode === 'provisioned'
     ? Object.fromEntries([...ROLES, 'verifier'].map((role) => [role, {
       // With one shared login every role is the same ledger user, resolved from the token.
-      userId: authMode === 'password' ? SHARED_USER : required(`DRAW_${envKey(role)}_USER`),
+      userId: authMode === 'password' ? sharedOr(role) : required(`DRAW_${envKey(role)}_USER`),
       party: role === 'verifier' ? undefined : required(`DRAW_${envKey(role)}_PARTY`),
     }]))
     : undefined;
+
+  // External parties allocated ahead of time by the node operator from
+  // topology we generated and signed. The keys stay in .keys/ on this machine.
+  let provisionedExternal;
+  if (partyMode === 'external-provisioned') {
+    const file = env('DRAW_EXTERNAL_PARTIES_FILE', join(ROOT, 'internal/noders-external-parties/summary.json'));
+    const { parties } = JSON.parse(readFileSync(file, 'utf8'));
+    const keyPrefix = env('DRAW_EXTERNAL_KEY_PREFIX', 'devnet-ext-');
+    provisionedExternal = Object.fromEntries(ROLES.map((role) => {
+      const entry = parties.find((p) => p.role === role);
+      if (!entry) throw new Error(`${file} has no external party for ${role}`);
+      return [role, { party: entry.partyId, fingerprint: entry.fingerprint, keyName: `${keyPrefix}${role}` }];
+    }));
+    provisionedExternal.verifier = { userId: authMode === 'password' ? sharedOr('verifier') : required('DRAW_VERIFIER_USER') };
+  }
 
   return {
     name,
@@ -86,6 +104,9 @@ function loadNetwork() {
     errorsMayBeHidden: env('DRAW_ERRORS_HIDDEN', name === 'localnet' ? 'false' : 'true') === 'true',
     scanProxyUrl: env('SCAN_PROXY_URL'),
     partyMode,
+    // Every party signs its own transactions with its own key.
+    externalKeys: partyMode === 'external' || partyMode === 'external-provisioned',
+    separateVerifier,
     apiFor,
     participantLabel: (role) => (apiFor(role) === providerApi ? (name === 'localnet' ? 'app-provider' : 'admin participant') : (name === 'localnet' ? 'app-user' : 'lp participant')),
     operators: {
@@ -94,6 +115,7 @@ function loadNetwork() {
       userApi,
     },
     provisioned,
+    provisionedExternal,
     registryUrl: env('REGISTRY_URL', 'http://scan.localhost:4000/registry'),
     scanUrl: env('SCAN_URL', 'http://scan.localhost:4000/api/scan'),
     scanAuthUser: env('SCAN_AUTH_USER'),

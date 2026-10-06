@@ -3,7 +3,7 @@ import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { after, before, test } from 'node:test';
 
-import { configureAuth, sharedUserId, tokenFor } from '../demo/lib/auth.mjs';
+import { configureAuth, registerOAuthClient, sharedUserId, tokenFor } from '../demo/lib/auth.mjs';
 
 // A stand-in for the Keycloak token endpoint: password and refresh grants.
 const grants = [];
@@ -16,11 +16,13 @@ const server = createServer((req, res) => {
     const form = new URLSearchParams(body);
     const grant = form.get('grant_type');
     grants.push(grant);
-    const ok = (grant === 'password' && form.get('password') === 'right' && form.get('client_id') === 'web-app')
+    const machine = grant === 'client_credentials' && form.get('client_id') === 'verifier-client' && form.get('client_secret') === 'verifier-secret';
+    const ok = machine
+      || (grant === 'password' && form.get('password') === 'right' && form.get('client_id') === 'web-app')
       || (grant === 'refresh_token' && form.get('refresh_token')?.startsWith('rt-'));
     res.writeHead(ok ? 200 : 401, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(ok
-      ? { access_token: jwt('user-123', grants.length), refresh_token: `rt-${grants.length}`, expires_in: expiresIn }
+      ? { access_token: jwt(machine ? 'verifier-1' : 'user-123', grants.length), ...(machine ? {} : { refresh_token: `rt-${grants.length}` }), expires_in: expiresIn }
       : { error: 'invalid_grant', error_description: 'Invalid user credentials' }));
   });
 });
@@ -74,4 +76,16 @@ test('LocalNet tokens are signed per user', async () => {
   const b = await tokenFor('bob');
   assert.notEqual(a, b);
   assert.equal(JSON.parse(Buffer.from(a.split('.')[1], 'base64url').toString()).sub, 'alice');
+});
+
+test('a user with its own client gets its own token even when a shared login acts for the parties', async () => {
+  grants.length = 0;
+  expiresIn = 3600;
+  shared();
+  registerOAuthClient('verifier-1', { clientId: 'verifier-client', clientSecret: 'verifier-secret', scope: 'openid daml_ledger_api' });
+  const party = await tokenFor('anyone');
+  const verifier = await tokenFor('verifier-1');
+  assert.notEqual(party, verifier);
+  assert.equal(JSON.parse(Buffer.from(verifier.split('.')[1], 'base64url').toString()).sub, 'verifier-1');
+  assert.deepEqual(grants.sort(), ['client_credentials', 'password']);
 });

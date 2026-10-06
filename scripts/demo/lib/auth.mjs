@@ -14,8 +14,8 @@ export function configureAuth(next) {
   shared = null;
 }
 
-export function registerOAuthClient(userId, { clientId, clientSecret }) {
-  oauthClients.set(userId, { clientId, clientSecret });
+export function registerOAuthClient(userId, { clientId, clientSecret, scope }) {
+  oauthClients.set(userId, { clientId, clientSecret, scope });
 }
 
 const base64url = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -38,7 +38,7 @@ async function oauthToken(userId) {
     client_id: client.clientId,
     client_secret: client.clientSecret,
     ...(settings.audience ? { audience: settings.audience } : {}),
-    ...(settings.scope ? { scope: settings.scope } : {}),
+    ...((client.scope ?? settings.scope) ? { scope: client.scope ?? settings.scope } : {}),
   });
   const response = await fetch(settings.tokenUrl, {
     method: 'POST',
@@ -86,7 +86,10 @@ export async function sharedUserId() {
   return JSON.parse(Buffer.from(payload, 'base64url').toString()).sub;
 }
 
+// A user with its own registered client (for example a read-only verifier)
+// gets its own token even when one shared login acts for the parties.
 export async function tokenFor(userId) {
+  if (oauthClients.has(userId)) return oauthToken(userId);
   if (settings.mode === 'password') return sharedToken();
   return settings.mode === 'oauth' ? oauthToken(userId) : hs256Token(userId);
 }

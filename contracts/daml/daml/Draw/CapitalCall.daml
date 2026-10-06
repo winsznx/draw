@@ -9,16 +9,28 @@
 -- obligation and executes it in the same transaction. The LP's signature on
 -- the obligation, given when it accepted its commitment, is the authority that
 -- lets the admin execute that LP's matching allocation and nothing else.
+--
+-- Wallet shape (0.3.0): each obligation comes with a 'PaymentRequest' that
+-- implements the CIP-0056 AllocationRequest interface, so the LP's standard
+-- Canton wallet can show the call and create exactly the allocation that
+-- 'Obligation_Settle' accepts. The request is archived when the obligation is
+-- settled or waived.
+--
+-- Verifier shape (0.3.0): a fund can name an independent verifier party. It
+-- observes the fund, each call header and each obligation, so it witnesses
+-- every settlement through its own party, never the admin's.
 module Draw.CapitalCall where
 
 import DA.Foldable (forA_)
 import DA.List (unique)
-import DA.Optional (isNone)
-import DA.Time (isLedgerTimeGE)
+import DA.Optional (isNone, optionalToList)
+import DA.Time (addRelTime, days, isLedgerTimeGE)
+import qualified DA.TextMap as TextMap
 
-import Splice.Api.Token.MetadataV1 (ExtraArgs)
+import Splice.Api.Token.MetadataV1 (ChoiceExecutionMetadata(..), ExtraArgs, Metadata(..), emptyMetadata)
 import Splice.Api.Token.HoldingV1 (Holding, HoldingView(..), InstrumentId)
 import Splice.Api.Token.AllocationV1
+import Splice.Api.Token.AllocationRequestV1
 
 data ObligationState
   = Issued
@@ -51,8 +63,10 @@ template Fund
     admin : Party
     fundId : Text
     fundName : Text
+    verifier : Optional Party
   where
     signatory admin
+    observer optionalToList verifier
 
     nonconsuming choice Fund_InviteInvestor : ContractId CommitmentInvitation
       with
@@ -84,11 +98,13 @@ template Fund
             amountDue = req.amountDue
             scenarioAmount = req.scenarioAmount
             dueAt
+            verifier
         callCid <- create CapitalCall with
           admin; fundId; callId; description; dueAt
           obligationRefs = refs
           totalScenarioAmount = sum (map (.scenarioAmount) requests)
           totalAmountDue = sum (map (.amountDue) requests)
+          verifier
         pure (callCid, map snd issued)
 
 template CommitmentInvitation
@@ -144,12 +160,14 @@ template InvestorCommitment
         amountDue : Decimal
         scenarioAmount : Decimal
         dueAt : Time
+        verifier : Optional Party
       controller admin
       do
         assertMsg "commitment belongs to a different fund" (expectedFundId == fundId)
         let newCalled = calledScenarioAmount + scenarioAmount
         assertMsg "call exceeds remaining commitment" (newCalled <= committedScenarioAmount)
         commitmentCid <- create this with calledScenarioAmount = newCalled
+        issuedAt <- getTime
         obligationCid <- create CapitalCallObligation with
           admin; lp; fundId; fundName; callId; obligationRef
           amountDue; scenarioAmount; instrumentId; dueAt
@@ -157,6 +175,15 @@ template InvestorCommitment
           pendingAllocationCid = None
           settlement = None
           reviewNote = None
+          verifier
+          issuedAt = Some issuedAt
+        -- The LP's wallet is asked to allocate by the due date. The fund then
+        -- has a week to settle; a late LP can still pay through DRAW itself.
+        create PaymentRequest with
+          admin; lp; fundName; callId; obligationRef; amountDue; instrumentId
+          requestedAt = issuedAt
+          allocateBefore = dueAt
+          settleBefore = addRelTime dueAt (days 7)
         pure (commitmentCid, obligationCid)
 
 -- | Fund-level call header. Admin-only: it lists obligation references but no
@@ -171,8 +198,10 @@ template CapitalCall
     obligationRefs : [Text]
     totalScenarioAmount : Decimal
     totalAmountDue : Decimal
+    verifier : Optional Party
   where
     signatory admin
+    observer optionalToList verifier
 
 template CapitalCallObligation
   with
@@ -190,8 +219,11 @@ template CapitalCallObligation
     pendingAllocationCid : Optional (ContractId Allocation)
     settlement : Optional SettlementRecord
     reviewNote : Optional Text
+    verifier : Optional Party
+    issuedAt : Optional Time
   where
     signatory admin, lp
+    observer optionalToList verifier
     ensure amountDue > 0.0 && scenarioAmount > 0.0
 
     choice Obligation_MarkPaymentPending : ContractId CapitalCallObligation
@@ -208,11 +240,13 @@ template CapitalCallObligation
       with
         allocationCid : ContractId Allocation
         extraArgs : ExtraArgs
+        paymentRequestCid : Optional (ContractId PaymentRequest)
       controller admin
       do
         assertMsg "obligation is not open for settlement"
           (state `elem` [Issued, PaymentPending, Overdue, ManualReview])
         assertMsg "obligation already carries a settlement" (isNone settlement)
+        closePaymentRequest this paymentRequestCid
         allocation <- fetch allocationCid
         let allocationView = view allocation
         assertAllocationMatches this allocationView
@@ -275,10 +309,73 @@ template CapitalCallObligation
     choice Obligation_Waive : ContractId CapitalCallObligation
       with
         note : Text
+        paymentRequestCid : Optional (ContractId PaymentRequest)
       controller admin
       do
         assertMsg "only an overdue or reviewed obligation can be waived" (state `elem` [Overdue, ManualReview])
+        closePaymentRequest this paymentRequestCid
         create this with state = Waived; reviewNote = Some note
+
+-- | What the LP's wallet sees: one CIP-0056 allocation request per
+-- obligation, with the obligation reference as settlement reference and as
+-- the transfer leg id, the fund admin as executor and receiver, and exactly
+-- the amount and instrument due. An allocation created from it passes
+-- 'assertAllocationMatches' unchanged.
+template PaymentRequest
+  with
+    admin : Party
+    lp : Party
+    fundName : Text
+    callId : Text
+    obligationRef : Text
+    amountDue : Decimal
+    instrumentId : InstrumentId
+    requestedAt : Time
+    allocateBefore : Time
+    settleBefore : Time
+  where
+    signatory admin
+    observer lp
+    ensure amountDue > 0.0 && allocateBefore < settleBefore
+
+    interface instance AllocationRequest for PaymentRequest where
+      view = AllocationRequestView with
+        settlement = SettlementInfo with
+          executor = admin
+          settlementRef = Reference with id = obligationRef; cid = None
+          requestedAt
+          allocateBefore
+          settleBefore
+          meta = emptyMetadata
+        transferLegs = TextMap.fromList
+          [ (obligationRef, TransferLeg with
+              sender = lp
+              receiver = admin
+              amount = amountDue
+              instrumentId
+              meta = emptyMetadata) ]
+        meta = Metadata with
+          values = TextMap.fromList
+            [("splice.lfdecentralizedtrust.org/reason", "Capital call " <> callId <> ", " <> fundName)]
+
+      -- The LP declines to pay through its wallet. The obligation stays open
+      -- and the fund decides what happens next.
+      allocationRequest_RejectImpl _self AllocationRequest_Reject{actor} = do
+        assertMsg "only the LP who owes this payment can reject it" (actor == lp)
+        pure ChoiceExecutionMetadata with meta = emptyMetadata
+
+      allocationRequest_WithdrawImpl _self _arg =
+        pure ChoiceExecutionMetadata with meta = emptyMetadata
+
+-- | Archives the obligation's payment request when one is given. It must be
+-- the request for this obligation, from this admin to this LP.
+closePaymentRequest : CapitalCallObligation -> Optional (ContractId PaymentRequest) -> Update ()
+closePaymentRequest _ None = pure ()
+closePaymentRequest obligation (Some requestCid) = do
+  request <- fetch requestCid
+  assertMsg "payment request belongs to a different obligation"
+    (request.obligationRef == obligation.obligationRef && request.admin == obligation.admin && request.lp == obligation.lp)
+  archive requestCid
 
 -- | The allocation must name this obligation's reference as both settlement
 -- reference and transfer leg id, come from this LP, pay this admin, be executed

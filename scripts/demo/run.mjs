@@ -62,12 +62,14 @@ const streamStart = Object.fromEntries(await Promise.all(ROLES.map(async (role) 
 step('party-scoped users ready', { network: network.name, partyMode: network.partyMode, party, users, verifierRights: 'readAs admin only' });
 
 if (network.singleCredential) {
-  const reason = 'one shared login acts for every party on this node, so credential separation cannot be tested here';
-  skip('credential: lpA token cannot read as lpB', reason);
-  skip('credential: verifier token cannot submit as admin', reason);
+  skip('credential: lpA token cannot read as lpB', 'one shared login acts for every party on this node, so LP credentials cannot be separated here');
 } else {
   await expectRejection('credential: lpA token cannot read as lpB',
     () => client.lpA.activeContracts(party.lpB, { templateId: TEMPLATES.CapitalCallObligation }), 'HTTP 403');
+}
+if (network.singleCredential && !network.separateVerifier) {
+  skip('credential: verifier token cannot submit as admin', 'the verifier uses the same shared login on this node');
+} else {
   await expectRejection('credential: verifier token cannot submit as admin',
     () => verifier.client.create({ actAs: [party.admin], templateId: TEMPLATES.Fund, argument: { admin: party.admin, fundId: 'X', fundName: 'X' } }),
     'HTTP 403');
@@ -76,7 +78,7 @@ if (network.singleCredential) {
 // ---------------------------------------------------------------- custody
 // With external parties the server's ledger users only relay. They must not be
 // able to act for a party without that party's own signature.
-if (network.partyMode === 'external') {
+if (network.externalKeys) {
   const relayOnly = new LedgerClient({ baseUrl: network.apiFor('lpA'), userId: users.lpA, label: 'relay without key' });
   await expectRejection('custody: server cannot act for lpA without lpA\'s key',
     () => relayOnly.create({ actAs: [party.lpA], templateId: TEMPLATES.Fund, argument: { admin: party.lpA, fundId: 'FORGED', fundName: 'forged' } }),
@@ -378,8 +380,8 @@ const result = {
   environment: network.name,
   authMode: network.authMode,
   partyMode: network.partyMode,
-  credentialSeparation: network.singleCredential ? 'NOT_TESTED_SINGLE_CREDENTIAL' : 'TESTED',
-  custody: network.partyMode === 'external' ? 'EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY' : 'SERVER_SUBMITS_FOR_PARTIES',
+  credentialSeparation: !network.singleCredential ? 'TESTED' : network.separateVerifier ? 'VERIFIER_ONLY' : 'NOT_TESTED_SINGLE_CREDENTIAL',
+  custody: network.externalKeys ? 'EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY' : 'SERVER_SUBMITS_FOR_PARTIES',
   externalParties: Object.entries(draw.external).map(([role, { fingerprint }]) => ({ role, fingerprint })),
   reasonsHidden: checks.filter((c) => c.detail?.reasonHidden).map((c) => c.id),
   skipped,
@@ -397,7 +399,7 @@ const result = {
   gates: {
     [network.name === 'localnet' ? 'LOCAL_SETTLEMENT' : 'DEVNET_E2E']: verdict(group(['settlement', 'negative', 'unpaid', 'deadline', 'totals'])),
     PRIVACY_CAMPAIGN: verdict(group(['privacy', 'authority', 'credential'])),
-    ...(network.partyMode === 'external' ? { CUSTODY: verdict(group(['custody'])) } : {}),
+    ...(network.externalKeys ? { CUSTODY: verdict(group(['custody'])) } : {}),
   },
   passed: checks.filter((c) => c.ok).length,
   failed: checks.filter((c) => !c.ok).map((c) => c.id),

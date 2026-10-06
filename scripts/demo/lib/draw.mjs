@@ -82,6 +82,8 @@ export class DrawSession {
   // External mode does the same, but each party is onboarded with its own key
   // and its ledger user can only relay transactions that key has signed.
   // Provisioned mode uses the ones in `.env` and checks the package is there.
+  // External-provisioned mode uses external parties the node operator allocated
+  // from topology we signed; the keys are local and sign every transaction.
   static async open({ tag, packageId, onStep = () => {} }) {
     const party = {};
     const users = {};
@@ -125,11 +127,13 @@ export class DrawSession {
       await operators[network.apiFor('admin')].createUser(users.verifier, { readAs: [party.admin] });
     } else {
       const shared = network.singleCredential ? await sharedUserId() : null;
+      const provided = network.partyMode === 'external-provisioned' ? network.provisionedExternal : network.provisioned;
       for (const role of ROLES) {
-        party[role] = network.provisioned[role].party;
-        users[role] = shared ?? network.provisioned[role].userId;
+        party[role] = provided[role].party;
+        users[role] = shared ?? provided[role].userId;
+        if (provided[role].keyName) external[role] = { keyName: provided[role].keyName, fingerprint: provided[role].fingerprint };
       }
-      users.verifier = shared ?? network.provisioned.verifier.userId;
+      users.verifier = network.separateVerifier ? provided.verifier.userId : shared ?? provided.verifier.userId;
       if (network.operators.provider) {
         await new LedgerClient({ baseUrl: network.apiFor('admin'), userId: network.operators.provider }).uploadDar(DAR);
         onStep('dar uploaded', { participant: network.apiFor('admin'), packageId });

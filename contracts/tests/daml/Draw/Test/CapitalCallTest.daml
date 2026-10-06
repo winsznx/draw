@@ -10,9 +10,12 @@ import DA.Optional (isNone, isSome)
 import DA.Time (time, days, addRelTime)
 import Daml.Script
 
-import Splice.Api.Token.MetadataV1 (emptyMetadata, emptyChoiceContext, ExtraArgs(..))
+import qualified DA.TextMap as TextMap
+
+import Splice.Api.Token.MetadataV1 (emptyMetadata, emptyChoiceContext, ExtraArgs(..), Metadata(..))
 import Splice.Api.Token.HoldingV1 (Holding, InstrumentId(..))
 import Splice.Api.Token.AllocationV1
+import Splice.Api.Token.AllocationRequestV1
 
 import Draw.CapitalCall
 import Draw.Test.Token
@@ -24,6 +27,7 @@ data Parties = Parties with
   lpC : Party
   outsider : Party
   registrar : Party
+  verifier : Party
 
 data World = World with
   parties : Parties
@@ -35,8 +39,8 @@ data World = World with
   obligationC : ContractId CapitalCallObligation
   dueAt : Time
 
-issuedAt : Time
-issuedAt = time (date 2026 Oct 1) 9 0 0
+callIssuedAt : Time
+callIssuedAt = time (date 2026 Oct 1) 9 0 0
 
 refA, refB, refC : Text
 refA = "DRAW:FUND-1:CALL-1:LP-A"
@@ -46,22 +50,29 @@ refC = "DRAW:FUND-1:CALL-1:LP-C"
 noExtraArgs : ExtraArgs
 noExtraArgs = ExtraArgs with context = emptyChoiceContext; meta = emptyMetadata
 
--- | Fund, three accepted commitments, one call, three obligations.
+-- | Fund, three accepted commitments, one call, three obligations. With
+-- 'withVerifier' the fund names the verifier party as an observer.
 setup : Script World
-setup = do
-  setTime issuedAt
+setup = setupWith False
+
+setupWith : Bool -> Script World
+setupWith withVerifier = do
+  setTime callIssuedAt
   admin <- allocatePartyByHint (PartyIdHint "admin")
   lpA <- allocatePartyByHint (PartyIdHint "lpA")
   lpB <- allocatePartyByHint (PartyIdHint "lpB")
   lpC <- allocatePartyByHint (PartyIdHint "lpC")
   outsider <- allocatePartyByHint (PartyIdHint "outsider")
   registrar <- allocatePartyByHint (PartyIdHint "registrar")
+  verifier <- allocatePartyByHint (PartyIdHint "verifier")
   let parties = Parties with ..
       instrument = InstrumentId with admin = registrar; id = "TestCoin"
-      dueAt = addRelTime issuedAt (days 10)
+      dueAt = addRelTime callIssuedAt (days 10)
 
   fundCid <- submit admin do
-    createCmd Fund with admin; fundId = "FUND-1"; fundName = "Example Ventures I"
+    createCmd Fund with
+      admin; fundId = "FUND-1"; fundName = "Example Ventures I"
+      verifier = if withVerifier then Some verifier else None
 
   commitments <- forA [(lpA, 1000000.0), (lpB, 700000.0), (lpC, 500000.0)] \(lp, committed) -> do
     invitationCid <- submit admin do
@@ -97,9 +108,9 @@ allocate p instrument sender executor settlementRefId legId amount = do
         settlement = SettlementInfo with
           executor
           settlementRef = Reference with id = settlementRefId; cid = None
-          requestedAt = issuedAt
-          allocateBefore = addRelTime issuedAt (days 9)
-          settleBefore = addRelTime issuedAt (days 30)
+          requestedAt = callIssuedAt
+          allocateBefore = addRelTime callIssuedAt (days 9)
+          settleBefore = addRelTime callIssuedAt (days 30)
           meta = emptyMetadata
         transferLegId = legId
         transferLeg = TransferLeg with
@@ -188,7 +199,7 @@ test_authority = script do
 
   -- An LP cannot change its own obligation state.
   expectFailure "Authorization failure" p.lpA do exerciseCmd w.obligationA (Obligation_FlagManualReview "self-review")
-  expectFailure "Authorization failure" p.lpA do exerciseCmd w.obligationA (Obligation_Waive "self-waive")
+  expectFailure "Authorization failure" p.lpA do exerciseCmd w.obligationA (Obligation_Waive "self-waive" None)
   expectFailure "Authorization failure" p.lpA do archiveCmd w.obligationA
 
   -- An LP cannot touch another LP's obligation.
@@ -207,7 +218,7 @@ test_authority = script do
       admin = p.admin; lp = p.lpA; fundId = "FUND-1"; fundName = "Example Ventures I"
       callId = "CALL-X"; obligationRef = "DRAW:FORGED"; amountDue = 1.0; scenarioAmount = 1.0
       instrumentId = w.instrument; dueAt = w.dueAt; state = Issued
-      pendingAllocationCid = None; settlement = None; reviewNote = None
+      pendingAllocationCid = None; settlement = None; reviewNote = None; verifier = None; issuedAt = None
 
   -- An LP cannot forge a funded obligation for itself.
   submitMustFail p.lpA do
@@ -215,12 +226,12 @@ test_authority = script do
       admin = p.admin; lp = p.lpA; fundId = "FUND-1"; fundName = "Example Ventures I"
       callId = "CALL-1"; obligationRef = refA; amountDue = 40.0; scenarioAmount = 400000.0
       instrumentId = w.instrument; dueAt = w.dueAt; state = Funded
-      pendingAllocationCid = None; settlement = None; reviewNote = None
+      pendingAllocationCid = None; settlement = None; reviewNote = None; verifier = None; issuedAt = None
 
   -- An LP cannot settle its own obligation, even with a matching allocation.
   allocationA <- allocateFor w p.lpA refA 40.0
   submitMustFail p.lpA do
-    exerciseCmd w.obligationA Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs
+    exerciseCmd w.obligationA Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs; paymentRequestCid = None
 
   -- A call cannot exceed the remaining commitment.
   [(commitC, _)] <- query @InvestorCommitment p.lpC
@@ -250,7 +261,7 @@ test_settlement_lifecycle = script do
   w <- setup
   let p = w.parties
       settle obligationCid allocationCid =
-        exerciseCmd obligationCid Obligation_Settle with allocationCid; extraArgs = noExtraArgs
+        exerciseCmd obligationCid Obligation_Settle with allocationCid; extraArgs = noExtraArgs; paymentRequestCid = None
 
   -- LP A allocates exactly; admin observes it as pending, then settles.
   allocationA <- allocateFor w p.lpA refA 40.0
@@ -313,7 +324,7 @@ test_settlement_lifecycle = script do
 
   -- A funded obligation cannot be made overdue, waived, or flagged.
   expectFailure "only an unpaid obligation can become overdue" p.admin do exerciseCmd obligationA2 Obligation_MarkOverdue
-  expectFailure "only an overdue or reviewed obligation can be waived" p.admin do exerciseCmd obligationA2 (Obligation_Waive "no")
+  expectFailure "only an overdue or reviewed obligation can be waived" p.admin do exerciseCmd obligationA2 (Obligation_Waive "no" None)
   expectFailure "only an open obligation can be flagged" p.admin do exerciseCmd obligationA2 (Obligation_FlagManualReview "no")
 
   -- Admin totals recomputed from admin-visible obligations.
@@ -349,18 +360,18 @@ test_resolution_paths = script do
   obligationA1 <- submit p.admin do exerciseCmd w.obligationA Obligation_MarkOverdue
   allocationA <- allocateFor w p.lpA refA 40.0
   obligationA2 <- submit p.admin do
-    exerciseCmd obligationA1 Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs
+    exerciseCmd obligationA1 Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs; paymentRequestCid = None
   Some lateA <- queryContractId p.lpA obligationA2
   lateA.state === Funded
   fmap (.settledAfterDue) lateA.settlement === Some True
 
   obligationB1 <- submit p.admin do exerciseCmd w.obligationB (Obligation_FlagManualReview "wire received off-ledger, needs ops check")
   obligationState p.lpB obligationB1 >>= (=== ManualReview)
-  obligationB2 <- submit p.admin do exerciseCmd obligationB1 (Obligation_Waive "side letter")
+  obligationB2 <- submit p.admin do exerciseCmd obligationB1 (Obligation_Waive "side letter" None)
   obligationState p.lpB obligationB2 >>= (=== Waived)
 
   -- An issued obligation cannot be waived without first being overdue or reviewed.
-  expectFailure "only an overdue or reviewed obligation can be waived" p.admin do exerciseCmd w.obligationC (Obligation_Waive "skip")
+  expectFailure "only an overdue or reviewed obligation can be waived" p.admin do exerciseCmd w.obligationC (Obligation_Waive "skip" None)
 
 -- | Stale pending payments, review round trips, and outsider authority.
 test_review_paths : Script ()
@@ -375,7 +386,7 @@ test_review_paths = script do
   submit (actAs [p.lpA, p.registrar]) do
     exerciseCmd allocationA Allocation_Withdraw with extraArgs = noExtraArgs
   expectFailure "Could not find contract" p.admin do
-    exerciseCmd pendingA Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs
+    exerciseCmd pendingA Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs; paymentRequestCid = None
   releasedA <- submit p.admin do exerciseCmd pendingA (Obligation_ReleasePending "LP withdrew the payment")
   obligationState p.lpA releasedA >>= (=== Issued)
   expectFailure "only a payment-pending obligation can be released" p.admin do
@@ -384,7 +395,7 @@ test_review_paths = script do
   -- A fresh correct payment still settles after the release.
   allocationA2 <- allocateFor w p.lpA refA 40.0
   fundedA <- submit p.admin do
-    exerciseCmd releasedA Obligation_Settle with allocationCid = allocationA2; extraArgs = noExtraArgs
+    exerciseCmd releasedA Obligation_Settle with allocationCid = allocationA2; extraArgs = noExtraArgs; paymentRequestCid = None
   obligationState p.lpA fundedA >>= (=== Funded)
 
   -- Review round trip: flagged, reopened, then settled.
@@ -399,7 +410,7 @@ test_review_paths = script do
   reviewB2 <- submit p.admin do exerciseCmd reopenedB (Obligation_FlagManualReview "second look")
   allocationB <- allocateFor w p.lpB refB 35.0
   fundedB <- submit p.admin do
-    exerciseCmd reviewB2 Obligation_Settle with allocationCid = allocationB; extraArgs = noExtraArgs
+    exerciseCmd reviewB2 Obligation_Settle with allocationCid = allocationB; extraArgs = noExtraArgs; paymentRequestCid = None
   obligationState p.lpB fundedB >>= (=== Funded)
 
   -- An unrelated party cannot issue a call, waive, or release.
@@ -408,14 +419,138 @@ test_review_paths = script do
     exerciseCmd w.fundCid Fund_IssueCall with
       callId = "CALL-X"; description = "rogue"; dueAt = w.dueAt
       requests = [ObligationRequest with commitmentCid = commitC; obligationRef = "X"; amountDue = 1.0; scenarioAmount = 1.0]
-  expectFailure "Could not find contract" p.outsider do exerciseCmd w.obligationC (Obligation_Waive "rogue")
+  expectFailure "Could not find contract" p.outsider do exerciseCmd w.obligationC (Obligation_Waive "rogue" None)
   -- Even with visibility through readAs on the admin, acting needs admin authority.
-  expectFailureAs "Authorization failure" (actAs p.outsider <> readAs p.admin) do exerciseCmd w.obligationC (Obligation_Waive "rogue")
+  expectFailureAs "Authorization failure" (actAs p.outsider <> readAs p.admin) do exerciseCmd w.obligationC (Obligation_Waive "rogue" None)
 
   -- A duplicate payment after funding is refused, and the LP can take it back.
   duplicateA <- allocateFor w p.lpA refA 40.0
   expectFailure "obligation is not open for settlement" p.admin do
-    exerciseCmd fundedA Obligation_Settle with allocationCid = duplicateA; extraArgs = noExtraArgs
+    exerciseCmd fundedA Obligation_Settle with allocationCid = duplicateA; extraArgs = noExtraArgs; paymentRequestCid = None
   submit (actAs [p.lpA, p.registrar]) do
     exerciseCmd duplicateA Allocation_Withdraw with extraArgs = noExtraArgs
   pure ()
+
+-- | The request the LP's wallet sees, and the wallet path end to end: an
+-- allocation built from the request settles the obligation and closes the
+-- request. Reject and withdraw follow the token standard's rules.
+test_payment_request : Script ()
+test_payment_request = script do
+  w <- setup
+  let p = w.parties
+      requestRefs party = sort . map ((.obligationRef) . snd) <$> query @PaymentRequest party
+
+  -- Each LP sees only its own request. The outsider sees none.
+  requestRefs p.admin >>= (=== [refA, refB, refC])
+  requestRefs p.lpA >>= (=== [refA])
+  requestRefs p.lpB >>= (=== [refB])
+  requestRefs p.lpC >>= (=== [refC])
+  requestRefs p.outsider >>= (=== [])
+
+  -- The interface view a standard wallet reads.
+  [(requestA, viewA)] <- queryInterface @AllocationRequest p.lpA
+  let Some v = viewA
+  v.settlement.executor === p.admin
+  v.settlement.settlementRef.id === refA
+  v.settlement.settlementRef.cid === None
+  v.settlement.requestedAt === callIssuedAt
+  v.settlement.allocateBefore === w.dueAt
+  v.settlement.settleBefore === addRelTime w.dueAt (days 7)
+  TextMap.toList v.transferLegs === [(refA, TransferLeg with sender = p.lpA; receiver = p.admin; amount = 40.0; instrumentId = w.instrument; meta = emptyMetadata)]
+  TextMap.lookup "splice.lfdecentralizedtrust.org/reason" v.meta.values === Some "Capital call CALL-1, Example Ventures I"
+
+  -- What a wallet's Accept creates: the request's settlement and its one leg.
+  let [(legId, leg)] = TextMap.toList v.transferLegs
+  walletAllocation <- submit (actAs [p.lpA, p.registrar]) do
+    createCmd TestAllocation with
+      registrar = p.registrar
+      lockedHoldingCids = []
+      spec = AllocationSpecification with settlement = v.settlement; transferLegId = legId; transferLeg = leg
+  [(requestCidA, _)] <- query @PaymentRequest p.lpA
+  [(requestCidB, _)] <- query @PaymentRequest p.lpB
+
+  -- Another obligation's request cannot be closed by this settlement.
+  expectFailure "payment request belongs to a different obligation" p.admin do
+    exerciseCmd w.obligationA Obligation_Settle with
+      allocationCid = toInterfaceContractId walletAllocation; extraArgs = noExtraArgs; paymentRequestCid = Some requestCidB
+
+  fundedA <- submit p.admin do
+    exerciseCmd w.obligationA Obligation_Settle with
+      allocationCid = toInterfaceContractId walletAllocation; extraArgs = noExtraArgs; paymentRequestCid = Some requestCidA
+  obligationState p.lpA fundedA >>= (=== Funded)
+  queryContractId p.lpA requestCidA >>= \r -> assertMsg "request still open after settlement" (isNone r)
+  requestRefs p.lpA >>= (=== [])
+
+  -- LP B declines in its wallet. Only that LP may reject, and the obligation
+  -- stays open for the fund to decide.
+  expectFailure "only the LP who owes this payment can reject it" p.admin do
+    exerciseCmd (toInterfaceContractId @AllocationRequest requestCidB) AllocationRequest_Reject with actor = p.admin; extraArgs = noExtraArgs
+  expectFailure "Could not find contract" p.lpA do
+    exerciseCmd (toInterfaceContractId @AllocationRequest requestCidB) AllocationRequest_Reject with actor = p.lpA; extraArgs = noExtraArgs
+  submit p.lpB do
+    exerciseCmd (toInterfaceContractId @AllocationRequest requestCidB) AllocationRequest_Reject with actor = p.lpB; extraArgs = noExtraArgs
+  requestRefs p.lpB >>= (=== [])
+  obligationState p.lpB w.obligationB >>= (=== Issued)
+
+  -- Waiving LP C's overdue obligation closes its request.
+  [(requestCidC, _)] <- query @PaymentRequest p.lpC
+  setTime (addRelTime w.dueAt (days 1))
+  overdueC <- submit p.admin do exerciseCmd w.obligationC Obligation_MarkOverdue
+  waivedC <- submit p.admin do exerciseCmd overdueC (Obligation_Waive "fund agreed to defer" (Some requestCidC))
+  obligationState p.lpC waivedC >>= (=== Waived)
+  requestRefs p.lpC >>= (=== [])
+
+  -- Only the executor, the fund admin, can withdraw a request.
+  [(commitA, _)] <- query @InvestorCommitment p.lpA
+  setTime (addRelTime w.dueAt (days 2))
+  _ <- submit p.admin do
+    exerciseCmd w.fundCid Fund_IssueCall with
+      callId = "CALL-2"; description = "Follow-on"; dueAt = addRelTime w.dueAt (days 20)
+      requests = [ObligationRequest with commitmentCid = commitA; obligationRef = "DRAW:FUND-1:CALL-2:LP-A"; amountDue = 10.0; scenarioAmount = 100000.0]
+  [(requestCidA2, _)] <- query @PaymentRequest p.lpA
+  expectFailure "Authorization failure" p.lpA do
+    exerciseCmd (toInterfaceContractId @AllocationRequest requestCidA2) AllocationRequest_Withdraw with extraArgs = noExtraArgs
+  submit p.admin do
+    exerciseCmd (toInterfaceContractId @AllocationRequest requestCidA2) AllocationRequest_Withdraw with extraArgs = noExtraArgs
+  requestRefs p.lpA >>= (=== [])
+
+-- | A named verifier observes the fund, each call header and each obligation,
+-- and nothing else. It cannot act, and LPs still see only their own records.
+test_verifier : Script ()
+test_verifier = script do
+  w <- setupWith True
+  let p = w.parties
+
+  length <$> query @Fund p.verifier >>= (=== 1)
+  length <$> query @CapitalCall p.verifier >>= (=== 1)
+  refsVisibleTo p.verifier >>= (=== [refA, refB, refC])
+  length <$> query @InvestorCommitment p.verifier >>= (=== 0)
+  length <$> query @CommitmentInvitation p.verifier >>= (=== 0)
+  length <$> query @PaymentRequest p.verifier >>= (=== 0)
+
+  -- Privacy between LPs is unchanged.
+  refsVisibleTo p.lpA >>= (=== [refA])
+  refsVisibleTo p.lpB >>= (=== [refB])
+  refsVisibleTo p.outsider >>= (=== [])
+
+  -- The verifier reads the settlement record through its own party.
+  allocationA <- allocateFor w p.lpA refA 40.0
+  fundedA <- submit p.admin do
+    exerciseCmd w.obligationA Obligation_Settle with allocationCid = allocationA; extraArgs = noExtraArgs; paymentRequestCid = None
+  Some seen <- queryContractId p.verifier fundedA
+  seen.state === Funded
+  fmap (.settledAmount) seen.settlement === Some 40.0
+
+  -- It cannot act on what it sees.
+  expectFailure "Authorization failure" p.verifier do exerciseCmd w.obligationB (Obligation_FlagManualReview "verifier")
+  expectFailure "Authorization failure" p.verifier do
+    exerciseCmd w.fundCid Fund_InviteInvestor with lp = p.verifier; committedScenarioAmount = 1.0; instrumentId = w.instrument
+
+-- | Without a named verifier, the verifier party sees nothing of the fund.
+test_no_verifier : Script ()
+test_no_verifier = script do
+  w <- setup
+  let p = w.parties
+  length <$> query @Fund p.verifier >>= (=== 0)
+  length <$> query @CapitalCall p.verifier >>= (=== 0)
+  refsVisibleTo p.verifier >>= (=== [])
