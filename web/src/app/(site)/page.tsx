@@ -216,7 +216,7 @@ export default async function Landing() {
           <article className={styles.tile}>
             <span className={styles.tileIcon}><IconEyeOff size={18} /></span>
             <h3 className={styles.tileTitle}>Private by the ledger</h3>
-            <p className={styles.tileText}>A notice is a contract only the fund and that LP can read. Another LP asking for it by its id gets nothing back.</p>
+            <p className={styles.tileText}>A notice is a contract only the fund and that LP can read, plus the node that hosts them. Another LP asking for it by its id gets nothing back.</p>
             <div className={styles.mini}>
               <div className={styles.miniRow}><span>LP A</span><b className={styles.miniGood}>Own notice</b></div>
               <div className={styles.miniRow}><span>LP B</span><b className={styles.miniGood}>Own notice</b></div>
