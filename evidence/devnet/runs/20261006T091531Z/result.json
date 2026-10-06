@@ -1,0 +1,642 @@
+{
+  "runId": "20261006T091531Z",
+  "environment": "devnet",
+  "authMode": "password",
+  "partyMode": "provisioned",
+  "credentialSeparation": "NOT_TESTED_SINGLE_CREDENTIAL",
+  "custody": "SERVER_SUBMITS_FOR_PARTIES",
+  "externalParties": [],
+  "reasonsHidden": [],
+  "skipped": [
+    {
+      "id": "credential: lpA token cannot read as lpB",
+      "reason": "one shared login acts for every party on this node, so LP credentials cannot be separated here"
+    },
+    {
+      "id": "credential: verifier token cannot submit as admin",
+      "reason": "the verifier uses the same shared login on this node"
+    }
+  ],
+  "canton": "3.5.19",
+  "commit": "688cdbc8f709af402913b696569d53cb8dd5a4c0",
+  "uncommittedFiles": 0,
+  "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534",
+  "darSha256": "382dcba523552e24aaaabd30a6205b7936317c7671e134712d9ac82182bf19b4",
+  "instrument": {
+    "admin": "DSO::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+    "id": "Amulet"
+  },
+  "parties": {
+    "admin": "b94ab230-draw-admin::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e",
+    "lpA": "b94ab230-draw-lpa::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e",
+    "lpB": "b94ab230-draw-lpb::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e",
+    "lpC": "b94ab230-draw-lpc::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e",
+    "outsider": "b94ab230-draw-outsider::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e"
+  },
+  "fundId": "FUND-20261006t091531z",
+  "users": {
+    "admin": "b94ab230-e690-46b2-9288-133b30609cb9",
+    "lpA": "b94ab230-e690-46b2-9288-133b30609cb9",
+    "lpB": "b94ab230-e690-46b2-9288-133b30609cb9",
+    "lpC": "b94ab230-e690-46b2-9288-133b30609cb9",
+    "outsider": "b94ab230-e690-46b2-9288-133b30609cb9",
+    "verifier": "b94ab230-e690-46b2-9288-133b30609cb9"
+  },
+  "participants": {
+    "admin": "admin participant",
+    "lpA": "admin participant",
+    "lpB": "admin participant",
+    "lpC": "admin participant",
+    "outsider": "admin participant"
+  },
+  "verifierUser": "b94ab230-e690-46b2-9288-133b30609cb9",
+  "gates": {
+    "DEVNET_E2E": "PASS",
+    "PRIVACY_CAMPAIGN": "PASS"
+  },
+  "passed": 79,
+  "failed": [],
+  "checks": [
+    {
+      "id": "deadline: overdue refused before due time",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 400: {\"code\":\"DAML_FAILURE\",\"cause\":\"Interpretation error: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed (error category 9): obligation is not yet due\",\"correlationId\":\"a08e6602-1b88-4a9d-a7f6-b1f610b302b4\",\"traceId\":\"67b7b5f93844e5325322ce17308d47aa\",\"context\":{\"participant\":\"'participant'\",\"error_id\":\"UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed\",\"exercise_trace\":\"    in choice 733ba37d:Draw.CapitalCall:CapitalCallObligation:Obligation_MarkOverdue on contract 00b99e82de (#0)\\n    "
+      }
+    },
+    {
+      "id": "privacy[after-issue]: admin sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: lpA sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: lpB sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: lpC sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: outsider sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: admin sees all three obligations",
+      "ok": true,
+      "detail": [
+        "obligation:lpA",
+        "obligation:lpB",
+        "obligation:lpC"
+      ]
+    },
+    {
+      "id": "privacy[after-issue]: lpA sees only its own obligation",
+      "ok": true,
+      "detail": [
+        "obligation:lpA"
+      ]
+    },
+    {
+      "id": "privacy[after-issue]: lpA sees only its own commitment",
+      "ok": true,
+      "detail": [
+        "commitment:lpA"
+      ]
+    },
+    {
+      "id": "privacy[after-issue]: lpA sees no Fund or CapitalCall",
+      "ok": true
+    },
+    {
+      "id": "privacy[after-issue]: lpA sees no other LP's allocation",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: lpB sees only its own obligation",
+      "ok": true,
+      "detail": [
+        "obligation:lpB"
+      ]
+    },
+    {
+      "id": "privacy[after-issue]: lpB sees only its own commitment",
+      "ok": true,
+      "detail": [
+        "commitment:lpB"
+      ]
+    },
+    {
+      "id": "privacy[after-issue]: lpB sees no Fund or CapitalCall",
+      "ok": true
+    },
+    {
+      "id": "privacy[after-issue]: lpB sees no other LP's allocation",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: lpC sees only its own obligation",
+      "ok": true,
+      "detail": [
+        "obligation:lpC"
+      ]
+    },
+    {
+      "id": "privacy[after-issue]: lpC sees only its own commitment",
+      "ok": true,
+      "detail": [
+        "commitment:lpC"
+      ]
+    },
+    {
+      "id": "privacy[after-issue]: lpC sees no Fund or CapitalCall",
+      "ok": true
+    },
+    {
+      "id": "privacy[after-issue]: lpC sees no other LP's allocation",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[after-issue]: outsider sees nothing",
+      "ok": true,
+      "detail": {
+        "Fund": [],
+        "CommitmentInvitation": [],
+        "InvestorCommitment": [],
+        "CapitalCall": [],
+        "CapitalCallObligation": [],
+        "PaymentRequest": [],
+        "Allocation": []
+      }
+    },
+    {
+      "id": "wallet: lpA sees exactly its own payment request",
+      "ok": true,
+      "detail": [
+        "DRAW-b3b6a29e5f078d3a"
+      ]
+    },
+    {
+      "id": "wallet: lpB sees exactly its own payment request",
+      "ok": true,
+      "detail": [
+        "DRAW-90ec5b577580ab2d"
+      ]
+    },
+    {
+      "id": "wallet: lpC sees exactly its own payment request",
+      "ok": true,
+      "detail": [
+        "DRAW-bbb8c605cc48cd5a"
+      ]
+    },
+    {
+      "id": "wallet: outsider sees no payment request",
+      "ok": true
+    },
+    {
+      "id": "wallet: lpA reads its call as a CIP-0056 AllocationRequest with the exact settlement and leg",
+      "ok": true,
+      "detail": {
+        "settlement": {
+          "executor": "b94ab230-draw-admin::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e",
+          "settlementRef": {
+            "id": "DRAW-b3b6a29e5f078d3a"
+          },
+          "requestedAt": "2026-10-06T09:16:21.800961Z",
+          "allocateBefore": "2026-10-06T09:17:51.721Z",
+          "settleBefore": "2026-10-13T09:17:51.721Z",
+          "meta": {
+            "values": {}
+          }
+        },
+        "transferLegs": {
+          "DRAW-b3b6a29e5f078d3a": {
+            "sender": "b94ab230-draw-lpa::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e",
+            "receiver": "b94ab230-draw-admin::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e",
+            "amount": "40.0000000000",
+            "instrumentId": {
+              "admin": "DSO::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+              "id": "Amulet"
+            },
+            "meta": {
+              "values": {}
+            }
+          }
+        },
+        "meta": {
+          "values": {
+            "splice.lfdecentralizedtrust.org/reason": "Capital call CALL-1, Example Ventures I (demo)"
+          }
+        }
+      }
+    },
+    {
+      "id": "privacy: lpA cannot fetch lpB obligation by contract id",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/events/events-by-contract-id -> HTTP 404: {\"code\":\"CONTRACT_EVENTS_NOT_FOUND\",\"cause\":\"Contract events not found, or not visible.\",\"correlationId\":null,\"traceId\":\"7653f4950ef283e3f03bd8c3e6788a2f\",\"context\":{\"participant\":\"'participant'\",\"definite_answer\":\"false\",\"tid\":\"7653f4950ef283e3f03bd8c3e6788a2f\",\"category\":\"11\"},\"resources\":[[\"ErrorResource(CONTRACT_ID)\",\"00b1515a57e1e63552938ee04553e8b060df2951c6c03d3b045bffa99f0a763d45ca1212208492eff0fd7b537aab6e7a9cde3b1358461769699aaceffc4f109c992f0aba16\"]],\"errorCategory\":11,\"grpcCodeValue\":5,\"retryInfo\":null,\"definiteAnswer\":null}"
+      }
+    },
+    {
+      "id": "authority: lpA cannot exercise on lpB obligation",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 404: {\"code\":\"CONTRACT_NOT_FOUND\",\"cause\":\"Contract could not be found with id 00b1515a57e1e63552938ee04553e8b060df2951c6c03d3b045bffa99f0a763d45ca1212208492eff0fd7b537aab6e7a9cde3b1358461769699aaceffc4f109c992f0aba16\",\"correlationId\":\"50ac265d-87d5-4aec-8d72-136e44438bc2\",\"traceId\":\"13f87925fe922fc8c90399c4563b6c91\",\"context\":{\"participant\":\"'participant'\",\"category\":\"11\",\"tid\":\"13f87925fe922fc8c90399c4563b6c91\",\"definite_answer\":\"false\",\"commands\":\"{readAs: [], deduplicationPeriod: {duration: 'PT30S'}, submittedAt: '2026-10-06T09:16:43.915"
+      }
+    },
+    {
+      "id": "authority: lpA cannot change its own obligation state",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 400: {\"code\":\"DAML_AUTHORIZATION_ERROR\",\"cause\":\"Interpretation error: Error: node NodeId(0) (733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534:Draw.CapitalCall:CapitalCallObligation) requires authorizers b94ab230-draw-admin::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e, but only b94ab230-draw-lpa::12204a9d883d1158141d8f099d06dd2e42cb52615deb42da5a46f042c8d0e1dbdf0e were given\",\"correlationId\":\"71e0f24c-ebc6-433d-bced-ecb879122b06\",\"traceId\":\"2039bccc13079ffa99afc3aa97ddbe1d\",\"context\":{\"participant\":\"'"
+      }
+    },
+    {
+      "id": "settlement[lpA]: admin observes allocation in its own ACS",
+      "ok": true,
+      "detail": {
+        "id": "DRAW-b3b6a29e5f078d3a"
+      }
+    },
+    {
+      "id": "settlement[lpA]: obligation is PaymentPending, not Funded, before execution",
+      "ok": true,
+      "detail": {
+        "state": "PaymentPending",
+        "updateId": "1220306817fd6dde7b4a6fa8445ea14d23aa18191d4f2b4e27e6f493a4f5accd518c"
+      }
+    },
+    {
+      "id": "settlement[lpA]: independent verifier returns VERIFIED_FUNDED",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "wallet: lpA's payment request closes when the call is settled",
+      "ok": true
+    },
+    {
+      "id": "settlement[lpA]: LP sees its own obligation as Funded",
+      "ok": true,
+      "detail": "Funded"
+    },
+    {
+      "id": "negative: wrong amount does not fund",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 400: {\"code\":\"DAML_FAILURE\",\"cause\":\"Interpretation error: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed (error category 9): allocation amount does not equal amount due\",\"correlationId\":\"cbfb7e71-85b0-4a29-bfbd-7f5691363bca\",\"traceId\":\"677b8122152083f36193a631ac5ebc4e\",\"context\":{\"participant\":\"'participant'\",\"error_id\":\"UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed\",\"exercise_trace\":\"    in choice 733ba37d:Draw.CapitalCall:CapitalCallObligation:Obligation_Settle on contract 00b1515a"
+      }
+    },
+    {
+      "id": "negative: wrong payer does not fund",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 400: {\"code\":\"DAML_FAILURE\",\"cause\":\"Interpretation error: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed (error category 9): allocation sender is not the obligated LP\",\"correlationId\":\"d7e21d27-6264-49f5-b6d9-a4e422602dbc\",\"traceId\":\"acb5d278b2c081873795f554dc67b235\",\"context\":{\"participant\":\"'participant'\",\"error_id\":\"UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed\",\"exercise_trace\":\"    in choice 733ba37d:Draw.CapitalCall:CapitalCallObligation:Obligation_Settle on contract 00b1515a57"
+      }
+    },
+    {
+      "id": "negative: wrong reference does not fund",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 400: {\"code\":\"DAML_FAILURE\",\"cause\":\"Interpretation error: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed (error category 9): allocation settlement reference does not match obligation\",\"correlationId\":\"4471fc73-6a2a-4d93-afdd-52b7502094f9\",\"traceId\":\"080abf33393d58ba9de40a0b5c186a49\",\"context\":{\"participant\":\"'participant'\",\"error_id\":\"UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed\",\"exercise_trace\":\"    in choice 733ba37d:Draw.CapitalCall:CapitalCallObligation:Obligation_Settle on con"
+      }
+    },
+    {
+      "id": "negative: replayed allocation from lpA does not fund lpB",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 404: {\"code\":\"CONTRACT_NOT_FOUND\",\"cause\":\"Contract could not be found with id 00d5fe8be64646b28db66818e620418014d99d148465e7f92956580d32ec299b98ca121220da583c1717b6b1c720162de6a4f4c4a41abdd4972204887284f51b56b69308e3\",\"correlationId\":\"c59c82b1-a2d9-47b1-941d-1596884a9545\",\"traceId\":\"9d2270a9252f84baa640e6146c4f9aab\",\"context\":{\"participant\":\"'participant'\",\"category\":\"11\",\"tid\":\"9d2270a9252f84baa640e6146c4f9aab\",\"definite_answer\":\"false\",\"commands\":\"{readAs: [], deduplicationPeriod: {duration: 'PT30S'}, submittedAt: '2026-10-06T09:17:32.976"
+      }
+    },
+    {
+      "id": "negative: replayed allocation does not fund lpA twice",
+      "ok": true,
+      "detail": {
+        "rejected": "/v2/commands/submit-and-wait-for-transaction -> HTTP 400: {\"code\":\"DAML_FAILURE\",\"cause\":\"Interpretation error: Error: User failure: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed (error category 9): obligation is not open for settlement\",\"correlationId\":\"80313824-8c46-41b9-80d7-70f40d3e0e62\",\"traceId\":\"5459db72fd609e16a0803ab39b1e3687\",\"context\":{\"participant\":\"'participant'\",\"error_id\":\"UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed\",\"exercise_trace\":\"    in choice 733ba37d:Draw.CapitalCall:CapitalCallObligation:Obligation_Settle on contract 0026f3e2c2 (#0"
+      }
+    },
+    {
+      "id": "negative: verifier rejects lpA settlement evidence offered for lpB",
+      "ok": true,
+      "detail": [
+        "update id not already used as evidence",
+        "update creates the funded obligation for this reference",
+        "current admin ACS obligation is the funded one",
+        "payer is the obligated LP"
+      ]
+    },
+    {
+      "id": "negative: lpB still unfunded after every bad attempt",
+      "ok": true,
+      "detail": "Issued"
+    },
+    {
+      "id": "negative: rejected allocations withdrawn, none left for admin to execute",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "settlement[lpB]: admin observes allocation in its own ACS",
+      "ok": true,
+      "detail": {
+        "id": "DRAW-90ec5b577580ab2d"
+      }
+    },
+    {
+      "id": "settlement[lpB]: obligation is PaymentPending, not Funded, before execution",
+      "ok": true,
+      "detail": {
+        "state": "PaymentPending",
+        "updateId": "12204a6c4e627325b66ddeb539886b7942fad4c7943d68552d59fb7004f0f0b8992c"
+      }
+    },
+    {
+      "id": "settlement[lpB]: independent verifier returns VERIFIED_FUNDED",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "wallet: lpB's payment request closes when the call is settled",
+      "ok": true
+    },
+    {
+      "id": "settlement[lpB]: LP sees its own obligation as Funded",
+      "ok": true,
+      "detail": "Funded"
+    },
+    {
+      "id": "unpaid: lpC obligation is Overdue after the due time, not Funded",
+      "ok": true,
+      "detail": {
+        "state": "Overdue",
+        "updateId": "1220b25f79a2b824cb05b5b677ddf67f3d1f9e8b079d73c9d35fbb413b14cde21791"
+      }
+    },
+    {
+      "id": "totals: funded is 750,000 USD scenario",
+      "ok": true,
+      "detail": 750000
+    },
+    {
+      "id": "totals: unresolved is 250,000 USD scenario",
+      "ok": true,
+      "detail": 250000
+    },
+    {
+      "id": "totals: funded + unresolved equals the call total",
+      "ok": true
+    },
+    {
+      "id": "totals: funded units equal verified receipt units",
+      "ok": true,
+      "detail": {
+        "fundedScenarioUsd": 750000,
+        "unresolvedScenarioUsd": 250000,
+        "callTotalScenarioUsd": 1000000,
+        "fundedUnits": 75,
+        "adminAmuletReceived": 75,
+        "verifiedReceiptUnits": 75,
+        "byObligation": [
+          {
+            "lp": "lpA",
+            "state": "Funded",
+            "evidence": "VERIFIED_FUNDED",
+            "scenarioUsd": 400000,
+            "units": 40
+          },
+          {
+            "lp": "lpB",
+            "state": "Funded",
+            "evidence": "VERIFIED_FUNDED",
+            "scenarioUsd": 350000,
+            "units": 35
+          },
+          {
+            "lp": "lpC",
+            "state": "Overdue",
+            "evidence": "NONE",
+            "scenarioUsd": 250000,
+            "units": 25
+          }
+        ],
+        "balancesBefore": {
+          "admin": 330,
+          "lpA": 410,
+          "lpB": 460,
+          "lpC": 600
+        },
+        "balancesAfter": {
+          "admin": 405,
+          "lpA": 370,
+          "lpB": 425,
+          "lpC": 600
+        }
+      }
+    },
+    {
+      "id": "totals: lpA unlocked balance fell by exactly what it settled (40)",
+      "ok": true,
+      "detail": {
+        "delta": 40,
+        "paid": 40
+      }
+    },
+    {
+      "id": "totals: lpB unlocked balance fell by exactly what it settled (35)",
+      "ok": true,
+      "detail": {
+        "delta": 35,
+        "paid": 35
+      }
+    },
+    {
+      "id": "totals: lpC unlocked balance fell by exactly what it settled (0)",
+      "ok": true,
+      "detail": {
+        "delta": 0,
+        "paid": 0
+      }
+    },
+    {
+      "id": "totals: admin Amulet balance grew by exactly the funded units",
+      "ok": true,
+      "detail": {
+        "received": 75,
+        "funded": 75
+      }
+    },
+    {
+      "id": "privacy[final]: admin sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: lpA sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: lpB sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: lpC sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: outsider sees no DRAW or allocation contract it is not party to, from any run",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: admin sees all three obligations",
+      "ok": true,
+      "detail": [
+        "obligation:lpA",
+        "obligation:lpB",
+        "obligation:lpC"
+      ]
+    },
+    {
+      "id": "privacy[final]: lpA sees only its own obligation",
+      "ok": true,
+      "detail": [
+        "obligation:lpA"
+      ]
+    },
+    {
+      "id": "privacy[final]: lpA sees only its own commitment",
+      "ok": true,
+      "detail": [
+        "commitment:lpA"
+      ]
+    },
+    {
+      "id": "privacy[final]: lpA sees no Fund or CapitalCall",
+      "ok": true
+    },
+    {
+      "id": "privacy[final]: lpA sees no other LP's allocation",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: lpB sees only its own obligation",
+      "ok": true,
+      "detail": [
+        "obligation:lpB"
+      ]
+    },
+    {
+      "id": "privacy[final]: lpB sees only its own commitment",
+      "ok": true,
+      "detail": [
+        "commitment:lpB"
+      ]
+    },
+    {
+      "id": "privacy[final]: lpB sees no Fund or CapitalCall",
+      "ok": true
+    },
+    {
+      "id": "privacy[final]: lpB sees no other LP's allocation",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: lpC sees only its own obligation",
+      "ok": true,
+      "detail": [
+        "obligation:lpC"
+      ]
+    },
+    {
+      "id": "privacy[final]: lpC sees only its own commitment",
+      "ok": true,
+      "detail": [
+        "commitment:lpC"
+      ]
+    },
+    {
+      "id": "privacy[final]: lpC sees no Fund or CapitalCall",
+      "ok": true
+    },
+    {
+      "id": "privacy[final]: lpC sees no other LP's allocation",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "privacy[final]: outsider sees nothing",
+      "ok": true,
+      "detail": {
+        "Fund": [],
+        "CommitmentInvitation": [],
+        "InvestorCommitment": [],
+        "CapitalCall": [],
+        "CapitalCallObligation": [],
+        "PaymentRequest": [],
+        "Allocation": []
+      }
+    },
+    {
+      "id": "privacy[stream]: admin received no transaction event about another party's fund records or payments",
+      "ok": true,
+      "detail": {
+        "transactions": 21,
+        "events": 82,
+        "foreign": []
+      }
+    },
+    {
+      "id": "privacy[stream]: lpA received no transaction event about another party's fund records or payments",
+      "ok": true,
+      "detail": {
+        "transactions": 7,
+        "events": 33,
+        "foreign": []
+      }
+    },
+    {
+      "id": "privacy[stream]: lpB received no transaction event about another party's fund records or payments",
+      "ok": true,
+      "detail": {
+        "transactions": 11,
+        "events": 59,
+        "foreign": []
+      }
+    },
+    {
+      "id": "privacy[stream]: lpC received no transaction event about another party's fund records or payments",
+      "ok": true,
+      "detail": {
+        "transactions": 7,
+        "events": 27,
+        "foreign": []
+      }
+    },
+    {
+      "id": "privacy[stream]: outsider received no transaction event about another party's fund records or payments",
+      "ok": true,
+      "detail": {
+        "transactions": 0,
+        "events": 0,
+        "foreign": []
+      }
+    }
+  ]
+}
