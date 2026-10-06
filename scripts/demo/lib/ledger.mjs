@@ -4,7 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-import { tokenFor } from './auth.mjs';
+import { ledgerUserOf, tokenFor, tokenSubject } from './auth.mjs';
 
 export const TEMPLATES = {
   Fund: '#draw:Draw.CapitalCall:Fund',
@@ -99,8 +99,13 @@ export class LedgerClient {
     return packageIds;
   }
 
+  // The ledger user this client's requests act as: its token's subject.
+  async tokenSubject() {
+    return tokenSubject(this.userId);
+  }
+
   async userRights(userId) {
-    return this.request('GET', `/v2/users/${encodeURIComponent(userId)}/rights`);
+    return this.request('GET', `/v2/users/${encodeURIComponent(await ledgerUserOf(userId))}/rights`);
   }
 
   static identifierFilter({ templateId, interfaceId }) {
@@ -166,7 +171,7 @@ export class LedgerClient {
   async prepare({ actAs, readAs = [], commands, disclosedContracts = [], synchronizerId }) {
     return this.request('POST', '/v2/interactive-submission/prepare', {
       json: {
-        userId: this.userId,
+        userId: await ledgerUserOf(this.userId),
         commandId: `draw-${randomUUID()}`,
         actAs,
         readAs,
@@ -184,7 +189,7 @@ export class LedgerClient {
         preparedTransaction: prepared.preparedTransaction,
         hashingSchemeVersion: prepared.hashingSchemeVersion,
         submissionId: randomUUID(),
-        userId: this.userId,
+        userId: await ledgerUserOf(this.userId),
         deduplicationPeriod: { Empty: {} },
         partySignatures: { signatures: [{ party, signatures: [signature] }] },
         transactionFormat: LedgerClient.transactionFormat(party),
@@ -237,7 +242,7 @@ export class LedgerClient {
         commands: {
           commands,
           commandId,
-          userId: this.userId,
+          userId: await ledgerUserOf(this.userId),
           actAs,
           readAs,
           disclosedContracts,

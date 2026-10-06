@@ -39,6 +39,7 @@ function Cell({ count, total }: { count: number | null; total: number }) {
 
 export default async function Landing() {
   const [proof, config] = await Promise.all([loadProof(), loadConfig()]);
+  const seats = config?.seatCredential === 'backend-client' ? 'DRAW’s backend login' : 'one hackathon login';
   const run = proof?.canonical ?? null;
   const receipt = run?.receipts[0] ?? null;
   const local = proof?.localnet ?? null;
@@ -228,12 +229,12 @@ export default async function Landing() {
           <div className={styles.faq}>
             {[
               ['Is this real money?', 'No. It runs on the Canton DevNet with test Canton Coin. Dollar figures are the business scenario; the coin is what actually moves.'],
-              ['Who holds the keys?', 'On LocalNet each person creates a key in their own browser and signs every action. On the shared HackCanton DevNet node, parties with their own keys are not enabled for teams yet, so one hackathon login acts for the demo seats there. An LP that signs in with its own HackCanton login acts for its own party from its own browser instead. The app says which mode you are in.'],
+              ['Who holds the keys?', `On LocalNet each person creates a key in their own browser and signs every action. On the shared HackCanton DevNet node, parties with their own keys are not enabled for teams yet, so ${seats} acts for the demo seats there. An LP that signs in with its own HackCanton login acts for its own party from its own browser instead. The app says which mode you are in.`],
               ['Can I pay from a real Canton wallet?', 'On DevNet, yes. Sign in with your HackCanton login on the seat screen and join as an LP. Your notice also shows up in the node’s Canton Coin wallet as an allocation request, and pressing Accept there pays it. DRAW’s server never receives your login.'],
               ['Why Canton?', 'Canton gives each contract a fixed set of parties who can read it, and settles a token transfer and a state change in one transaction. Those two properties are what make a private notice and a provable funded status possible.'],
               ['What does the fund manager see?', 'Every notice in its fund, the payments waiting against them, and two totals: deployable now and unresolved.'],
               ['Can an LP see the other LPs?', 'No. An LP’s ledger returns its own commitment and notices only. Opening another LP’s notice link shows nothing, because the ledger returns nothing.'],
-              ['Who can see the payment?', 'The notice and the commitment are private. Only the fund’s party and that LP’s party can read them, plus the node that hosts them. On DevNet one hackathon login reads for every demo seat. They don’t appear in the network’s Scan service. The Canton Coin transfer that pays a notice is visible to Scan, under a random reference, with both party ids. Those ids carry readable hints such as draw-lpa. In production the fund would settle in a tokenized dollar through the same Token Standard allocation interface. The USDCx registry lists that interface, but DRAW hasn’t been run with USDCx.'],
+              ['Who can see the payment?', `The notice and the commitment are private. Only the fund’s party and that LP’s party can read them, plus the node that hosts them. On DevNet ${seats} reads for every demo seat. They don’t appear in the network’s Scan service. The Canton Coin transfer that pays a notice is visible to Scan, under a random reference, with both party ids. Those ids carry readable hints such as draw-lpa. In production the fund would settle in a tokenized dollar through the same Token Standard allocation interface. The USDCx registry lists that interface, but DRAW hasn’t been run with USDCx.`],
             ].map(([q, a]) => (
               <details key={q} className={styles.qa}>
                 <summary>{q}<span aria-hidden="true" /></summary>

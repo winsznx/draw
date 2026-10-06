@@ -8,26 +8,33 @@ import { execFileSync } from 'node:child_process';
 
 import { network, ROOT } from './lib/network.mjs';
 import { LedgerClient, TEMPLATES } from './lib/ledger.mjs';
-import { sharedUserId } from './lib/auth.mjs';
+import { ledgerUserOf } from './lib/auth.mjs';
+import { hint, judgeBackend, judgeVerifier, summarizeRights } from './lib/rights.mjs';
 import { amuletInstrument } from './lib/registry.mjs';
-import { packageInfo } from './lib/draw.mjs';
+import { credentialFacts, packageInfo, providedUsers } from './lib/draw.mjs';
 import { PartyKey } from './lib/keys.mjs';
 
 const runId = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
 const OUT = join(ROOT, 'evidence', network.name === 'localnet' ? 'local' : network.name, 'probes', runId);
 mkdirSync(OUT, { recursive: true });
 
-const user = network.singleCredential ? await sharedUserId() : network.provisioned.admin.userId;
+// The ledger users the provided parties act as, resolved the way a run resolves them.
+const users = await providedUsers();
+const user = users.admin;
 const admin = network.provisioned.admin.party;
+const demoParties = new Set(['admin', 'lpA', 'lpB', 'lpC', 'outsider'].map((role) => network.provisioned[role].party));
 const client = new LedgerClient({ baseUrl: network.apiFor('admin'), userId: user, label: 'probe' });
 const probes = [];
 
-async function probe(id, expectation, action) {
+// A refusal counts only with the status a permission check answers. Any other
+// error is FAILED, so a broken request never passes for a refused one.
+async function probe(id, expectation, action, { refusedWith = 403 } = {}) {
   try {
     const detail = await action();
     probes.push({ id, expectation, outcome: 'SUCCEEDED', detail });
   } catch (error) {
-    probes.push({ id, expectation, outcome: 'REFUSED', status: error.status ?? null, detail: String(error.message ?? error).slice(0, 600) });
+    const refused = error.status === refusedWith;
+    probes.push({ id, expectation, outcome: refused ? 'REFUSED' : 'FAILED', status: error.status ?? null, detail: String(error.message ?? error).slice(0, 600) });
   }
   console.log(`${probes.at(-1).outcome.padEnd(9)} ${id}`);
 }
@@ -86,9 +93,46 @@ await probe('external parties: tenant allocate is refused on the shared node', '
 
 await probe('user management: listing parties is refused for a tenant', 'REFUSED', () => client.request('GET', '/v2/parties?pageSize=1'));
 
+// What each credential may do, as the node itself reports it to that
+// credential. Party ids are shortened to their hint.
+const rightsOf = async (reader, userId) => summarizeRights(await reader.userRights(userId));
+const shown = (rights) => ({ actAs: rights.actAs.map(hint), readAs: rights.readAs.map(hint), executeAs: rights.executeAs.map(hint), other: rights.other });
+
+if (network.seatCredential === 'backend-client') {
+  const backend = await ledgerUserOf(network.backendUser);
+  await probe('credentials: the demo seats\' backend client acts for the five demo parties and nothing else', 'SUCCEEDED', async () => {
+    const rights = await rightsOf(client, backend);
+    const problems = judgeBackend(rights, [...demoParties]);
+    if (problems.length) throw new Error(`the backend client ${problems.join('; ')}`);
+    return { user: backend, ...shown(rights) };
+  });
+}
+
+const verifierUser = users.verifier;
+if (credentialFacts(users).verifierSeparate) {
+  const verifierClient = new LedgerClient({ baseUrl: network.apiFor('admin'), userId: verifierUser, label: 'probe-verifier' });
+  await probe('credentials: the verifier\'s client only reads, as the fund\'s party', 'SUCCEEDED', async () => {
+    const rights = await rightsOf(verifierClient, verifierUser);
+    const problems = judgeVerifier(rights, admin);
+    if (problems.length) throw new Error(`the verifier ${problems.join('; ')}`);
+    return { user: verifierUser, ...shown(rights) };
+  });
+  await probe('credentials: the verifier\'s client cannot prepare a transaction for the fund', 'REFUSED', async () => {
+    const prepared = await verifierClient.prepare({
+      actAs: [admin],
+      synchronizerId,
+      commands: [{ CreateCommand: { templateId: TEMPLATES.Fund, createArguments: { admin, fundId: `PROBE-${runId}`, fundName: 'probe', verifier: null } } }],
+    });
+    return { preparedTransactionHashPresent: Boolean(prepared.preparedTransactionHash), executed: false };
+  });
+}
+
 const result = {
   runId,
   network: network.name,
+  authMode: network.authMode,
+  seatCredential: network.seatCredential,
+  separateVerifier: network.separateVerifier,
   ledgerApi: network.apiFor('admin'),
   commit: execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD']).toString().trim(),
   packageId,

@@ -158,6 +158,12 @@ export interface Commitment {
 export interface SiteConfig {
   network: string;
   singleCredential: boolean;
+  // Who acts for the demo seats: one person's login, DRAW's backend client,
+  // another user several seats share, or a credential per seat. Older APIs
+  // don't send it.
+  seatCredential?: 'shared-login' | 'backend-client' | 'shared-user' | 'per-seat';
+  // The read-back step acts as a ledger user none of the seats act as.
+  separateVerifier?: boolean;
   browserKeys: boolean;
   // Each browser has its own demo fund. Off only with browser keys, where everyone joins one.
   tours: boolean;
@@ -263,6 +269,11 @@ export interface Proof {
     commit: string;
     packageId: string;
     canton: string;
+    // How the run's credentials were separated: TESTED, VERIFIER_ONLY, SEATS_ONLY or NOT_TESTED_SINGLE_CREDENTIAL.
+    credentialSeparation: string | null;
+    seatCredential: string | null;
+    // The run's own test that the read-back credential cannot act as the fund.
+    verifierCheck: { ran: boolean; ok: boolean; reason?: string | null };
     fundId: string;
     instrument: { admin: string; id: string };
     gates: Record<string, string>;

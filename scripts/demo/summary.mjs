@@ -20,7 +20,7 @@ console.log(`DRAW capital call, ${result.environment} run ${runId}`);
 console.log(`commit ${result.commit.slice(0, 7)}, package ${short(result.packageId)}, Canton ${result.canton}`);
 console.log(`instrument ${result.instrument.id} (registry admin ${short(result.instrument.admin)})\n`);
 
-console.log('What each party can read through its own ledger credential');
+console.log(result.credentialSeparation === 'TESTED' ? 'What each party can read through its own ledger credential' : 'What each party can read through its own party-scoped reads');
 for (const [reader, row] of Object.entries(visibility)) {
   const leaked = finalView.leaks?.[reader]?.length ?? 0;
   console.log(`  ${reader.padEnd(9)} leaks: ${leaked}  obligations: ${(row.CapitalCallObligation.join(', ') || 'none').padEnd(52)} fund/call: ${row.Fund.length + row.CapitalCall.length > 0 ? 'yes' : 'no'}`);
@@ -32,7 +32,11 @@ for (const o of totals.byObligation) {
   console.log(`  ${o.lp.padEnd(4)} ${usd(o.scenarioUsd).padStart(9)}  ${String(o.units).padStart(3)} Amulet  ${label}`);
 }
 
-console.log('\nSettlement receipts (independent verifier, read-only admin credential)');
+// What the run itself recorded about the read-back step's credential.
+const readBack = result.credentialSeparation === 'TESTED' || result.credentialSeparation === 'VERIFIER_ONLY'
+  ? 'read-back step with a login of its own'
+  : 'read-back step on the same login as the seats';
+console.log(`\nSettlement receipts (${readBack})`);
 for (const role of ['lpA', 'lpB']) {
   const r = read(`receipt-${role}.json`);
   console.log(`  ${role}: ${r.verdict}, ${r.receivedAmount} ${r.instrument.id}, update ${short(r.claimedUpdateId)}, allocation ${short(r.allocationCid)}, ${r.stateBefore} -> ${r.stateAfter}`);

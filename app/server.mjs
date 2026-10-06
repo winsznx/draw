@@ -10,7 +10,7 @@ import { dirname, extname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { INTERFACES, TEMPLATES } from '../scripts/demo/lib/ledger.mjs';
-import { DAR, DrawSession, LPS, eventually, newRef, packageInfo, sum } from '../scripts/demo/lib/draw.mjs';
+import { DAR, DrawSession, LPS, credentialFacts, eventually, newRef, packageInfo, providedUsers, sum } from '../scripts/demo/lib/draw.mjs';
 import { ROLES, ROOT, network } from '../scripts/demo/lib/network.mjs';
 import { businessStatus, classifyPayments, obligationOutcome } from '../scripts/demo/lib/reconcile.mjs';
 import { LedgerClient } from '../scripts/demo/lib/ledger.mjs';
@@ -105,6 +105,21 @@ const signIn = (() => {
 })();
 // The DRAW package this server submits with.
 const RELEASE = (({ version, packageId }) => ({ version, packageId }))(packageInfo());
+
+// Whether the read-back step acts as a ledger user none of the seats act as,
+// decided from the resolved users once the login service answers. Until then
+// the config says no, never more than is known.
+let verifierSeparate = false;
+async function resolveCredentials(attempt = 1) {
+  if (network.partyMode !== 'provisioned' && network.partyMode !== 'external-provisioned') return;
+  try {
+    verifierSeparate = credentialFacts(await providedUsers()).verifierSeparate;
+  } catch (error) {
+    console.error(`resolving the configured ledger users failed (attempt ${attempt}): ${error.message}`);
+    if (attempt < 5) setTimeout(() => void resolveCredentials(attempt + 1), 30_000 * attempt);
+  }
+}
+void resolveCredentials();
 // A Canton party id: a hint, "::", and the namespace's SHA-256 fingerprint.
 const isPartyId = (value) => typeof value === 'string' && /^[\w:.-]{1,185}::1220[0-9a-f]{64}$/.test(value);
 
@@ -246,6 +261,8 @@ function explain(error) {
 const config = () => ({
   network: NETWORK_LABEL,
   singleCredential: network.singleCredential,
+  seatCredential: network.seatCredential,
+  separateVerifier: verifierSeparate,
   browserKeys: BROWSER_KEYS,
   tours: TOURS,
   accessCodeRequired: Boolean(ACCESS_CODE),
@@ -951,6 +968,14 @@ function browserRuns(base) {
   });
 }
 
+const VERIFIER_CHECK = 'credential: verifier token cannot submit as admin';
+function verifierCheck(result) {
+  const ran = result.checks?.find((c) => c.id === VERIFIER_CHECK);
+  if (ran) return { ran: true, ok: ran.ok };
+  const skipped = result.skipped?.find((s) => s.id === VERIFIER_CHECK);
+  return { ran: false, ok: false, reason: skipped?.reason ?? null };
+}
+
 function proof() {
   const base = join(EVIDENCE, NETWORK_DIR);
   const run = latest(join(base, 'runs'));
@@ -964,6 +989,10 @@ function proof() {
       commit: run.result.commit,
       packageId: run.result.packageId,
       canton: run.result.canton,
+      credentialSeparation: run.result.credentialSeparation ?? null,
+      seatCredential: run.result.seatCredential ?? null,
+      // The run's own test of the read-back credential: whether it ran, and held.
+      verifierCheck: verifierCheck(run.result),
       fundId: run.result.fundId,
       instrument: run.result.instrument,
       gates: run.result.gates,

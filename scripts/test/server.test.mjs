@@ -512,3 +512,18 @@ test('a payment for no notice of this fund names no investor, with or without a 
   assert.equal(after.investor, null);
   assert.equal(after.from, 'lpA');
 });
+
+test('the config says who signs for the demo seats and whether the read-back step has its own login', async (t) => {
+  const plain = await startApp(t);
+  const config = (await plain('/api/config')).body;
+  assert.equal(config.seatCredential, 'per-seat');
+  assert.equal(config.separateVerifier, false);
+
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const provisionedApp = await startApp(t, provisioned(fake));
+  const seats = (await provisionedApp('/api/config')).body;
+  assert.equal(seats.seatCredential, 'per-seat');
+  assert.equal(seats.separateVerifier, true, 'user-verifier is none of the seats');
+  assert.equal(seats.singleCredential, false);
+});

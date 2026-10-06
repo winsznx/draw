@@ -165,7 +165,8 @@ function SeatCard({ role, view }: { role: Role; view: View }) {
       <p className={styles.signing}>
         {view.browserKeys
           ? <>Signs with your browser key{fingerprint ? <span className="mono"> {fingerprint.slice(4, 12)}</span> : null}</>
-          : view.singleCredential ? 'The shared DevNet login signs for this party.' : 'Signs with this party’s own ledger login.'}
+          : view.seatCredential === 'backend-client' ? 'DRAW’s backend login signs for this demo seat.'
+            : view.singleCredential ? 'The shared DevNet login signs for this party.' : 'Signs with this party’s own ledger login.'}
       </p>
       <div className={styles.seatActions}>
         {balance !== null && role !== 'admin' && (
@@ -205,7 +206,7 @@ function LedgerContext({ role, view }: { role: Role; view: View }) {
           </span>
         </p>
       )}
-      <p><IconLayers size={15} /><span>{guest ? `${view.network}, HackCanton shared node. Your login signs for your party, and the demo login signs for the fund manager.` : networkNote(view)}</span></p>
+      <p><IconLayers size={15} /><span>{guest ? `${view.network}, HackCanton shared node. Your login signs for your party, and ${view.seatCredential === 'backend-client' ? 'DRAW’s backend login' : 'the demo login'} signs for the fund manager.` : networkNote(view)}</span></p>
     </div>
   );
 }

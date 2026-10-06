@@ -89,7 +89,7 @@ export default function Onboard() {
           </ol>
         </div>
         <SeatPreview role={role ?? 'admin'} />
-        {view && <p className={styles.network}><span className="live-dot" /><span>{view.signIn ? signInNote(view.network) : networkNote(view)}</span></p>}
+        {view && <p className={styles.network}><span className="live-dot" /><span>{view.signIn ? signInNote(view) : networkNote(view)}</span></p>}
       </aside>
 
       <main id="main" className={styles.main}>
@@ -338,9 +338,11 @@ function SharedPartyStep({ role, view, onBack, onNext }: { role: Role; view: Vie
         <p className="t-h3">How signing works here</p>
         {view?.singleCredential ? (
           <p className="t-sm muted">
-            The shared HackCanton node does not let teams create parties that hold their own keys yet, so one hackathon login submits
-            for every demo party on this network. Privacy still comes from the ledger: each party&rsquo;s reads return only its own
-            records. On LocalNet, DRAW creates a key in your browser and you sign every action yourself.
+            The shared HackCanton node does not let teams create parties that hold their own keys yet, so{' '}
+            {view.seatCredential === 'backend-client' ? 'DRAW’s backend login' : 'one hackathon login'} submits for every demo party on this
+            network.{view.separateVerifier ? ' A different login reads each settlement back.' : ''} Privacy still comes from the ledger:
+            each party&rsquo;s reads return only its own records.{view.signIn ? ' To act as yourself, sign in with your own HackCanton login as an LP.' : ''}{' '}
+            On LocalNet, DRAW creates a key in your browser and you sign every action yourself.
           </p>
         ) : (
           <p className="t-sm muted">

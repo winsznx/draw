@@ -9,7 +9,7 @@ import { LedgerClient, TEMPLATES, INTERFACES, transactionEvents } from './ledger
 import { allocationFactory, amuletInstrument, executeTransferContext, tapContext, withdrawContext } from './registry.mjs';
 import { SettlementVerifier } from './verifier.mjs';
 import { ROLES, ROOT, network } from './network.mjs';
-import { sharedUserId } from './auth.mjs';
+import { ledgerUserOf } from './auth.mjs';
 import { PartyKey } from './keys.mjs';
 
 const darVersion = readFileSync(join(ROOT, 'contracts/daml/daml.yaml'), 'utf8').match(/^version:\s*(\S+)/m)[1];
@@ -52,6 +52,26 @@ export function packageInfo() {
 }
 
 const firstCreated = (transaction) => transactionEvents(transaction).find((e) => e.kind === 'created');
+
+const providedParties = () => network.partyMode === 'provisioned' || network.partyMode === 'external-provisioned';
+
+// The ledger users the provided parties act through, from the configuration
+// as it is now. A stored session's ids are never reused for these: a stored id
+// may name a client this process has not resolved, or a setup that has since
+// changed, and either would put a different credential behind a seat.
+export async function providedUsers() {
+  const provided = network.partyMode === 'external-provisioned' ? network.provisionedExternal : network.provisioned;
+  const users = {};
+  for (const role of [...ROLES, 'verifier']) users[role] = await ledgerUserOf(provided[role].userId);
+  return users;
+}
+
+// What the resolved ledger users can show: whether every seat has a user of
+// its own, and whether the read-back verifier is none of the seats.
+export function credentialFacts(users) {
+  const seats = ROLES.map((role) => users[role]);
+  return { seatsSeparate: new Set(seats).size === seats.length, verifierSeparate: Boolean(users.verifier) && !seats.includes(users.verifier) };
+}
 
 export class DrawSession {
   // `external` maps a role to { keyName, fingerprint } when that party holds
@@ -129,14 +149,12 @@ export class DrawSession {
       users.verifier = `draw-verifier-${tag}`;
       await operators[network.apiFor('admin')].createUser(users.verifier, { readAs: [party.admin] });
     } else {
-      const shared = network.singleCredential ? await sharedUserId() : null;
       const provided = network.partyMode === 'external-provisioned' ? network.provisionedExternal : network.provisioned;
       for (const role of ROLES) {
         party[role] = provided[role].party;
-        users[role] = shared ?? provided[role].userId;
         if (provided[role].keyName) external[role] = { keyName: provided[role].keyName, fingerprint: provided[role].fingerprint };
       }
-      users.verifier = network.separateVerifier ? provided.verifier.userId : shared ?? provided.verifier.userId;
+      Object.assign(users, await providedUsers());
       if (network.operators.provider) {
         await new LedgerClient({ baseUrl: network.apiFor('admin'), userId: network.operators.provider }).uploadDar(DAR);
         onStep('dar uploaded', { participant: network.apiFor('admin'), packageId });
@@ -150,8 +168,11 @@ export class DrawSession {
     return new DrawSession({ party, users, external, instrument: await amuletInstrument() });
   }
 
+  // Provided parties act through the users the configuration names now, not
+  // the ones stored with the session (see providedUsers).
   static async resume({ party, users, external, signers, verifierParty }) {
-    return new DrawSession({ party, users, external, signers, verifierParty: verifierParty ?? network.verifierParty, instrument: await amuletInstrument() });
+    const current = providedParties() ? await providedUsers() : users;
+    return new DrawSession({ party, users: current, external, signers, verifierParty: verifierParty ?? network.verifierParty, instrument: await amuletInstrument() });
   }
 
   async tap(role, amount) {

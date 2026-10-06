@@ -112,7 +112,8 @@ export class SettlementVerifier {
 
     return {
       verdict,
-      verifierUser: this.client.userId,
+      // Who the ledger saw read: the subject of the token the reads carried.
+      verifierUser: await this.client.tokenSubject(),
       readAs: reader.party,
       obligationRef,
       claimedUpdateId,

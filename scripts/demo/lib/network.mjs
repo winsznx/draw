@@ -5,14 +5,14 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { configureAuth, registerOAuthClient } from './auth.mjs';
+import { SHARED_USER, configureAuth, registerOAuthClient } from './auth.mjs';
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 // DRAW_ENV_FILE=none skips the file, so tests see only the environment they set.
 if (process.env.DRAW_ENV_FILE !== 'none' && existsSync(join(ROOT, '.env'))) process.loadEnvFile(join(ROOT, '.env'));
 
 export const ROLES = ['admin', 'lpA', 'lpB', 'lpC', 'outsider'];
-export const SHARED_USER = '__shared__';
+export { SHARED_USER };
 const env = (name, fallback) => {
   const value = process.env[name];
   return value === undefined || value === '' ? fallback : value;
@@ -62,21 +62,45 @@ function loadNetwork() {
     });
   }
 
-  // Each user's OAuth client, keyed by the ledger user id the token resolves to.
+  // Each user's OAuth client, keyed by its ledger user id, or by a placeholder
+  // the token's subject resolves when only the client is given (see auth.mjs).
   const userIdFor = (key) => env(`DRAW_${key}_USER`);
-  for (const key of [...ROLES.map(envKey), 'VERIFIER', 'OPERATOR']) {
-    const userId = userIdFor(key);
+  const userKeyFor = (key) => userIdFor(key) ?? (env(`DRAW_${key}_CLIENT_ID`) ? `__${key.toLowerCase()}__` : undefined);
+  for (const key of [...ROLES.map(envKey), 'VERIFIER', 'OPERATOR', 'BACKEND']) {
+    const user = userKeyFor(key);
     const clientId = env(`DRAW_${key}_CLIENT_ID`);
-    if (userId && clientId) registerOAuthClient(userId, { clientId, clientSecret: required(`DRAW_${key}_CLIENT_SECRET`), scope: env(`DRAW_${key}_SCOPE`) });
+    if (user && clientId) registerOAuthClient(user, { clientId, clientSecret: required(`DRAW_${key}_CLIENT_SECRET`), scope: env(`DRAW_${key}_SCOPE`) });
   }
-  // On a shared login, a verifier with its own client is still its own credential.
-  const separateVerifier = authMode === 'password' && Boolean(userIdFor('VERIFIER') && env('DRAW_VERIFIER_CLIENT_ID'));
+  // The user a key acts as when it has a client of its own.
+  const ownUser = (key) => (env(`DRAW_${key}_CLIENT_ID`) ? userKeyFor(key) : undefined);
+  // One backend client for every demo seat (DRAW_BACKEND_*): a seat without a
+  // client of its own acts through it.
+  const backendUser = authMode === 'oauth' ? ownUser('BACKEND') : undefined;
+  // With one shared login every seat is the same ledger user, resolved from the
+  // token. Otherwise a seat acts through its own client, then the backend
+  // client, then a plain user id (LocalNet signs its own tokens for any id).
+  const seatUser = (role) => (authMode === 'password'
+    ? SHARED_USER
+    : ownUser(envKey(role)) ?? backendUser ?? userIdFor(envKey(role)) ?? required(`DRAW_${envKey(role)}_USER`));
+  // Parties made ahead of time come with users to act as them. Other modes make their own.
+  const providedParties = partyMode === 'provisioned' || partyMode === 'external-provisioned';
+  // A verifier with a client of its own is its own credential, even on a shared login.
+  const verifierUser = providedParties
+    ? ownUser('VERIFIER') ?? (authMode === 'password' ? SHARED_USER : userIdFor('VERIFIER') ?? backendUser ?? required('DRAW_VERIFIER_USER'))
+    : undefined;
 
-  const sharedOr = (role) => (role === 'verifier' && separateVerifier ? userIdFor('VERIFIER') : SHARED_USER);
+  const seatUsers = providedParties ? ROLES.map(seatUser) : [];
+  // Seats that share a ledger user cannot prove one seat's credential is refused another's records.
+  const singleCredential = authMode === 'password' || new Set(seatUsers).size < seatUsers.length;
+  // As configured. Whether the verifier really is someone else is decided
+  // again from the resolved ledger users (draw.mjs credentialFacts).
+  const separateVerifier = seatUsers.length > 0 && verifierUser !== SHARED_USER && !seatUsers.includes(verifierUser);
+  const usesBackend = Boolean(backendUser) && seatUsers.length > 0 && seatUsers.every((user) => user === backendUser);
+  const seatCredential = authMode === 'password' ? 'shared-login' : usesBackend ? 'backend-client' : singleCredential ? 'shared-user' : 'per-seat';
+
   const provisioned = partyMode === 'provisioned'
     ? Object.fromEntries([...ROLES, 'verifier'].map((role) => [role, {
-      // With one shared login every role is the same ledger user, resolved from the token.
-      userId: authMode === 'password' ? sharedOr(role) : required(`DRAW_${envKey(role)}_USER`),
+      userId: role === 'verifier' ? verifierUser : seatUser(role),
       party: role === 'verifier' ? undefined : required(`DRAW_${envKey(role)}_PARTY`),
     }]))
     : undefined;
@@ -91,15 +115,21 @@ function loadNetwork() {
     provisionedExternal = Object.fromEntries(ROLES.map((role) => {
       const entry = parties.find((p) => p.role === role);
       if (!entry) throw new Error(`${file} has no external party for ${role}`);
-      return [role, { party: entry.partyId, fingerprint: entry.fingerprint, keyName: `${keyPrefix}${role}` }];
+      return [role, { userId: seatUser(role), party: entry.partyId, fingerprint: entry.fingerprint, keyName: `${keyPrefix}${role}` }];
     }));
-    provisionedExternal.verifier = { userId: authMode === 'password' ? sharedOr('verifier') : required('DRAW_VERIFIER_USER') };
+    provisionedExternal.verifier = { userId: verifierUser };
   }
 
   return {
     name,
     authMode,
-    singleCredential: authMode === 'password',
+    singleCredential,
+    // Who acts for the demo seats: one person's login ('shared-login'), the
+    // DRAW_BACKEND_* client ('backend-client'), some other user that several
+    // seats share ('shared-user'), or a credential per seat ('per-seat').
+    seatCredential,
+    // The OAuth backend client's user, when one is configured.
+    backendUser,
     // Shared nodes may hide error details behind a trace id.
     errorsMayBeHidden: env('DRAW_ERRORS_HIDDEN', name === 'localnet' ? 'false' : 'true') === 'true',
     scanProxyUrl: env('SCAN_PROXY_URL'),
@@ -120,7 +150,9 @@ function loadNetwork() {
     provisionedExternal,
     registryUrl: env('REGISTRY_URL', 'http://scan.localhost:4000/registry'),
     scanUrl: env('SCAN_URL', 'http://scan.localhost:4000/api/scan'),
-    scanAuthUser: env('SCAN_AUTH_USER'),
+    // Scan behind a validator's proxy wants a token. `shared` means the user the
+    // demo seats act as: the shared login, or the backend client.
+    scanAuthUser: env('SCAN_AUTH_USER') === 'shared' && providedParties ? seatUser('admin') : env('SCAN_AUTH_USER'),
     tapAmount: env('DRAW_TAP_AMOUNT', '100.0'),
     evidenceDir: join(ROOT, 'evidence', name === 'localnet' ? 'local' : name, 'runs'),
   };

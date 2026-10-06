@@ -141,7 +141,7 @@ export default async function ProofPage() {
           What the scripted runs produced. A script wrote every number on this page into a result file, and every file is linked. LocalNet and
           DevNet results are kept apart.
         </p>
-        {config && <p className="t-sm muted">{networkNote(config)}</p>}
+        {config && <p className="t-sm muted">The live site right now: {networkNote(config)} Each run below records its own setup.</p>}
       </header>
 
       {!c ? <p className="panel">No canonical run on {proof.network} yet.</p> : (
@@ -193,7 +193,13 @@ export default async function ProofPage() {
             id="settlements"
             title="Settlements, read back by a separate step"
             env={proof.network}
-            lead="After each settlement, a separate step reads the transaction and the fund's holdings back from the ledger and issues the receipt before the notice counts as funded. On DevNet that step uses the same shared login as every seat. On LocalNet it has its own read-only login."
+            lead={`After each settlement, a separate step reads the transaction and the fund's holdings back from the ledger and issues the receipt before the notice counts as funded. ${
+              !c.verifierCheck?.ran
+                ? `In this ${proof.network} run that step read as the same ledger user as the seats.`
+                : c.verifierCheck.ok
+                  ? `In this ${proof.network} run that step had a login of its own, and the ledger refused it when it tried to act as the fund.`
+                  : `In this ${proof.network} run that step had a login of its own, but the ledger did not refuse it when it tried to act as the fund.`
+            }`}
           >
             <div className={styles.receipts}>
               {c.receipts.map((r) => (

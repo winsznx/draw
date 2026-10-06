@@ -1,16 +1,30 @@
 // Bearer tokens for ledger users. LocalNet signs its own HS256 tokens with the
 // documented `unsafe` secret. DevNet uses OAuth client credentials, one client
-// per ledger user, so no single credential can act for every party.
+// per ledger user, or one person's login on a shared node.
+//
+// A user may be named by a placeholder such as `__backend__` when only its
+// OAuth client is configured. Its real ledger user id is the subject of the
+// client's token, and ledgerUserOf resolves it.
 import { createHmac } from 'node:crypto';
+
+// The user name a shared login answers to before its real id is known.
+export const SHARED_USER = '__shared__';
 
 const oauthClients = new Map();
 const tokenCache = new Map();
+const resolvedUsers = new Map();
+// The shared login's real ledger user id, once a token has shown it.
+let sharedSubject = null;
 let shared = null;
 let settings = { mode: 'hs256', secret: 'unsafe', audience: 'https://canton.network.global' };
 
+// A new configuration starts with no clients: network.mjs registers them after.
 export function configureAuth(next) {
   settings = { ...settings, ...next };
+  oauthClients.clear();
   tokenCache.clear();
+  resolvedUsers.clear();
+  sharedSubject = null;
   shared = null;
 }
 
@@ -80,16 +94,46 @@ async function sharedToken() {
   return shared.token;
 }
 
+const subjectOf = (token) => JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()).sub;
+
 // The ledger user id is the token's subject.
 export async function sharedUserId() {
-  const payload = (await sharedToken()).split('.')[1];
-  return JSON.parse(Buffer.from(payload, 'base64url').toString()).sub;
+  sharedSubject = subjectOf(await sharedToken());
+  return sharedSubject;
+}
+
+// The real ledger user id behind a user name. A placeholder (`__name__`) is
+// resolved from its token's subject, once per process, and its OAuth client is
+// then also known under the real id. Any other name already is a ledger user
+// id. Callers resolve again in every new process, since nothing here survives
+// a restart.
+export async function ledgerUserOf(user) {
+  if (!/^__\w+__$/.test(user)) return user;
+  if (!resolvedUsers.has(user)) {
+    const id = user === SHARED_USER && settings.mode === 'password' ? await sharedUserId() : subjectOf(await tokenFor(user));
+    if (oauthClients.has(user)) oauthClients.set(id, oauthClients.get(user));
+    resolvedUsers.set(user, id);
+  }
+  return resolvedUsers.get(user);
+}
+
+// The subject of the token this user's requests carry, which is who the ledger
+// sees act, whatever the user was called in the configuration.
+export async function tokenSubject(userId) {
+  return subjectOf(await tokenFor(userId));
 }
 
 // A user with its own registered client (for example a read-only verifier)
-// gets its own token even when one shared login acts for the parties.
+// gets its own token even when one shared login acts for the parties. The
+// shared login answers only for itself: an id it does not know is refused,
+// never quietly served with the shared login.
 export async function tokenFor(userId) {
   if (oauthClients.has(userId)) return oauthToken(userId);
-  if (settings.mode === 'password') return sharedToken();
+  if (settings.mode === 'password') {
+    if (userId !== SHARED_USER && userId !== (sharedSubject ?? await sharedUserId())) {
+      throw new Error(`no credential for ledger user ${userId}: the shared login acts only as itself`);
+    }
+    return sharedToken();
+  }
   return settings.mode === 'oauth' ? oauthToken(userId) : hs256Token(userId);
 }

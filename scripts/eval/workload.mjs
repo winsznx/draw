@@ -19,7 +19,8 @@ function settlementLatency(role) {
   const observed = at(new RegExp(`^settlement\\[${role}\\]: admin observes allocation`));
   const pending = at(new RegExp(`^settlement\\[${role}\\]: obligation is PaymentPending`));
   const executed = at(new RegExp(`^admin executed Obligation_Settle for ${role}`));
-  const verified = at(new RegExp(`^settlement\\[${role}\\]: independent verifier`));
+  // Runs before 2026-10-06 named this check "independent verifier".
+  const verified = at(new RegExp(`^settlement\\[${role}\\]: (independent|read-back) verifier`));
   return {
     paymentLockedToAdminObservedMs: ms(lastAllocated, observed),
     observedToPendingMs: ms(observed, pending),

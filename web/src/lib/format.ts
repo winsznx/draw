@@ -25,16 +25,31 @@ export function shortParty(party: string): string {
   return namespace ? `${hint}::${namespace.slice(0, 8)}…` : shortId(party);
 }
 
-// How this network signs, in one sentence shown on every app screen.
-export function networkNote({ network, singleCredential, browserKeys }: Pick<SiteConfig, 'network' | 'singleCredential' | 'browserKeys'>): string {
+type Signing = Pick<SiteConfig, 'network' | 'browserKeys' | 'singleCredential' | 'seatCredential' | 'separateVerifier'>;
+
+const nodeName = (network: string): string => (network === 'DevNet' ? 'DevNet, HackCanton shared node' : network);
+
+// Who signs for the demo seats, as a sentence subject. A setting this page
+// doesn't know reads as one shared login, never as more separation.
+export function seatSigner({ network, singleCredential, seatCredential }: Pick<SiteConfig, 'network' | 'singleCredential' | 'seatCredential'>): string {
+  if (seatCredential === 'backend-client') return 'DRAW’s backend login';
+  if (seatCredential === 'per-seat' && !singleCredential) return 'Each party’s own login';
+  return network === 'DevNet' ? 'One hackathon login' : 'One login';
+}
+
+// How this network signs, in one sentence shown on every app screen. It says
+// only what the configuration shows: who signs, and whether the read-back step
+// is a different login. Whether that login can act is for the evidence to say.
+export function networkNote({ network, browserKeys, singleCredential, seatCredential, separateVerifier }: Signing): string {
   if (browserKeys) return `${network}. Each party signs with its own key.`;
-  if (singleCredential) return network === 'DevNet' ? 'DevNet, HackCanton shared node. One hackathon login signs for every seat.' : `${network}. One login signs for every seat.`;
-  return `${network}. Each party reads and acts with its own ledger login.`;
+  if (seatCredential === 'per-seat' && !singleCredential) return `${network}. Each party reads and acts with its own ledger login.`;
+  const readBack = separateVerifier ? ', and a different login reads each settlement back' : '';
+  return `${nodeName(network)}. ${seatSigner({ network, singleCredential, seatCredential })} signs for every demo seat${readBack}.`;
 }
 
 // The same, for a site where an LP can also sign in with its own HackCanton login.
-export const signInNote = (network: string): string =>
-  `${network}, HackCanton shared node. One demo login signs for the demo seats. An LP that signs in with its own HackCanton login signs only for its own party.`;
+export const signInNote = (config: Signing): string =>
+  `${networkNote(config)} An LP that signs in with its own HackCanton login signs only for its own party.`;
 
 export const assetNote = (network: string): string => `Settles in Canton Coin from the ${network} faucet. Dollar figures are the scenario.`;
 

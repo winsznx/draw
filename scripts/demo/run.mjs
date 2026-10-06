@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 import { LedgerClient, TEMPLATES, transactionEvents } from './lib/ledger.mjs';
 import { PartyKey } from './lib/keys.mjs';
-import { DrawSession, LPS, eventually, newRef, packageInfo, sleep, sum } from './lib/draw.mjs';
+import { DrawSession, LPS, credentialFacts, eventually, newRef, packageInfo, sleep, sum } from './lib/draw.mjs';
 import { ROLES, ROOT, network } from './lib/network.mjs';
 
 const DUE_SECONDS = Number(process.env.DRAW_DUE_SECONDS ?? 90);
@@ -59,16 +59,25 @@ const draw = await DrawSession.open({ tag: runTag, packageId, onStep: step });
 const { party, client, users, instrument, verifier } = draw;
 // Each participant numbers its own offsets, so each reader remembers where it started.
 const streamStart = Object.fromEntries(await Promise.all(ROLES.map(async (role) => [role, await client[role].ledgerEnd()])));
-step('party-scoped users ready', { network: network.name, partyMode: network.partyMode, party, users, verifierRights: 'readAs admin only' });
+// Decided from the ledger users the seats really act as, not from configured names.
+const facts = credentialFacts(users);
+const sharedBy = {
+  'backend-client': 'one backend client acts for every demo seat on this node',
+  'shared-login': 'one shared login acts for every party on this node',
+}[network.seatCredential] ?? 'several seats act through the same ledger user';
+step('party-scoped users ready', {
+  network: network.name, partyMode: network.partyMode, party, users, seatCredential: network.seatCredential,
+  verifierCredential: facts.verifierSeparate ? 'a ledger user of its own' : 'one of the seats\' ledger users',
+});
 
-if (network.singleCredential) {
-  skip('credential: lpA token cannot read as lpB', 'one shared login acts for every party on this node, so LP credentials cannot be separated here');
+if (!facts.seatsSeparate) {
+  skip('credential: lpA token cannot read as lpB', `${sharedBy}, so LP credentials cannot be separated here`);
 } else {
   await expectRejection('credential: lpA token cannot read as lpB',
     () => client.lpA.activeContracts(party.lpB, { templateId: TEMPLATES.CapitalCallObligation }), 'HTTP 403');
 }
-if (network.singleCredential && !network.separateVerifier) {
-  skip('credential: verifier token cannot submit as admin', 'the verifier uses the same shared login on this node');
+if (!facts.verifierSeparate) {
+  skip('credential: verifier token cannot submit as admin', 'the verifier reads as one of the seats\' ledger users');
 } else {
   await expectRejection('credential: verifier token cannot submit as admin',
     () => verifier.client.create({ actAs: [party.admin], templateId: TEMPLATES.Fund, argument: { admin: party.admin, fundId: 'X', fundName: 'X' } }),
@@ -288,7 +297,7 @@ async function settleAndVerify(role, { viaWallet = false } = {}) {
     commit: execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD']).toString().trim(),
   };
   writeJson(`receipt-${role}.json`, receipts[role]);
-  check(`settlement[${role}]: independent verifier returns VERIFIED_FUNDED`, receipt.verdict === 'VERIFIED_FUNDED',
+  check(`settlement[${role}]: read-back verifier returns VERIFIED_FUNDED`, receipt.verdict === 'VERIFIED_FUNDED',
     receipt.checks.filter((c) => !c.ok));
   if (draw.verifierParty) check(`settlement[${role}]: verifier read the settlement through its own party`, receipt.readAs === draw.verifierParty, receipt.readAs);
   check(`wallet: ${role}'s payment request closes when the call is settled`, (await requestsOf(role)).length === 0);
@@ -424,7 +433,13 @@ const result = {
   environment: network.name,
   authMode: network.authMode,
   partyMode: network.partyMode,
-  credentialSeparation: !network.singleCredential ? 'TESTED' : network.separateVerifier ? 'VERIFIER_ONLY' : 'NOT_TESTED_SINGLE_CREDENTIAL',
+  // TESTED: every seat and the verifier act as ledger users of their own.
+  // VERIFIER_ONLY: the seats share a user and the verifier has its own.
+  // SEATS_ONLY: the other way round. NOT_TESTED_SINGLE_CREDENTIAL: neither.
+  credentialSeparation: facts.seatsSeparate
+    ? (facts.verifierSeparate ? 'TESTED' : 'SEATS_ONLY')
+    : (facts.verifierSeparate ? 'VERIFIER_ONLY' : 'NOT_TESTED_SINGLE_CREDENTIAL'),
+  seatCredential: network.seatCredential,
   custody: network.externalKeys ? 'EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY' : 'SERVER_SUBMITS_FOR_PARTIES',
   externalParties: Object.entries(draw.external).map(([role, { fingerprint }]) => ({ role, fingerprint })),
   reasonsHidden: checks.filter((c) => c.detail?.reasonHidden).map((c) => c.id),
