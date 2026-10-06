@@ -1,0 +1,583 @@
+Running multi-package build of all packages in /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.vaRMvbuk2u.
+
+2026-10-06 08:22:45.53 [INFO]  [multi-package build] 
+Building /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.vaRMvbuk2u/daml
+
+2026-10-06 08:22:50.17 [INFO]  [build] 
+Compiling draw to a DAR.
+File:     daml/Draw/CapitalCall.daml
+Hidden:   no
+Range:    61:10-66:30
+Source:   Daml-LF typechecker
+Severity: DsWarning
+Message: 
+[0;93mwarning while type checking template Draw.CapitalCall.Fund choice Archive:
+  The upgraded choice Archive has changed the definition of controllers.
+  There is 1 difference in the expression:
+    Name Draw.CapitalCall:$csignatory4 and name Draw.CapitalCall:$csignatory5 differ for the following reason: Nothing
+  Upgrade this warning to an error -Werror=upgraded-choice-expression-changed
+  Disable this warning entirely with -Wno-upgraded-choice-expression-changed[0m
+File:     daml/Draw/CapitalCall.daml
+Hidden:   no
+Range:    61:10-66:30
+Source:   Daml-LF typechecker
+Severity: DsWarning
+Message: 
+[0;93mwarning while type checking template Draw.CapitalCall.Fund observers:
+  The upgraded template Fund has changed the definition of its observers.
+  There is 1 difference in the expression:
+    Expression is structurally different.
+  Upgrade this warning to an error -Werror=upgraded-template-expression-changed
+  Disable this warning entirely with -Wno-upgraded-template-expression-changed[0m
+File:     daml/Draw/CapitalCall.daml
+Hidden:   no
+Range:    110:10-117:32
+Source:   Daml-LF typechecker
+Severity: DsWarning
+Message: 
+[0;93mwarning while type checking template Draw.CapitalCall.CommitmentInvitation choice Archive:
+  The upgraded choice Archive has changed the definition of controllers.
+  There is 1 difference in the expression:
+    Name Draw.CapitalCall:$csignatory3 and name Draw.CapitalCall:$csignatory4 differ for the following reason: Nothing
+  Upgrade this warning to an error -Werror=upgraded-choice-expression-changed
+  Disable this warning entirely with -Wno-upgraded-choice-expression-changed[0m
+File:     daml/Draw/CapitalCall.daml
+Hidden:   no
+Range:    140:10-148:32
+Source:   Daml-LF typechecker
+Severity: DsWarning
+Message: 
+[0;93mwarning while type checking template Draw.CapitalCall.InvestorCommitment choice Archive:
+  The upgraded choice Archive has changed the definition of controllers.
+  There is 1 difference in the expression:
+    Name Draw.CapitalCall:$csignatory2 and name Draw.CapitalCall:$csignatory3 differ for the following reason: Nothing
+  Upgrade this warning to an error -Werror=upgraded-choice-expression-changed
+  Disable this warning entirely with -Wno-upgraded-choice-expression-changed[0m
+File:     daml/Draw/CapitalCall.daml
+Hidden:   no
+Range:    191:10-201:30
+Source:   Daml-LF typechecker
+Severity: DsWarning
+Message: 
+[0;93mwarning while type checking template Draw.CapitalCall.CapitalCall choice Archive:
+  The upgraded choice Archive has changed the definition of controllers.
+  There is 1 difference in the expression:
+    Name Draw.CapitalCall:$csignatory1 and name Draw.CapitalCall:$csignatory2 differ for the following reason: Nothing
+  Upgrade this warning to an error -Werror=upgraded-choice-expression-changed
+  Disable this warning entirely with -Wno-upgraded-choice-expression-changed[0m
+File:     daml/Draw/CapitalCall.daml
+Hidden:   no
+Range:    191:10-201:30
+Source:   Daml-LF typechecker
+Severity: DsWarning
+Message: 
+[0;93mwarning while type checking template Draw.CapitalCall.CapitalCall observers:
+  The upgraded template CapitalCall has changed the definition of its observers.
+  There is 1 difference in the expression:
+    Expression is structurally different.
+  Upgrade this warning to an error -Werror=upgraded-template-expression-changed
+  Disable this warning entirely with -Wno-upgraded-template-expression-changed[0m
+File:     daml/Draw/CapitalCall.daml
+Hidden:   no
+Range:    206:10-223:29
+Source:   Daml-LF typechecker
+Severity: DsWarning
+Message: 
+[0;93mwarning while type checking template Draw.CapitalCall.CapitalCallObligation choice Archive:
+  The upgraded choice Archive has changed the definition of controllers.
+  There is 1 difference in the expression:
+    Name Draw.CapitalCall:$csignatory and name Draw.CapitalCall:$csignatory1 differ for the following reason: Nothing
+  Upgrade this warning to an error -Werror=upgraded-choice-expression-changed
+  Disable this warning entirely with -Wno-upgraded-choice-expression-changed[0m
+
+2026-10-06 08:22:54.05 [INFO]  [build] 
+Created .daml/dist/draw-0.3.0.dar
+
+2026-10-06 08:22:54.09 [INFO]  [multi-package build] 
+Building /private/var/folders/jz/4r875xns6z57sm2r92bz7xlm0000gn/T/tmp.vaRMvbuk2u/tests
+
+2026-10-06 08:22:59.70 [INFO]  [build] 
+Compiling draw-tests to a DAR.
+File:     daml/Draw/Test/CapitalCallTest.daml
+Hidden:   no
+Range:    15:1-15:100
+Source:   typecheck
+Severity: DsWarning
+Message: 
+[0;93mdaml/Draw/Test/CapitalCallTest.daml:15:1: warning:
+    The import of ‘Metadata’
+    from module ‘Splice.Api.Token.MetadataV1’ is redundant[0m
+
+2026-10-06 08:23:02.20 [INFO]  [build] 
+Created .daml/dist/draw-tests-0.1.0.dar
+File:     daml/Draw/Test/CapitalCallTest.daml
+Hidden:   no
+Range:    15:1-15:100
+Source:   typecheck
+Severity: DsWarning
+Message: 
+[0;93mdaml/Draw/Test/CapitalCallTest.daml:15:1: warning:
+    The import of ‘Metadata’
+    from module ‘Splice.Api.Token.MetadataV1’ is redundant[0m
+File:     daml/Draw/Test/CapitalCallTest.daml
+Hidden:   no
+Range:    520:1-520:14
+Source:   Script
+Severity: DsError
+Message: 
+[0;91mScript execution failed:
+  Failed with status: UNHANDLED_EXCEPTION/DA.Exception.AssertionFailed:AssertionFailed: Failure, expected [] == ["DRAW:FUND-1:CALL-1:LP-A","DRAW:FUND-1:CALL-1:LP-B","DRAW:FUND-1:CALL-1:LP-C"]
+  Using Canton Error Category InvalidGivenCurrentSystemStateOther
+
+Ledger time: 2026-10-01T09:00:00Z
+
+Committed transactions: 
+  pass 0 1790845200s
+  
+  TX 1 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:72:14)
+  #1:0
+  │   referenced by #2:0, #4:0, #6:0, #8:0
+  │   disclosed to (since): 'admin' (1), 'verifier' (1)
+  └─> 'admin' creates Draw.CapitalCall:Fund@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+              with
+                admin = 'admin';
+                fundId = "FUND-1";
+                fundName = "Example Ventures I";
+                verifier = some 'verifier'
+  
+  TX 2 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:78:22)
+  #2:0
+  │   disclosed to (since): 'admin' (2)
+  └─> 'admin' exercises Fund_InviteInvestor on #1:0 (Draw.CapitalCall:Fund@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+              with
+                lp = 'lpA';
+                committedScenarioAmount = 1000000.0000000000;
+                instrumentId =
+                  (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                     admin = 'registrar'; id = "TestCoin")
+      children:
+      #2:1
+      │   consumed by: #3:0
+      │   referenced by #3:0
+      │   disclosed to (since): 'admin' (2), 'lpA' (2)
+      └─> 'admin' creates Draw.CapitalCall:CommitmentInvitation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                  with
+                    admin = 'admin';
+                    lp = 'lpA';
+                    fundId = "FUND-1";
+                    fundName = "Example Ventures I";
+                    committedScenarioAmount = 1000000.0000000000;
+                    instrumentId =
+                      (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                         admin = 'registrar'; id = "TestCoin")
+  
+  TX 3 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:81:5)
+  #3:0
+  │   disclosed to (since): 'admin' (3), 'lpA' (3)
+  └─> 'lpA' exercises Invitation_Accept on #2:1 (Draw.CapitalCall:CommitmentInvitation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+      children:
+      #3:1
+      │   consumed by: #8:1
+      │   referenced by #8:1
+      │   disclosed to (since): 'admin' (3), 'lpA' (3)
+      └─> 'admin' and 'lpA' create Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                            with
+                              admin = 'admin';
+                              lp = 'lpA';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              committedScenarioAmount = 1000000.0000000000;
+                              calledScenarioAmount = 0.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin")
+  
+  TX 4 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:78:22)
+  #4:0
+  │   disclosed to (since): 'admin' (4)
+  └─> 'admin' exercises Fund_InviteInvestor on #1:0 (Draw.CapitalCall:Fund@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+              with
+                lp = 'lpB';
+                committedScenarioAmount = 700000.0000000000;
+                instrumentId =
+                  (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                     admin = 'registrar'; id = "TestCoin")
+      children:
+      #4:1
+      │   consumed by: #5:0
+      │   referenced by #5:0
+      │   disclosed to (since): 'admin' (4), 'lpB' (4)
+      └─> 'admin' creates Draw.CapitalCall:CommitmentInvitation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                  with
+                    admin = 'admin';
+                    lp = 'lpB';
+                    fundId = "FUND-1";
+                    fundName = "Example Ventures I";
+                    committedScenarioAmount = 700000.0000000000;
+                    instrumentId =
+                      (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                         admin = 'registrar'; id = "TestCoin")
+  
+  TX 5 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:81:5)
+  #5:0
+  │   disclosed to (since): 'admin' (5), 'lpB' (5)
+  └─> 'lpB' exercises Invitation_Accept on #4:1 (Draw.CapitalCall:CommitmentInvitation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+      children:
+      #5:1
+      │   consumed by: #8:5
+      │   referenced by #8:5
+      │   disclosed to (since): 'admin' (5), 'lpB' (5)
+      └─> 'admin' and 'lpB' create Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                            with
+                              admin = 'admin';
+                              lp = 'lpB';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              committedScenarioAmount = 700000.0000000000;
+                              calledScenarioAmount = 0.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin")
+  
+  TX 6 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:78:22)
+  #6:0
+  │   disclosed to (since): 'admin' (6)
+  └─> 'admin' exercises Fund_InviteInvestor on #1:0 (Draw.CapitalCall:Fund@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+              with
+                lp = 'lpC';
+                committedScenarioAmount = 500000.0000000000;
+                instrumentId =
+                  (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                     admin = 'registrar'; id = "TestCoin")
+      children:
+      #6:1
+      │   consumed by: #7:0
+      │   referenced by #7:0
+      │   disclosed to (since): 'admin' (6), 'lpC' (6)
+      └─> 'admin' creates Draw.CapitalCall:CommitmentInvitation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                  with
+                    admin = 'admin';
+                    lp = 'lpC';
+                    fundId = "FUND-1";
+                    fundName = "Example Ventures I";
+                    committedScenarioAmount = 500000.0000000000;
+                    instrumentId =
+                      (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                         admin = 'registrar'; id = "TestCoin")
+  
+  TX 7 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:81:5)
+  #7:0
+  │   disclosed to (since): 'admin' (7), 'lpC' (7)
+  └─> 'lpC' exercises Invitation_Accept on #6:1 (Draw.CapitalCall:CommitmentInvitation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+      children:
+      #7:1
+      │   consumed by: #8:9
+      │   referenced by #8:9
+      │   disclosed to (since): 'admin' (7), 'lpC' (7)
+      └─> 'admin' and 'lpC' create Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                            with
+                              admin = 'admin';
+                              lp = 'lpC';
+                              fundId = "FUND-1";
+                              fundName = "Example Ventures I";
+                              committedScenarioAmount = 500000.0000000000;
+                              calledScenarioAmount = 0.0000000000;
+                              instrumentId =
+                                (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                   admin = 'registrar'; id = "TestCoin")
+  
+  TX 8 2026-10-01T09:00:00Z (Draw.Test.CapitalCallTest:87:29)
+  #8:0
+  │   disclosed to (since): 'admin' (8)
+  └─> 'admin' exercises Fund_IssueCall on #1:0 (Draw.CapitalCall:Fund@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+              with
+                callId = "CALL-1";
+                description = "Initial close drawdown";
+                dueAt = 2026-10-11T09:00:00Z;
+                requests =
+                  [(Draw.CapitalCall:ObligationRequest@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a with
+                      commitmentCid = #3:1;
+                      obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                      amountDue = 40.0000000000;
+                      scenarioAmount = 400000.0000000000),
+                   (Draw.CapitalCall:ObligationRequest@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a with
+                      commitmentCid = #5:1;
+                      obligationRef = "DRAW:FUND-1:CALL-1:LP-B";
+                      amountDue = 35.0000000000;
+                      scenarioAmount = 350000.0000000000),
+                   (Draw.CapitalCall:ObligationRequest@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a with
+                      commitmentCid = #7:1;
+                      obligationRef = "DRAW:FUND-1:CALL-1:LP-C";
+                      amountDue = 25.0000000000;
+                      scenarioAmount = 250000.0000000000)]
+      children:
+      #8:1
+      │   disclosed to (since): 'admin' (8), 'lpA' (8)
+      └─> 'admin' exercises Commitment_IssueObligation on #3:1 (Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+                  with
+                    expectedFundId = "FUND-1";
+                    callId = "CALL-1";
+                    obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                    amountDue = 40.0000000000;
+                    scenarioAmount = 400000.0000000000;
+                    dueAt = 2026-10-11T09:00:00Z;
+                    verifier = some 'verifier'
+          children:
+          #8:2
+          │   disclosed to (since): 'admin' (8), 'lpA' (8)
+          └─> 'admin' and 'lpA' create Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpA';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  committedScenarioAmount = 1000000.0000000000;
+                                  calledScenarioAmount = 400000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin")
+          
+          #8:3
+          │   disclosed to (since): 'admin' (8), 'lpA' (8)
+          └─> 'admin' and 'lpA' create Draw.CapitalCall:CapitalCallObligation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpA';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  callId = "CALL-1";
+                                  obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                                  amountDue = 40.0000000000;
+                                  scenarioAmount = 400000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin");
+                                  dueAt = 2026-10-11T09:00:00Z;
+                                  state =
+                                    Draw.CapitalCall:ObligationState@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a:Issued;
+                                  pendingAllocationCid = none;
+                                  settlement = none;
+                                  reviewNote = none;
+                                  verifier = some 'verifier';
+                                  issuedAt = some 2026-10-01T09:00:00Z
+          
+          #8:4
+          │   disclosed to (since): 'admin' (8), 'lpA' (8)
+          └─> 'admin' creates Draw.CapitalCall:PaymentRequest@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                      with
+                        admin = 'admin';
+                        lp = 'lpA';
+                        fundName = "Example Ventures I";
+                        callId = "CALL-1";
+                        obligationRef = "DRAW:FUND-1:CALL-1:LP-A";
+                        amountDue = 40.0000000000;
+                        instrumentId =
+                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                             admin = 'registrar'; id = "TestCoin");
+                        requestedAt = 2026-10-01T09:00:00Z;
+                        allocateBefore = 2026-10-11T09:00:00Z;
+                        settleBefore = 2026-10-18T09:00:00Z
+      
+      #8:5
+      │   disclosed to (since): 'admin' (8), 'lpB' (8)
+      └─> 'admin' exercises Commitment_IssueObligation on #5:1 (Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+                  with
+                    expectedFundId = "FUND-1";
+                    callId = "CALL-1";
+                    obligationRef = "DRAW:FUND-1:CALL-1:LP-B";
+                    amountDue = 35.0000000000;
+                    scenarioAmount = 350000.0000000000;
+                    dueAt = 2026-10-11T09:00:00Z;
+                    verifier = some 'verifier'
+          children:
+          #8:6
+          │   disclosed to (since): 'admin' (8), 'lpB' (8)
+          └─> 'admin' and 'lpB' create Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpB';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  committedScenarioAmount = 700000.0000000000;
+                                  calledScenarioAmount = 350000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin")
+          
+          #8:7
+          │   disclosed to (since): 'admin' (8), 'lpB' (8)
+          └─> 'admin' and 'lpB' create Draw.CapitalCall:CapitalCallObligation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpB';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  callId = "CALL-1";
+                                  obligationRef = "DRAW:FUND-1:CALL-1:LP-B";
+                                  amountDue = 35.0000000000;
+                                  scenarioAmount = 350000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin");
+                                  dueAt = 2026-10-11T09:00:00Z;
+                                  state =
+                                    Draw.CapitalCall:ObligationState@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a:Issued;
+                                  pendingAllocationCid = none;
+                                  settlement = none;
+                                  reviewNote = none;
+                                  verifier = some 'verifier';
+                                  issuedAt = some 2026-10-01T09:00:00Z
+          
+          #8:8
+          │   disclosed to (since): 'admin' (8), 'lpB' (8)
+          └─> 'admin' creates Draw.CapitalCall:PaymentRequest@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                      with
+                        admin = 'admin';
+                        lp = 'lpB';
+                        fundName = "Example Ventures I";
+                        callId = "CALL-1";
+                        obligationRef = "DRAW:FUND-1:CALL-1:LP-B";
+                        amountDue = 35.0000000000;
+                        instrumentId =
+                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                             admin = 'registrar'; id = "TestCoin");
+                        requestedAt = 2026-10-01T09:00:00Z;
+                        allocateBefore = 2026-10-11T09:00:00Z;
+                        settleBefore = 2026-10-18T09:00:00Z
+      
+      #8:9
+      │   disclosed to (since): 'admin' (8), 'lpC' (8)
+      └─> 'admin' exercises Commitment_IssueObligation on #7:1 (Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a)
+                  with
+                    expectedFundId = "FUND-1";
+                    callId = "CALL-1";
+                    obligationRef = "DRAW:FUND-1:CALL-1:LP-C";
+                    amountDue = 25.0000000000;
+                    scenarioAmount = 250000.0000000000;
+                    dueAt = 2026-10-11T09:00:00Z;
+                    verifier = some 'verifier'
+          children:
+          #8:10
+          │   disclosed to (since): 'admin' (8), 'lpC' (8)
+          └─> 'admin' and 'lpC' create Draw.CapitalCall:InvestorCommitment@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpC';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  committedScenarioAmount = 500000.0000000000;
+                                  calledScenarioAmount = 250000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin")
+          
+          #8:11
+          │   disclosed to (since): 'admin' (8), 'lpC' (8)
+          └─> 'admin' and 'lpC' create Draw.CapitalCall:CapitalCallObligation@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                                with
+                                  admin = 'admin';
+                                  lp = 'lpC';
+                                  fundId = "FUND-1";
+                                  fundName = "Example Ventures I";
+                                  callId = "CALL-1";
+                                  obligationRef = "DRAW:FUND-1:CALL-1:LP-C";
+                                  amountDue = 25.0000000000;
+                                  scenarioAmount = 250000.0000000000;
+                                  instrumentId =
+                                    (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                                       admin = 'registrar'; id = "TestCoin");
+                                  dueAt = 2026-10-11T09:00:00Z;
+                                  state =
+                                    Draw.CapitalCall:ObligationState@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a:Issued;
+                                  pendingAllocationCid = none;
+                                  settlement = none;
+                                  reviewNote = none;
+                                  verifier = some 'verifier';
+                                  issuedAt = some 2026-10-01T09:00:00Z
+          
+          #8:12
+          │   disclosed to (since): 'admin' (8), 'lpC' (8)
+          └─> 'admin' creates Draw.CapitalCall:PaymentRequest@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                      with
+                        admin = 'admin';
+                        lp = 'lpC';
+                        fundName = "Example Ventures I";
+                        callId = "CALL-1";
+                        obligationRef = "DRAW:FUND-1:CALL-1:LP-C";
+                        amountDue = 25.0000000000;
+                        instrumentId =
+                          (Splice.Api.Token.HoldingV1:InstrumentId@718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b with
+                             admin = 'registrar'; id = "TestCoin");
+                        requestedAt = 2026-10-01T09:00:00Z;
+                        allocateBefore = 2026-10-11T09:00:00Z;
+                        settleBefore = 2026-10-18T09:00:00Z
+      
+      #8:13
+      │   disclosed to (since): 'admin' (8), 'verifier' (8)
+      └─> 'admin' creates Draw.CapitalCall:CapitalCall@0bbb29cc0ee99dc09b41ca3e6ace29a61b23d97091849ec77b2fa7eff9fda12a
+                  with
+                    admin = 'admin';
+                    fundId = "FUND-1";
+                    callId = "CALL-1";
+                    description = "Initial close drawdown";
+                    dueAt = 2026-10-11T09:00:00Z;
+                    obligationRefs =
+                      ["DRAW:FUND-1:CALL-1:LP-A", "DRAW:FUND-1:CALL-1:LP-B",
+                       "DRAW:FUND-1:CALL-1:LP-C"];
+                    totalScenarioAmount = 1000000.0000000000;
+                    totalAmountDue = 100.0000000000;
+                    verifier = some 'verifier'[0m
+File:     daml/Draw/Test/CapitalCallTest.daml
+Hidden:   no
+Range:    15:1-15:100
+Source:   typecheck
+Severity: DsWarning
+Message: 
+[0;93mdaml/Draw/Test/CapitalCallTest.daml:15:1: warning:
+    The import of ‘Metadata’
+    from module ‘Splice.Api.Token.MetadataV1’ is redundant[0m
+[4;1m
+Test Summary[m
+
+daml/Draw/Test/CapitalCallTest.daml:setup: ok, 11 active contracts, 9 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_resolution_paths: ok, 12 active contracts, 16 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_no_verifier: ok, 11 active contracts, 9 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_visibility: ok, 11 active contracts, 9 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_verifier: failed
+daml/Draw/Test/CapitalCallTest.daml:test_review_paths: ok, 15 active contracts, 30 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_authority: ok, 12 active contracts, 22 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_settlement_lifecycle: ok, 20 active contracts, 37 transactions.
+daml/Draw/Test/CapitalCallTest.daml:test_payment_request: ok, 11 active contracts, 22 transactions.
+Modules internal to this package:
+- Internal templates
+  2 defined
+  2 (100.0%) created
+- Internal template choices
+  2 defined
+  0 (  0.0%) exercised
+- Internal interface implementations
+  2 defined
+    2 internal interfaces
+    0 external interfaces
+- Internal interface choices
+  0 defined
+  0 (100.0%) exercised
+Modules external to this package:
+- External templates
+  0 defined
+  0 (100.0%) created in any tests
+  0 (100.0%) created in internal tests
+  0 (100.0%) created in external tests
+- External template choices
+  0 defined
+  0 (100.0%) exercised in any tests
+  0 (100.0%) exercised in internal tests
+  0 (100.0%) exercised in external tests
+- External interface implementations
+  0 defined
+- External interface choices
+  0 defined
+  0 (100.0%) exercised in any tests
+  0 (100.0%) exercised in internal tests
+  0 (100.0%) exercised in external tests
+
