@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-06T11:18:48.211Z",
-  "generatedAtCommit": "a8b686afe1db3fd871f3261dae1c4d4e7852b0d7",
+  "generatedAt": "2026-10-06T13:33:30.116Z",
+  "generatedAtCommit": "de2c4b25dc0dfc0f8fc2676b0826d10c67ec3480",
   "generator": "node scripts/evidence/manifest.mjs",
   "tokenStandardPackages": [
     {
@@ -254,6 +254,56 @@
     {
       "kind": "browser",
       "environment": "devnet",
+      "runId": "web-hackcanton-20261006132613",
+      "path": "evidence/devnet/browser/web-hackcanton-20261006132613",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "01-signed-in.png",
+          "sha256": "197c7c8a70dfee15fafec6168fe3281f623d5ddd9786aaaeaa2cf6ce6ba7951d"
+        },
+        {
+          "path": "02-lp-committed.png",
+          "sha256": "82ee9ce62fc80d8944ae68122fde51ad393f771ab50b60b3762feab9f1cf3ce6"
+        },
+        {
+          "path": "03-call-issued.png",
+          "sha256": "a28f62a8194862043980da340070c8d7819d5280c57e33017686c1f21bf7c80d"
+        },
+        {
+          "path": "04-lp-paid.png",
+          "sha256": "fe04f9350346f62324898225bb26484bc52e6299dec963c34a5f28f00ce62aae"
+        },
+        {
+          "path": "05-settled.png",
+          "sha256": "51d94632216de9eafe29dff82398c59c1706b8b5375ed771217c6a848b1bb0dd"
+        },
+        {
+          "path": "06-lp-verified.png",
+          "sha256": "39963ea0912ed593cd23362bc27e4307f90881ac616906e707543387da288bf0"
+        },
+        {
+          "path": "result.json",
+          "sha256": "c9a4e4f5622cc4cd1717fdf3491215e55dc9c86979f739eeb6c0de988fd0c068"
+        }
+      ],
+      "claims": [
+        "signed-in-lp"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "devnet",
       "runId": "web-hackcanton-wallet-20261006101052",
       "path": "evidence/devnet/browser/web-hackcanton-wallet-20261006101052",
       "commit": null,
@@ -361,6 +411,122 @@
         {
           "path": "result.json",
           "sha256": "4c3e85c72fad9053fe89e5f852d8c626e8052113de599a84a807dba079e470cc"
+        }
+      ],
+      "claims": [
+        "signed-in-lp"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "devnet",
+      "runId": "web-hackcanton-wallet-20261006114558",
+      "path": "evidence/devnet/browser/web-hackcanton-wallet-20261006114558",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "01-signed-in.png",
+          "sha256": "535debb449cccf7cda956cacb1f3528c46a64050e18949bcb062eda7a21310f3"
+        },
+        {
+          "path": "02-lp-committed.png",
+          "sha256": "b428d638159976dada8fdce0939fd181ea0faddf525fab59564f0fe70eeb8447"
+        },
+        {
+          "path": "03-call-issued.png",
+          "sha256": "41bb46fa128ecb9f6b1a0fc1dc3519054411a6e5ac534b88bf29cb71c8bbb0aa"
+        },
+        {
+          "path": "04-wallet-request.png",
+          "sha256": "2ce212a37e65dae9b852ff9ec166a80d0183fd43199d0f63028eca6ed5da3620"
+        },
+        {
+          "path": "05-wallet-accepted.png",
+          "sha256": "eaa8680fbf88906fefbf443166594f5c2de16c7e7587fafbad7b8b255bfd4611"
+        },
+        {
+          "path": "06-lp-paid.png",
+          "sha256": "eb60bf8459f3a655f5a152c4224e3706d6e05d0dec75d06034017ba9a3a99cc2"
+        },
+        {
+          "path": "07-settled.png",
+          "sha256": "f51862192d102464a15e2fcdab87d3921f5f3739f7e96f3e9bc8627ac4eb2eaa"
+        },
+        {
+          "path": "08-lp-verified.png",
+          "sha256": "d1afc3bf178a82f57cdc6d3935203d4446df6d6e0fba45176a2cd409801cc10c"
+        },
+        {
+          "path": "result.json",
+          "sha256": "21d5e02eee69abc38fe5aa0c1c6c3c07fde5dc4209f063cabd7aea5b18cac829"
+        }
+      ],
+      "claims": [
+        "signed-in-lp"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "devnet",
+      "runId": "web-hackcanton-wallet-20261006132730",
+      "path": "evidence/devnet/browser/web-hackcanton-wallet-20261006132730",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "01-signed-in.png",
+          "sha256": "d0109920d59fb019252862d93a781ea7a66ec20d0485a8f81e7a6562bf556ec5"
+        },
+        {
+          "path": "02-lp-committed.png",
+          "sha256": "635391fa3961d9e7a6b10308e15f0543ee9e7e6e68466da3adb6231d2e5e816a"
+        },
+        {
+          "path": "03-call-issued.png",
+          "sha256": "d42846365f02f886d79f2752c5fd29e064c6bd6e7cccb60b426ec81489019a14"
+        },
+        {
+          "path": "04-wallet-request.png",
+          "sha256": "aa57feb39cc2ff945687cf93d0749d443bf0768389223bae302a5c5321ae6ce5"
+        },
+        {
+          "path": "05-wallet-accepted.png",
+          "sha256": "d6969ae49b30b806f6eefe61befb915f577a44c8b9588bbd139059bbbaad7898"
+        },
+        {
+          "path": "06-lp-paid.png",
+          "sha256": "6c6218df4c98f5b3930ec8485085629a8bdd1e9463c3642b481442b9c808e427"
+        },
+        {
+          "path": "07-settled.png",
+          "sha256": "967b5e4ad05293024acbc29c2c40065eebb4bac94e5f5b4cb167d40e5a484121"
+        },
+        {
+          "path": "08-lp-verified.png",
+          "sha256": "4c3ea3e341e13137b40afcd6de3bc6dd0adade25be0751cc5705d88323086ff0"
+        },
+        {
+          "path": "result.json",
+          "sha256": "a4e1c2c753901458c5b6b4e0f28924418dae18683a962221e8d2193e7796a702"
         }
       ],
       "claims": [
@@ -610,6 +776,68 @@
       ]
     },
     {
+      "kind": "browser",
+      "environment": "devnet",
+      "runId": "web-journey-20261006132858",
+      "path": "evidence/devnet/browser/web-journey-20261006132858",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "00-landing.png",
+          "sha256": "22490da4cfbc4c55d0e70348bd63abfe229ddffd56a8f7f29056a2e681193652"
+        },
+        {
+          "path": "02-manager-overview.png",
+          "sha256": "18f519bdc023fbcdf3ca4e5d2e5084463bcf82f6d435dde8193154f1ab65bff3"
+        },
+        {
+          "path": "03-call-issued.png",
+          "sha256": "96f255511993400d46b314f0976926444660c27e2d8f2cc61912d82f36e4232e"
+        },
+        {
+          "path": "04-lp-paid.png",
+          "sha256": "98797c98657b6fe6d234b55dd1ad06eb40f3ed4765287a2020101e3a2a72c3a0"
+        },
+        {
+          "path": "05-lpb-cannot-read.png",
+          "sha256": "12d45b91b53286f0037d1767c5a09aea30a8b783e3b1e44f487139ca6f2bcd56"
+        },
+        {
+          "path": "06-settled.png",
+          "sha256": "732ce2d9d26af03d2743ef0144ba1814503419e8c2f36c34876307436dce4dc6"
+        },
+        {
+          "path": "07-lp-verified.png",
+          "sha256": "7c8d52161522ced705ad578b4751cce22810569c36ffcc5dad30942286af4dc0"
+        },
+        {
+          "path": "08-second-browser.png",
+          "sha256": "152eca9d4edfb11266b54aac36a20123ece0820a54b8c7b7fdd1378c95337fc9"
+        },
+        {
+          "path": "09-started-over.png",
+          "sha256": "e3c872d71967b40b5780961a18554f3ea0aa866dc6ece7b71337465adb025f4f"
+        },
+        {
+          "path": "result.json",
+          "sha256": "99bb3f746ebe9909e43f6baca5352e9a26fc51d4f755af4e27aee55378eeb3d7"
+        }
+      ],
+      "claims": [
+        "web-journey-devnet"
+      ]
+    },
+    {
       "kind": "probes",
       "environment": "devnet",
       "runId": "20261006T091205Z",
@@ -638,6 +866,61 @@
       ]
     },
     {
+      "kind": "probes",
+      "environment": "devnet",
+      "runId": "20261006T131751Z",
+      "path": "evidence/devnet/probes/20261006T131751Z",
+      "commit": "97d15d60de66308a610b14235483ba469b1e106a",
+      "verdict": "NOT_AS_EXPECTED",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [
+        "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534"
+      ],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node scripts/demo/probe.mjs",
+      "verifierCommand": "each probe states the outcome it expects, and the run compares",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "result.json",
+          "sha256": "0c513859cdf056d14a4897f1cf6a583340907e220bd2c619d3dfc63c81576cc6"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "kind": "probes",
+      "environment": "devnet",
+      "runId": "20261006T133219Z",
+      "path": "evidence/devnet/probes/20261006T133219Z",
+      "commit": "de2c4b25dc0dfc0f8fc2676b0826d10c67ec3480",
+      "verdict": "NOT_AS_EXPECTED",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [
+        "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534"
+      ],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "node scripts/demo/probe.mjs",
+      "verifierCommand": "each probe states the outcome it expects, and the run compares",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "result.json",
+          "sha256": "7d4a9490438e318d1a97c99a3840ea15ff8dbbf8f0ce324d44148ff5e0f47eee"
+        }
+      ],
+      "claims": [
+        "devnet",
+        "signed-in-lp"
+      ]
+    },
+    {
       "kind": "runs",
       "environment": "devnet",
       "runId": "20261004T115438Z",
@@ -651,7 +934,7 @@
       "partyAliases": null,
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -714,7 +997,7 @@
       "partyAliases": null,
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -796,7 +1079,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -884,7 +1167,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -970,7 +1253,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -1032,6 +1315,94 @@
       "claims": [
         "devnet",
         "wallet-request"
+      ]
+    },
+    {
+      "kind": "runs",
+      "environment": "devnet",
+      "runId": "20261006T131900Z",
+      "path": "evidence/devnet/runs/20261006T131900Z",
+      "commit": "8f30e3f43b14a5b8d7c3219f9e9b3a7e5a687c57",
+      "verdict": "DEVNET_E2E=PASS PRIVACY_CAMPAIGN=PASS",
+      "damlSdk": "3.5.12",
+      "canton": "3.5.19",
+      "packageIds": [
+        "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534"
+      ],
+      "instrument": {
+        "admin": "DSO::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+        "id": "Amulet"
+      },
+      "partyAliases": [
+        "admin",
+        "lpA",
+        "lpB",
+        "lpC",
+        "outsider"
+      ],
+      "seed": null,
+      "testCommand": "node scripts/demo/run.mjs",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
+      "updateRefs": [
+        {
+          "file": "receipt-lpA.json",
+          "updateId": "12205f807c74d2bcd7c5c87fb4d06e25bc662177345c9e87238aab4900a915283c1d",
+          "allocationCid": "00bc879692fa44beee99200250379e904b455833e505347c246bdc94ac6117f927ca12122062de3691f5763ae16a506cdb1cff1704ff0a70913345ea2a0c43c5e8109053a1",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-lpB.json",
+          "updateId": "1220e58baf4e379153295bbe041a0f01752471c6e092893ae390fa50877db2c07ebb",
+          "allocationCid": "00e49907752bddf752bf4ed0eabf775191303ae1149ce92b3be54152985ea9e079ca121220b0b68bd3ff518c0aa41ea4b9504d99574598102c68c8b93e6e7d23255ab13163",
+          "verdict": "VERIFIED_FUNDED"
+        },
+        {
+          "file": "receipt-replay-attempt-lpB.json",
+          "updateId": "12205f807c74d2bcd7c5c87fb4d06e25bc662177345c9e87238aab4900a915283c1d",
+          "allocationCid": "00bc879692fa44beee99200250379e904b455833e505347c246bdc94ac6117f927ca12122062de3691f5763ae16a506cdb1cff1704ff0a70913345ea2a0c43c5e8109053a1",
+          "verdict": "CONTRADICTED"
+        }
+      ],
+      "files": [
+        {
+          "path": "receipt-lpA.json",
+          "sha256": "89599ee89c5857b5457980565351f73496a9905f95f49a34523505a8b4f048a6"
+        },
+        {
+          "path": "receipt-lpB.json",
+          "sha256": "8b5db05564c26c76830297b93699fbe6f48cfb69dd2f2184505c04b054ce5bd8"
+        },
+        {
+          "path": "receipt-replay-attempt-lpB.json",
+          "sha256": "06fbfef47799d10ba7a6b5a8dab05efd464eafd984298db52a7c98dc106a5da6"
+        },
+        {
+          "path": "result.json",
+          "sha256": "eca86015dc163d72f70a8eab961028038b6daf4240b84ca8c3e73eb786b6d0ea"
+        },
+        {
+          "path": "steps.jsonl",
+          "sha256": "fb4cdb8bfa23ab3b9b86ab61d2a18d00a43c94f9c3dcbc498a1147a25386fb31"
+        },
+        {
+          "path": "streams.json",
+          "sha256": "a8d15a0ced427b85a593b6557125be0792a043bb4bd0bac5d1615e946b0cd6be"
+        },
+        {
+          "path": "totals.json",
+          "sha256": "2d7752f6a3158094b0b60557a831b9acabc89413a39d2db36b15144407dbf50e"
+        },
+        {
+          "path": "visibility-after-issue.json",
+          "sha256": "0f0b0af07b11f9bf025d0f9266595667bbfaf975c4ea8d34450ec8559888d439"
+        },
+        {
+          "path": "visibility-final.json",
+          "sha256": "0f0b0af07b11f9bf025d0f9266595667bbfaf975c4ea8d34450ec8559888d439"
+        }
+      ],
+      "claims": [
+        "devnet"
       ]
     },
     {
@@ -2548,7 +2919,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -2630,7 +3001,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -2719,7 +3090,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -2801,7 +3172,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -2883,7 +3254,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -2965,7 +3336,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -3047,7 +3418,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",
@@ -3118,7 +3489,7 @@
       "partyAliases": null,
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [],
       "files": [
         {
@@ -3153,7 +3524,7 @@
       ],
       "seed": null,
       "testCommand": "node scripts/demo/run.mjs",
-      "verifierCommand": "scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user",
+      "verifierCommand": "scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser",
       "updateRefs": [
         {
           "file": "receipt-lpA.json",

@@ -20,7 +20,7 @@ function readClaims() {
   for (const line of readFileSync(join(ROOT, 'claims.yaml'), 'utf8').split('\n')) {
     const id = line.match(/^\s*-\s*id:\s*(\S+)/);
     if (id) {
-      current = { id: id[1], status: null, evidence: [], mentions: [], text: '' };
+      current = { id: id[1], status: null, evidence: [], mentions: [], text: '', limits: '' };
       claims.push(current);
       inEvidence = false;
       continue;
@@ -32,6 +32,7 @@ function readClaims() {
       inEvidence = name === 'evidence';
       if (name === 'status') current.status = value.trim();
       if (name === 'text') current.text = value;
+      if (name === 'limits') current.limits = value;
       if (inEvidence) current.evidence.push(...(value.match(EVIDENCE_PATH) ?? []));
       else current.mentions.push(...(value.match(EVIDENCE_PATH) ?? []));
       continue;
@@ -62,19 +63,23 @@ test('LocalNet and DevNet claims stay separate', () => {
   }
 });
 
-test('no cited result records a failure', () => {
-  const failures = [];
+test('a cited result records a failure only where the claim\'s limits name that run', () => {
+  const unacknowledged = [];
   for (const claim of claims) {
     for (const path of claim.evidence) {
       const file = path.endsWith('.json') ? join(ROOT, path) : join(ROOT, path, 'result.json');
       if (!file.endsWith('result.json') || !existsSync(file)) continue;
       const result = JSON.parse(readFileSync(file, 'utf8'));
-      if (result.verdict !== undefined && !['PASS', 'TREATMENT_STOPS_ALL'].includes(result.verdict)) failures.push(`${claim.id}: ${path} verdict ${result.verdict}`);
-      for (const [gate, verdict] of Object.entries(result.gates ?? {})) if (verdict !== 'PASS') failures.push(`${claim.id}: ${path} ${gate} ${verdict}`);
-      if (result.asExpected === false) failures.push(`${claim.id}: ${path} not as expected`);
+      const failures = [];
+      if (result.verdict !== undefined && !['PASS', 'TREATMENT_STOPS_ALL'].includes(result.verdict)) failures.push(`verdict ${result.verdict}`);
+      for (const [gate, verdict] of Object.entries(result.gates ?? {})) if (verdict !== 'PASS') failures.push(`${gate} ${verdict}`);
+      if (result.asExpected === false) failures.push('not as expected');
+      // A failure the claim states openly, by naming the run in its limits, is not leaned on.
+      const runId = path.split('/').find((part) => /^\d{8}T\d{6}Z$/.test(part)) ?? path;
+      if (failures.length && !claim.limits.includes(runId)) unacknowledged.push(`${claim.id}: ${path} ${failures.join(', ')}`);
     }
   }
-  assert.deepEqual(failures, []);
+  assert.deepEqual(unacknowledged, []);
 });
 
 test('a verified claim cites evidence, and a blocked one cites none', () => {

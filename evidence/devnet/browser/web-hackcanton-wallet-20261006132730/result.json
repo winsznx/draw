@@ -1,0 +1,57 @@
+{
+  "run": "20261006132730",
+  "test": "an LP approves the capital call in the node's Canton Coin wallet",
+  "site": "https://draw.timjosh507.workers.dev",
+  "siteSetup": {
+    "network": "DevNet",
+    "seatCredential": "backend-client",
+    "singleCredential": true,
+    "separateVerifier": false,
+    "signInClientId": "xidoncapitals-web-app-hackcanton-01-devnet",
+    "release": {
+      "version": "0.3.0",
+      "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534"
+    }
+  },
+  "steps": [
+    {
+      "step": "demo fund started",
+      "at": "2026-10-06T13:27:52.260Z"
+    },
+    {
+      "step": "signed in on the node Keycloak",
+      "at": "2026-10-06T13:28:00.065Z"
+    },
+    {
+      "step": "LP accepted with its own login",
+      "at": "2026-10-06T13:28:11.648Z"
+    },
+    {
+      "step": "call issued to the signed-in LP",
+      "at": "2026-10-06T13:28:19.283Z"
+    },
+    {
+      "step": "the Canton wallet lists the capital call as an allocation request",
+      "at": "2026-10-06T13:28:32.170Z"
+    },
+    {
+      "step": "LP pressed Accept in its Canton wallet",
+      "at": "2026-10-06T13:28:36.651Z"
+    },
+    {
+      "step": "DRAW reads the payment from the LP ledger",
+      "at": "2026-10-06T13:28:39.350Z"
+    },
+    {
+      "step": "fund manager settled, verifier confirmed",
+      "at": "2026-10-06T13:28:53.115Z"
+    },
+    {
+      "step": "LP sees verified funded",
+      "at": "2026-10-06T13:28:58.395Z"
+    }
+  ],
+  "expectedSteps": 9,
+  "verdict": "PASS",
+  "error": null
+}

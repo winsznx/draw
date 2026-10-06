@@ -1,0 +1,92 @@
+{
+  "runId": "20261006T133219Z",
+  "network": "devnet",
+  "authMode": "oauth",
+  "seatCredential": "backend-client",
+  "users": {
+    "admin": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "lpA": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "lpB": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "lpC": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "outsider": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "verifier": "b20615ba-00dc-4336-bbea-391e48070776"
+  },
+  "seatsSeparate": false,
+  "verifierSeparate": true,
+  "ledgerApi": "https://ledger-api-json.participant.hackcanton-01.devnet.naas.noders.services",
+  "commit": "de2c4b25dc0dfc0f8fc2676b0826d10c67ec3480",
+  "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534",
+  "probes": [
+    {
+      "id": "package: this release is registered on the node",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534",
+        "version": "0.3.0",
+        "status": "PACKAGE_STATUS_REGISTERED"
+      }
+    },
+    {
+      "id": "interactive submission: prepare succeeds for this tenant and resolves the release template",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "preparedTransactionHashPresent": true,
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+        "executed": false
+      }
+    },
+    {
+      "id": "external parties: generate-topology succeeds for this tenant",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "partyId": "b94ab230-probe-20261006t133219z::12202c11f633f1cfd4d8c2c8615048b224af8791589cbebfeac0f0b3512eaeea335b",
+        "topologyTransactions": 1
+      }
+    },
+    {
+      "id": "external parties: tenant allocate is refused on the shared node",
+      "expectation": "REFUSED",
+      "outcome": "REFUSED",
+      "status": 403,
+      "detail": "/v2/parties/external/allocate -> HTTP 403: {\"code\":\"NA\",\"cause\":\"A security-sensitive error has been received\",\"correlationId\":\"06a8d5f3b3cd63609be6d823639f7a02\",\"traceId\":\"06a8d5f3b3cd63609be6d823639f7a02\",\"context\":{},\"resources\":[],\"errorCategory\":-1,\"grpcCodeValue\":7,\"retryInfo\":null,\"definiteAnswer\":null}"
+    },
+    {
+      "id": "user management: listing parties is refused for a tenant",
+      "expectation": "REFUSED",
+      "outcome": "REFUSED",
+      "status": 403,
+      "detail": "/v2/parties?pageSize=1 -> HTTP 403: {\"code\":\"NA\",\"cause\":\"A security-sensitive error has been received\",\"correlationId\":\"2d9f3bbf95b92168e2b8351a33e084f2\",\"traceId\":\"2d9f3bbf95b92168e2b8351a33e084f2\",\"context\":{},\"resources\":[],\"errorCategory\":-1,\"grpcCodeValue\":7,\"retryInfo\":null,\"definiteAnswer\":null}"
+    },
+    {
+      "id": "credentials: the demo seats' backend client acts for the five demo parties and nothing else",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "user": "4d4358a3-c890-4e12-b292-53f668230b34",
+        "actAs": [
+          "b94ab230-draw-lpa",
+          "b94ab230-draw-admin",
+          "b94ab230-draw-outsider",
+          "b94ab230-draw-lpc",
+          "b94ab230-draw-lpb"
+        ],
+        "readAs": [
+          "b94ab230-draw-admin"
+        ],
+        "executeAs": [],
+        "other": []
+      }
+    },
+    {
+      "id": "credentials: the verifier's client only reads, as the fund's party",
+      "expectation": "SUCCEEDED",
+      "outcome": "FAILED",
+      "status": null,
+      "detail": "the verifier can act for b94ab230-e690-46b2-9288-133b30609cb9; also reads as b94ab230-e690-46b2-9288-133b30609cb9"
+    }
+  ],
+  "asExpected": false
+}
