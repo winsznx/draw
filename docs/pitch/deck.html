@@ -463,8 +463,8 @@ img, svg { display: block; }
   <div class="cover-grid">
     <div class="cover-copy">
       <p class="cover-brand"><svg class="seal"><use href="#seal"/></svg>draw</p>
-      <h1 class="cover-title">Capital calls only the right investor can read.</h1>
-      <p class="cover-lead">DRAW runs a fund’s capital call on Canton. Each LP gets a private notice and pays it with a Canton token. The fund counts money as deployable only after a separate read-back step confirms it arrived.</p>
+      <h1 class="cover-title">Capital calls where each LP sees only its own notice.</h1>
+      <p class="cover-lead">DRAW runs a fund’s capital call on Canton. Each LP gets a private notice and pays it with a Canton token. The fund counts money as deployable only after a read-back step confirms it arrived.</p>
       <p class="cover-live">Live on DevNet: draw.timjosh507.workers.dev</p>
     </div>
     <figure>
@@ -510,14 +510,14 @@ img, svg { display: block; }
           <div>
             <p class="h3">Payments get matched in batches, from bank exports.</p>
             <p class="body">One fund software vendor’s service terms: “Client must provide a .csv file of recent bank transactions” before it can reconcile contributions, updated “up to three times per capital call.”</p>
-            <p class="src">Juniper Square, Description of Services, rev. May 17, 2023</p>
+            <p class="src">A fund software vendor’s service terms, rev. May 17, 2023, source 10 in docs/PROBLEM_EVIDENCE.md</p>
           </div>
         </li>
         <li>
           <span class="ico"><svg width="22" height="22"><use href="#i-payments"/></svg></span>
           <div>
             <p class="h3">Partial, split and wrong-name payments are worked by hand.</p>
-            <p class="body">Capital call tools reconcile each contribution against candidate bank transactions, and funds treat money as in only once it has cleared and been reconciled.</p>
+            <p class="body">Capital call tools reconcile each contribution against candidate bank transactions, and one ops guide advises counting money only once it has cleared.</p>
             <p class="src">Product docs and ops guides, sources 9 to 11 in docs/PROBLEM_EVIDENCE.md</p>
           </div>
         </li>
@@ -557,7 +557,7 @@ img, svg { display: block; }
         </div>
       </div>
       <dl>
-        <dt>Works at</dt><dd>An emerging manager. In most small funds, operations issues the call itself</dd>
+        <dt>Works at</dt><dd>An emerging manager. Our assumption: at a small fund, operations issues the call itself</dd>
         <dt>Owns</dt><dd>The notices, matching wires to LPs, following up late payers, reporting funded versus outstanding</dd>
         <dt>Uses today</dt><dd>A spreadsheet or admin system, email, wires and a bank export</dd>
       </dl>
@@ -613,7 +613,7 @@ img, svg { display: block; }
     <li class="module step step-final">
       <div class="step-top"><span class="step-n">04</span><span class="who">Read-back</span></div>
       <p class="name">Verify</p>
-      <p class="body">A separate step reads the settlement back and runs 14 checks. Only then does the money count as deployable.</p>
+      <p class="body">A read-back step reads the settlement from the ledger and runs 14 checks. Only then does the money count as deployable.</p>
       <p class="led">Read-only login on LocalNet, a login of its own in the DevNet run</p>
     </li>
   </ol>
@@ -737,7 +737,7 @@ img, svg { display: block; }
         <p class="h3">A payment can’t be reused</p>
         <p class="body">A settled allocation is consumed. The same payment can’t fund a second notice.</p>
       </li>
-      <li class="limits">What it doesn’t hide: the fund sees every LP by design, the node operator that hosts every party can read them all, and the Canton Coin leg shows up in Scan under a random reference.</li>
+      <li class="limits">What it doesn’t hide: the fund sees every LP by design, the node operator that hosts every party can read them all, and per the Scan docs the Canton Coin leg shows up in Scan under a random reference, which we haven’t checked against Scan.</li>
     </ul>
   </div>
   <footer class="foot">
@@ -782,14 +782,14 @@ img, svg { display: block; }
       <div class="shot"><img src="img/localnet-05-call-issued-crop.png" alt="LocalNet: the fund manager's view of Call 1 to LP A and LP B, with the seat card reading Signs with your browser key"></div>
       <p class="label">LocalNet. Each party signs with its own key.</p>
       <div class="speed">
-        <div><b>6.8 s</b><span class="net">DevNet</span><p>Settlement record time to LP A’s read-back receipt, 4.5 s for LP B, in the shared-login run. The verifier’s clock against the ledger’s</p></div>
+        <div><b>6.4 s</b><span class="net">DevNet</span><p>Settlement record time to LP A’s read-back receipt, 5.1 s for LP B. The read-back’s clock against the ledger’s</p></div>
         <div><b>1,047 ms</b><span class="net local">LocalNet</span><p>Payment locked to verified funded. One machine, scripted fund manager, not production latency</p></div>
       </div>
     </div>
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Runs: DevNet <span class="path">20261006T131900Z</span> on package 0.3.0, the 6.8 s from DevNet <span class="path">20261006T091531Z</span>, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
+    <span class="src">Runs: DevNet <span class="path">20261006T131900Z</span> on package 0.3.0, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
     <span class="num">8 / 11</span>
   </footer>
 </section>

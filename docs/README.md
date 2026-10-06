@@ -73,7 +73,7 @@ The six uploads the hackathon platform asks for, one per judging criterion, then
 34. [DEMO_SCRIPT.md](DEMO_SCRIPT.md): the presenter's script for showing the live site, with labels, timings and narration.
 35. [pitch/video-script.md](pitch/video-script.md): scenes and voiceover for the demo video.
 
-The deck, pitch/DRAW-deck.pdf, is a v1 draft still being checked against claims.yaml, so it isn't linked here yet.
+The deck, pitch/DRAW-deck.pdf, is v1. The fixes listed in [SUBMISSION.md](SUBMISSION.md#links) are made and the PDF was re-exported on 2026-10-06, and it isn't linked here until the owner has reviewed it.
 
 ### Hackathon process records
 

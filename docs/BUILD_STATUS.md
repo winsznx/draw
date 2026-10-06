@@ -88,7 +88,7 @@ Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (writte
 | [HACKATHON_DELTA.md](HACKATHON_DELTA.md) | DONE |
 | [SUBMISSION.md](SUBMISSION.md) | DONE (draft, track pending the owner's confirmation) |
 | [LIMITATIONS.md](LIMITATIONS.md), [PROOF.md](PROOF.md), [CLEAN_ROOM.md](CLEAN_ROOM.md) | DONE |
-| Deck ([deck.html](pitch/deck.html) and its PDF export) | PARTIAL, v1 draft, not yet reviewed. It still has lines that go past claims.yaml, among them the older DevNet run's timing figures, a vendor name and the cover headline, all listed in [SUBMISSION.md](SUBMISSION.md#links) |
+| Deck ([deck.html](pitch/deck.html) and its PDF export) | PARTIAL, v1. The fixes listed in [SUBMISSION.md](SUBMISSION.md#links) are made and the PDF was re-exported on 2026-10-06. The owner hasn't reviewed it yet |
 | The six platform materials ([docs/pitch/materials/](pitch/materials)) | PARTIAL, drafts, not yet reviewed |
 | Demo video | TODO |
 
@@ -98,7 +98,7 @@ Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (writte
 - Mana burned to 1,000, the project profile with Track 3, and a journal entry every day.
 - A public repository and a license. The 2026-10-06 scan found no secrets in the 45 commits up to `94ffc14`. The 23 commits after it, up to `515569d`, haven't been scanned. Re-run the scan on the release commit at the freeze.
 - The demo access code: set `DRAW_ACCESS_CODE_PUBLIC=true` on the API so the landing page prints it, or give the code in the submission form.
-- The deck: make the fixes listed in [SUBMISSION.md](SUBMISSION.md#links), among them the timing figures, the vendor name, the cover headline, the "most small funds" line and the Scan line, re-export the PDF, and only then link it from the README.
+- The deck: the owner reviews the re-exported PDF, and only then does the README link it.
 - The demo video and the voiceover.
 - Asks to NODERS: take the team's personal party off the verifier client so it only reads, which we've asked for, and external parties allocated for keys we hold.
 - A sign-in run with a second person's HackCanton login, so the LP and the fund manager aren't the same person.

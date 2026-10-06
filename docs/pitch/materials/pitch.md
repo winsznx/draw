@@ -2,7 +2,7 @@
 
 The Pitch material: DRAW in one line, in thirty seconds and in two minutes slide by slide, then the numbers we use with their labels and what we don't claim. It's for judges scoring the presentation, and it's the text the deck and the video follow.
 
-- Deck, 11 slides: `docs/pitch/DRAW-deck.pdf`, built from `docs/pitch/deck.html`. It's a v1 draft with known fixes still to make, listed in [SUBMISSION.md](../../SUBMISSION.md#links), so it isn't linked here until it's re-exported.
+- Deck, 11 slides: `docs/pitch/DRAW-deck.pdf`, built from `docs/pitch/deck.html`. It's v1. The fixes listed in [SUBMISSION.md](../../SUBMISSION.md#links) are made and the PDF was re-exported on 2026-10-06, and it isn't linked here until the owner has reviewed it.
 - Script for the demo video: [video-script.md](../video-script.md). The video link is added at submission.
 - Live demo on DevNet: https://draw.timjosh507.workers.dev
 - Proof page: https://draw.timjosh507.workers.dev/proof
