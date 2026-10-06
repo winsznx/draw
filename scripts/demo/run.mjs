@@ -92,9 +92,14 @@ if (network.externalKeys) {
 }
 
 // ---------------------------------------------------------------- faucet
-for (const role of LPS) {
-  const updateId = await draw.tap(role, network.tapAmount);
-  step(`${role} tapped ${network.tapAmount} Amulet through AmuletRules_DevNet_Tap`, { updateId });
+// DRAW_TAP_AMOUNT=0 skips the faucet, for a network where the LPs hold coin already.
+if (Number(network.tapAmount) > 0) {
+  for (const role of LPS) {
+    const updateId = await draw.tap(role, network.tapAmount);
+    step(`${role} tapped ${network.tapAmount} Amulet through AmuletRules_DevNet_Tap`, { updateId });
+  }
+} else {
+  step('faucet skipped, DRAW_TAP_AMOUNT is 0');
 }
 const balances = async () => Object.fromEntries(await Promise.all(['admin', ...LPS].map(async (r) => [r, await draw.balance(r)])));
 const balancesBefore = await balances();
