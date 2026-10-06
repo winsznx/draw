@@ -149,7 +149,7 @@ Backup: the screenshots in `evidence/devnet/browser/web-hackcanton-wallet-202610
 
 ### 3:10 to 3:34 Why Canton, and the honest line
 
-On screen: slide 6 of the deck, the five attacks with "4 of 5" and "0 of 5". Then the production asset label.
+On screen: slide 7 of the deck, the five attacks with "4 of 5" and "0 of 5". Then the production asset label.
 
 Captions: "LocalNet ablation run, evidence/local/ablation/20261002T193830Z". Production asset label from 3:22.
 
@@ -159,7 +159,7 @@ Voiceover:
 
 ### 3:34 to 3:50 Who it's for, and the ask
 
-On screen: slide 3, then slide 10 with the live link.
+On screen: slide 3, then slide 11 with the live link.
 
 Caption: draw.timjosh507.workers.dev
 

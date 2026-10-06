@@ -495,7 +495,7 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">HackCanton Season 3. Every test result in this deck traces to a script-written file in the repo, and claims.yaml is its ceiling.</span>
-    <span class="num">1 / 10</span>
+    <span class="num">1 / 11</span>
   </footer>
 </section>
 
@@ -540,7 +540,7 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">12 public sources in docs/PROBLEM_EVIDENCE.md, 2 of them against our hypothesis.</span>
-    <span class="num">2 / 10</span>
+    <span class="num">2 / 11</span>
   </footer>
 </section>
 
@@ -581,7 +581,7 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">docs/BUSINESS_BRIEF.md, docs/PRODUCT.md, from public sources. Who pays, and what a call costs them in time, stay assumptions until the interviews on slide 8 test them.</span>
-    <span class="num">3 / 10</span>
+    <span class="num">3 / 11</span>
   </footer>
 </section>
 
@@ -621,7 +621,7 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">Daml package draw 0.3.0. Issuing the measured three-LP call took 1 transaction (LocalNet workload run 20261002T185353Z).</span>
-    <span class="num">4 / 10</span>
+    <span class="num">4 / 11</span>
   </footer>
 </section>
 
@@ -637,7 +637,7 @@ img, svg { display: block; }
         <p class="label">Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</p>
       </div>
       <p class="url">draw.timjosh507.workers.dev</p>
-      <p class="limits"><span class="strong">Have a HackCanton login?</span> An LP can join as itself, read its notices with its own token, and pay with Accept in its own Canton Coin wallet. DRAW never gets the token. Run with the team’s own login.</p>
+      <p class="limits"><span class="strong">Have a HackCanton login?</span> An LP can join as itself, read its notices with its own token, and pay with Accept in its own Canton Coin wallet. DRAW never gets the token. Our runs used the team’s own login.</p>
     </div>
     <!-- 1, 2 and 4 are crops of 03-call-issued, 04-lp-paid and 06-settled from the run in the footer, boxes (270,96)-(1254,757), (287,84)-(1028,582) and (270,96)-(1254,757). -->
     <div class="grid4">
@@ -662,11 +662,50 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">Screens from <span class="path">evidence/devnet/browser/web-journey-20261005214111</span>, the 2026-10-05 UI. 1, 2 and 4 are cropped. On DevNet the read-back step runs with the same shared login. Sign-in runs: <span class="path">web-hackcanton-20261006100912</span> and <span class="path">web-hackcanton-wallet-20261006101052</span>.</span>
-    <span class="num">5 / 10</span>
+    <span class="num">5 / 11</span>
   </footer>
 </section>
 
 <!-- 6 ---------------------------------------------------------------- -->
+<section class="slide" aria-label="An LP pays from its own Canton wallet">
+  <div class="live">
+    <div class="live-copy">
+      <span class="net" style="justify-self:start">DevNet</span>
+      <h2 class="title">An LP pays from its own Canton wallet.</h2>
+      <p class="lead">Each capital call also reaches the LP as a CIP-0056 allocation request. The node’s Canton Coin wallet lists it, and Accept pays it.</p>
+      <div class="labels">
+        <p class="label">DevNet, HackCanton shared node. The LP signs in with its own HackCanton login. The fund manager seat uses the demo login.</p>
+        <p class="label">DRAW’s server learns only the LP’s party id. Both runs used the team’s own login, which the demo seats also use.</p>
+      </div>
+      <p class="limits"><span class="strong">9 of 9 steps</span> on the live site, from sign-in to verified funded. Paying from DRAW instead of the wallet passed 7 of 7.</p>
+    </div>
+    <div class="grid4">
+      <figure>
+        <div class="shot"><img src="img/devnet-signin-02-lp-committed.png" alt="DRAW read by the LP's own browser with its own HackCanton login: its notices, its commitment, and its own Canton wallet balance on the seat card"></div>
+        <figcaption><b>1</b><span>The LP signs in with its own HackCanton login and joins. Its browser reads its notices with its own token.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="img/devnet-signin-04-wallet-request-crop.png" alt="The node's Canton Coin wallet listing DRAW's capital call as an allocation request: 4 Amulet from the LP to the fund, executor the fund, with Accept and Reject"></div>
+        <figcaption><b>2</b><span>The fund calls 4 CC. The LP’s Canton Coin wallet lists the call as an allocation request.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="img/devnet-signin-05-wallet-accepted-crop.png" alt="The same wallet after Accept: the request now offers Withdraw, and the 4 Amulet allocation to the fund exists"></div>
+        <figcaption><b>3</b><span>The LP presses Accept. Its wallet locks 4 CC for the fund, and nothing moves yet.</span></figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="img/devnet-signin-08-lp-verified.png" alt="The LP's notice in DRAW after settlement: funded, and verified funded by the read-back step"></div>
+        <figcaption><b>4</b><span>The fund settles and the read-back step confirms it. The LP’s notice shows verified funded.</span></figcaption>
+      </figure>
+    </div>
+  </div>
+  <footer class="foot">
+    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
+    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-hackcanton-wallet-20261006101052</span>. 2 and 3 show the top of the wallet page. The DRAW-pay run is <span class="path">web-hackcanton-20261006100912</span>.</span>
+    <span class="num">6 / 11</span>
+  </footer>
+</section>
+
+<!-- 7 ---------------------------------------------------------------- -->
 <section class="slide" aria-label="Why Canton">
   <h2 class="title">Same call, same five attacks. A database let 4 through. DRAW let none through.</h2>
   <div class="canton">
@@ -704,11 +743,11 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src"><span class="path">evidence/local/ablation/20261002T193830Z</span>, LocalNet. The database attacker has write access, as an operator or a compromised app server would.</span>
-    <span class="num">6 / 10</span>
+    <span class="num">7 / 11</span>
   </footer>
 </section>
 
-<!-- 7 ---------------------------------------------------------------- -->
+<!-- 8 ---------------------------------------------------------------- -->
 <section class="slide" aria-label="Proof">
   <h2 class="title">Every number here comes from a script-written file.</h2>
   <div class="proof">
@@ -751,11 +790,11 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">Runs: DevNet <span class="path">20261006T091531Z</span> on package 0.3.0, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
-    <span class="num">7 / 10</span>
+    <span class="num">8 / 11</span>
   </footer>
 </section>
 
-<!-- 8 ---------------------------------------------------------------- -->
+<!-- 9 ---------------------------------------------------------------- -->
 <section class="slide" aria-label="Validation and metrics">
   <h2 class="title">What’s on file, and what we measure next.</h2>
   <div class="val">
@@ -793,11 +832,11 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">docs/PROBLEM_EVIDENCE.md, docs/PILOT_PLAN.md. Placeholders get filled only from notes taken in the calls and tests. No quote is used without permission.</span>
-    <span class="num">8 / 10</span>
+    <span class="num">9 / 11</span>
   </footer>
 </section>
 
-<!-- 9 ---------------------------------------------------------------- -->
+<!-- 10 ---------------------------------------------------------------- -->
 <section class="slide" aria-label="Go to market and business model">
   <h2 class="title">Go to market through the people who run the call.</h2>
   <div class="gtm">
@@ -837,11 +876,11 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">docs/PILOT_PLAN.md, docs/BUSINESS_BRIEF.md. Nobody has agreed to a pilot yet, and no customer or partner is implied.</span>
-    <span class="num">9 / 10</span>
+    <span class="num">10 / 11</span>
   </footer>
 </section>
 
-<!-- 10 --------------------------------------------------------------- -->
+<!-- 11 --------------------------------------------------------------- -->
 <section class="slide" aria-label="Roadmap and the ask">
   <h2 class="title">Next: one real call in shadow, then TestNet.</h2>
   <ol class="road">
@@ -886,7 +925,7 @@ img, svg { display: block; }
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
     <span class="src">TestNet and MainNet requirements: docs.canton.network, global synchronizer onboarding process. Built from scratch during HackCanton Season 3. First commit 2026-10-01.</span>
-    <span class="num">10 / 10</span>
+    <span class="num">11 / 11</span>
   </footer>
 </section>
 
