@@ -344,6 +344,33 @@
   }
 }
 
+.context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-6);
+  margin-bottom: var(--s-6);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.context p {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.context svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--intaglio-3);
+}
+
+.context :global(.mono) {
+  color: var(--ink-2);
+}
+
 .mobileSeat {
   padding: 0 var(--s-4) calc(110px + env(safe-area-inset-bottom));
 }

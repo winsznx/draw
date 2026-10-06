@@ -1,4 +1,4 @@
-import type { PaymentKind, Role, Status } from './types';
+import type { PaymentKind, Role, SiteConfig, Status } from './types';
 
 export const ROLE_NAME: Record<Role, string> = {
   admin: 'Fund manager',
@@ -16,6 +16,22 @@ export const usd = (n: number): string => `$${n.toLocaleString('en-US')}`;
 export const units = (n: number): string => n.toLocaleString('en-US', { maximumFractionDigits: 4 });
 
 export const shortId = (id: string | null | undefined): string => (id ? `${id.slice(0, 14)}…` : '');
+
+// A party id is a readable hint, "::", then the namespace fingerprint. The hint
+// and the start of the fingerprint are enough to tell parties apart.
+export function shortParty(party: string): string {
+  const [hint, namespace] = party.split('::');
+  return namespace ? `${hint}::${namespace.slice(0, 8)}…` : shortId(party);
+}
+
+// How this network signs, in one sentence shown on every app screen.
+export function networkNote({ network, singleCredential, browserKeys }: Pick<SiteConfig, 'network' | 'singleCredential' | 'browserKeys'>): string {
+  if (browserKeys) return `${network}. Each party signs with its own key.`;
+  if (singleCredential) return network === 'DevNet' ? 'DevNet, HackCanton shared node. One hackathon login signs for every seat.' : `${network}. One login signs for every seat.`;
+  return `${network}. Each party reads and acts with its own ledger login.`;
+}
+
+export const assetNote = (network: string): string => `Settles in Canton Coin from the ${network} faucet. Dollar figures are the scenario.`;
 
 export function dateTime(iso: string): string {
   return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });

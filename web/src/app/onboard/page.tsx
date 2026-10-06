@@ -11,7 +11,7 @@ import { ThemeSwitch } from '@/components/theme-switch';
 import { IconArrowRight, IconBuilding, IconEyeOff, IconUser } from '@/components/icons';
 import { ActionButton, AccessDialog, SignDialog, Toasts } from '@/components/app/ui';
 import { AccessCodeNeeded, accessCode, rememberAccessCode, startOnboarding } from '@/lib/api';
-import { usd } from '@/lib/format';
+import { networkNote, usd } from '@/lib/format';
 import { backupPem, createKey, hasKey, signHash } from '@/lib/keys';
 import type { Role, View } from '@/lib/types';
 
@@ -86,7 +86,7 @@ export default function Onboard() {
           </ol>
         </div>
         <SeatPreview role={role ?? 'admin'} />
-        {view && <p className={styles.network}><span className="live-dot" />{view.network}, {view.browserKeys ? 'keys in your browser' : view.singleCredential ? 'shared hackathon login' : 'one login per party'}</p>}
+        {view && <p className={styles.network}><span className="live-dot" /><span>{networkNote(view)}</span></p>}
       </aside>
 
       <main id="main" className={styles.main}>
@@ -143,7 +143,7 @@ export default function Onboard() {
             <BackupStep role={role} network={view.network} tag={view.sessionTag ?? ''} onNext={() => setStep('done')} />
           )}
 
-          {step === 'access' && <AccessStep onNext={() => setStep('done')} />}
+          {step === 'access' && <AccessStep publicCode={view?.accessCode ?? null} onNext={() => setStep('done')} />}
 
           {step === 'done' && role && (
             <div className="stack-6">
@@ -164,7 +164,7 @@ export default function Onboard() {
       </main>
       <Toasts />
       <SignDialog />
-      <AccessDialog />
+      <AccessDialog publicCode={view?.accessCode} />
     </div>
   );
 }
@@ -208,11 +208,11 @@ function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefi
       {failed && <p className="form-error">DRAW could not reach the ledger. Try again in a minute.</p>}
       {view && !view.session && (
         <div className={styles.callout}>
-          <p className="t-h3">No demo fund is running</p>
+          <p className="t-h3">{view.tours ? 'This browser has no demo fund yet' : 'No demo fund is running'}</p>
           <p className="t-sm muted">
             {view.browserKeys
               ? 'Start the demo first. Then each person, the fund manager first, creates their own party and key.'
-              : 'Start the demo fund first. It creates the fund, funds each LP with test Canton Coin, and sends their invitations.'}
+              : 'Start one first. It creates a fund for this browser, sends each LP a private invitation, and tops up their test Canton Coin if it is low. Other visitors get their own.'}
           </p>
           <div><ActionButton name="setup" body={{}} busyLabel="Starting on the ledger…">{view.browserKeys ? 'Start the demo' : 'Create the demo fund'}</ActionButton></div>
         </div>
@@ -296,7 +296,7 @@ function KeyStep({ role, network, tag, onBack, onNext }: { role: Role; network: 
       const signature = await signHash(network, tag, role, started.multiHash);
       if (await act('onboardfinish', { role, signature }, 'onboard')) onNext();
     } catch (error) {
-      if (error instanceof AccessCodeNeeded) notify(error.message, true);
+      if (error instanceof AccessCodeNeeded) notify(error.message, 'bad');
       setProblem(error instanceof Error ? error.message : 'Creating the account failed.');
     } finally {
       setWorking(false);
@@ -361,8 +361,9 @@ function BackupStep({ role, network, tag, onNext }: { role: Role; network: strin
   );
 }
 
-function AccessStep({ onNext }: { onNext: () => void }) {
-  const [code, setCode] = useState('');
+// `publicCode` is set when the operator prints the code for every visitor.
+function AccessStep({ publicCode, onNext }: { publicCode: string | null; onNext: () => void }) {
+  const [code, setCode] = useState(publicCode ?? '');
   return (
     <form
       className="stack-6"
@@ -375,8 +376,14 @@ function AccessStep({ onNext }: { onNext: () => void }) {
       <div className="stack-3">
         <h1 className="t-h1">Access code</h1>
         <p className="t-lead">
-          The demo fund lives on a shared network, so actions need an access code from the DRAW team. Without one you can still read
-          everything your seat can see.
+          {publicCode ? (
+            <>
+              The demo fund lives on a shared network, so actions need an access code. This demo&rsquo;s code is public, and it is
+              filled in below: <strong className="mono">{publicCode}</strong>
+            </>
+          ) : (
+            'The demo fund lives on a shared network, so actions need an access code from the DRAW team. Without one you can still read everything your seat can see.'
+          )}
         </p>
       </div>
       <div className="field" style={{ maxWidth: 360 }}>

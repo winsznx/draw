@@ -6,6 +6,9 @@ import { expect, type Page, type TestInfo } from '@playwright/test';
 
 export type Seat = 'Fund manager' | 'LP A' | 'LP B' | 'LP C';
 
+// The demo's access code. When the site prints it, the app fills it in and this can stay empty.
+export const ACCESS_CODE = process.env.DRAW_ACCESS_CODE ?? '';
+
 // Evidence for one test run, written by the test itself, pass or fail.
 export function evidence(name: string) {
   const run = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
@@ -58,12 +61,22 @@ export async function openOnboarding(page: Page) {
   await expect(page.getByRole('heading', { name: 'Who are you in this fund?' })).toBeVisible();
 }
 
+// Each browser starts its own demo fund, so a fresh browser always starts one.
+// On a site with an access code, that first action asks for the code.
 export async function startDemoIfNeeded(page: Page) {
   const start = page.getByRole('button', { name: /^(Create the demo fund|Start the demo)$/ });
   const seat = page.getByRole('listitem').filter({ hasText: 'Fund manager' });
-  await expect(start.or(seat).first()).toBeVisible();
+  // Seats render disabled while the page loads, so only an enabled seat means a fund exists.
+  await expect(start.or(seat.and(page.locator(':enabled'))).first()).toBeVisible();
   if (await start.isVisible()) {
     await start.click();
+    const access = page.getByRole('dialog', { name: 'Enter the access code' });
+    const started = page.getByRole('status').locator('div').filter({ hasText: /set up|Ready/ }).first();
+    await expect(access.or(started)).toBeVisible();
+    if (await access.isVisible()) {
+      if (ACCESS_CODE) await access.getByLabel('Access code').fill(ACCESS_CODE);
+      await access.getByRole('button', { name: 'Continue' }).click();
+    }
     await dismissToast(page, /set up|Ready/);
   }
   await expect(seat).toBeEnabled();

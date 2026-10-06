@@ -5,10 +5,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 
 import { Seal, Wordmark } from '@/components/brand';
-import { IconCall, IconDownload, IconNotice, IconOverview, IconPayments, IconInvestors, IconShield, IconSwitch } from '@/components/icons';
+import { IconCall, IconDownload, IconEye, IconLayers, IconNotice, IconOverview, IconPayments, IconInvestors, IconShield, IconSwitch } from '@/components/icons';
 import { leaveSeat, useSeat, useView } from '@/components/session';
 import { ThemeSwitch } from '@/components/theme-switch';
-import { ROLE_NAME, units } from '@/lib/format';
+import { ROLE_NAME, networkNote, shortParty, units } from '@/lib/format';
 import { backupPem } from '@/lib/keys';
 import type { Role, View } from '@/lib/types';
 
@@ -131,6 +131,20 @@ function SeatCard({ role, view }: { role: Role; view: View }) {
   );
 }
 
+// Which party this screen was read as, and how this network signs, so nobody
+// has to guess whose ledger they are looking at.
+function LedgerContext({ role, view }: { role: Role; view: View }) {
+  const party = view.session && 'queriedAs' in view ? view.queriedAs.party : null;
+  return (
+    <div className={styles.context}>
+      {party && (
+        <p><IconEye size={15} /><span>Read from the ledger as <span className="mono" title={party}>{shortParty(party)}</span> ({ROLE_NAME[role]})</span></p>
+      )}
+      <p><IconLayers size={15} /><span>{networkNote(view)}</span></p>
+    </div>
+  );
+}
+
 function ShellSkeleton() {
   return (
     <div className={styles.shell}>
@@ -220,7 +234,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className={styles.seatPill}><Identicon seed={(view.session && 'queriedAs' in view ? view.queriedAs.party : null) ?? seat} size={24} />{ROLE_NAME[seat]}</span>
             </div>
           </header>
-          <main id="main" className={styles.content}>{children}</main>
+          <main id="main" className={styles.content}>
+            <LedgerContext role={seat} view={view} />
+            {children}
+          </main>
           <div className={styles.mobileSeat}><SeatCard role={seat} view={view} /></div>
         </div>
 
@@ -236,7 +253,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <Toasts />
       <SignDialog />
-      <AccessDialog />
+      <AccessDialog publicCode={view.accessCode} />
     </SeatContext.Provider>
   );
 }

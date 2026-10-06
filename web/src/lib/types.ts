@@ -131,13 +131,21 @@ export interface Commitment {
   calledUsd: number;
 }
 
-interface ViewBase {
+// What the API says about itself before any ledger read.
+export interface SiteConfig {
   network: string;
-  role: Role;
   singleCredential: boolean;
-  autoSettle: boolean;
   browserKeys: boolean;
+  // Each browser has its own demo fund. Off only with browser keys, where everyone joins one.
+  tours: boolean;
   accessCodeRequired: boolean;
+  // Set only when the operator chose to print the code for every visitor.
+  accessCode: string | null;
+}
+
+interface ViewBase extends SiteConfig {
+  role: Role;
+  autoSettle: boolean;
   accounts?: Role[];
 }
 
@@ -180,6 +188,10 @@ export interface ViewWithSession extends ViewBase {
 }
 
 export type View = ViewNoSession | ViewNotOnboarded | ViewNeedsFund | ViewWithSession;
+
+// Where a notice reference sits on a seat's own ledger: in this browser's demo
+// fund, in another demo fund on the same party, or nowhere.
+export type NoticePlace = 'here' | 'elsewhere' | 'absent';
 
 export interface ProofReceipt {
   payer: string;

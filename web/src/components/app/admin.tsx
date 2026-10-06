@@ -5,22 +5,34 @@ import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
 import { useActions } from '@/components/session';
-import { PAYMENT_KIND, coin, dateTime, isPast, relative, roleName, units, usd } from '@/lib/format';
+import { PAYMENT_KIND, assetNote, coin, dateTime, isPast, relative, roleName, units, usd } from '@/lib/format';
 import type { Call, Investor, Obligation, ViewWithSession } from '@/lib/types';
 
 import { IconCheck } from '@/components/icons';
 
 import { Identicon } from './shell';
-import { ActionButton, LedgerDetails, NoteAction, PageHead, ReceiptCard, Spinner, StatusMark, Timeline, ZeroState } from './ui';
+import { ActionButton, LedgerDetails, NoteAction, PageHead, ReceiptCard, Spinner, StartOverButton, StatusMark, Timeline, ZeroState } from './ui';
 import styles from './screens.module.css';
 
 const INVESTORS: Investor[] = ['lpA', 'lpB', 'lpC'];
 const DEFAULT_COMMITMENT: Record<Investor, number> = { lpA: 1000000, lpB: 700000, lpC: 500000 };
-const FIRST_CALL: Record<Investor, { usd: number; units: number }> = {
-  lpA: { usd: 400000, units: 40 },
-  lpB: { usd: 350000, units: 35 },
-  lpC: { usd: 250000, units: 25 },
-};
+// The demo's standard call for each investor, and the scenario dollars per CC it settles at.
+const CALL_USD: Record<Investor, number> = { lpA: 400000, lpB: 350000, lpC: 250000 };
+const USD_PER_CC = 10000;
+
+// The first "Call N" name this fund has not used.
+function nextCallName(calls: Call[]): string {
+  const taken = new Set(calls.map((c) => c.callId));
+  let n = calls.length + 1;
+  while (taken.has(`Call ${n}`)) n += 1;
+  return `Call ${n}`;
+}
+
+// The standard call, cut down to what the investor has left to commit.
+function defaultRow(investor: Investor, left: number): { usd: string; units: string } {
+  const amount = Math.max(0, Math.min(CALL_USD[investor], left));
+  return { usd: String(amount), units: String(amount / USD_PER_CC) };
+}
 
 const OPEN = new Set(['Issued', 'PaymentPending', 'Overdue']);
 const hasMatch = (o: Obligation) => o.payments.some((p) => p.kind === 'match');
@@ -36,7 +48,10 @@ export function StartFund({ network, browserKeys }: { network: string; browserKe
       {browserKeys ? (
         <p>Each person in the demo creates their own party with a key in their browser. You create the fund next, then invite investors once they have joined.</p>
       ) : (
-        <p>This creates the fund on {network}, gives each of the three LPs test Canton Coin, and sends each one a private invitation to commit. It takes about a minute.</p>
+        <p>
+          This creates a demo fund on {network} for this browser, so other visitors work in their own. Each of the three LPs gets a
+          private invitation to commit, and test Canton Coin from the faucet if its balance is low. It takes about a minute.
+        </p>
       )}
     </ZeroState>
   );
@@ -71,13 +86,13 @@ export function Overview({ view }: { view: ViewWithSession }) {
     <>
       <PageHead
         title={view.fund?.name ?? view.fundName}
-        lead="What is deployable now, and what is still unresolved."
+        lead={`What is deployable now, and what is still unresolved. ${assetNote(view.network)}`}
         actions={<Link href="/app/calls/new" className="btn btn-primary">Create capital call</Link>}
       />
 
       <Figures
         items={[
-          { label: 'Deployable now', value: usd(t.fundedUsd), note: 'Funded and independently verified', tone: 'good' },
+          { label: 'Deployable now', value: usd(t.fundedUsd), note: 'Funded and confirmed by read-back', tone: 'good' },
           { label: 'Unresolved', value: usd(t.unresolvedUsd), note: 'Called, not yet verified funded', tone: t.unresolvedUsd ? 'wait' : undefined },
           { label: 'Called', value: usd(t.calledUsd), note: `${t.fundedCount} of ${t.count} notices funded` },
         ]}
@@ -202,19 +217,20 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
   const { act, busy } = useActions();
   const first = view.calls.length === 0;
   const accepted = INVESTORS.filter((r) => view.commitments.some((c) => c.investor === r));
-  const [name, setName] = useState(`Call ${view.calls.length + 1}`);
+  const remaining = (r: Investor) => {
+    const c = view.commitments.find((x) => x.investor === r);
+    return c ? c.committedUsd - c.calledUsd : 0;
+  };
+  const [name, setName] = useState(() => nextCallName(view.calls));
   const [description, setDescription] = useState(first ? 'Initial close drawdown' : '');
   const [dueAt, setDueAt] = useState(defaultDue);
-  const [rows, setRows] = useState(() => Object.fromEntries(INVESTORS.map((r) => [r, first ? { usd: String(FIRST_CALL[r].usd), units: String(FIRST_CALL[r].units) } : { usd: '', units: '' }])));
+  const [rows, setRows] = useState(() => Object.fromEntries(INVESTORS.map((r) => [r, defaultRow(r, remaining(r))])));
   const [problem, setProblem] = useState<string | null>(null);
   const updateRow = (role: Investor, field: 'usd' | 'units', value: string) =>
     setRows((prev) => ({ ...prev, [role]: { usd: prev[role]?.usd ?? '', units: prev[role]?.units ?? '', [field]: value } }));
 
   const total = accepted.reduce((s, r) => s + (Number(rows[r]?.usd) || 0), 0);
-  const remaining = (r: Investor) => {
-    const c = view.commitments.find((x) => x.investor === r);
-    return c ? c.committedUsd - c.calledUsd : 0;
-  };
+  const nearlyUsed = accepted.every((r) => remaining(r) < CALL_USD[r]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -236,10 +252,27 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
     );
   }
 
+  if (accepted.every((r) => remaining(r) <= 0)) {
+    return (
+      <ZeroState
+        title="Every commitment so far is fully called"
+        action={<><StartOverButton className="btn btn-primary">Start a fresh demo fund</StartOverButton><Link href="/app/calls" className="btn">All calls</Link></>}
+      >
+        <p>The investors who have committed have nothing left to call. Start a fresh demo fund to run a call from the beginning. This one stays on the ledger.</p>
+      </ZeroState>
+    );
+  }
+
   return (
     <>
-      <PageHead title="Create capital call" back={{ href: '/app/calls', label: 'Calls' }} lead={`Each investor receives a private notice for its own amount only. Dollar amounts are the business figure. Canton Coin is what each investor pays on ${view.network}.`} />
+      <PageHead title="Create capital call" back={{ href: '/app/calls', label: 'Calls' }} lead={`Each investor receives a private notice for its own amount only. ${assetNote(view.network)}`} />
       <form className="module module-pad stack-6" onSubmit={submit}>
+        {nearlyUsed && (
+          <div className={`${styles.callout} ${styles.freshFund}`}>
+            <p>Most of what the investors committed has been called, so the amounts below are what is left. To run a call from the start, start a fresh demo fund. This one stays on the ledger.</p>
+            <StartOverButton className="btn btn-sm">Start a fresh demo fund</StartOverButton>
+          </div>
+        )}
         <div className={styles.formGrid}>
           <div className="field">
             <label htmlFor="call-name">Name or reference</label>
@@ -466,8 +499,12 @@ export function InvestorsPage({ view }: { view: ViewWithSession }) {
       <details className="more" style={{ marginTop: 32 }}>
         <summary>Start over</summary>
         <div className="stack-3">
-          <p className="t-sm muted">Starts a new demo fund. The current one stays on the ledger, but the app stops showing it.</p>
-          <ActionButton className="btn btn-sm btn-danger" name="reset" body={{}} confirm="Start over with a new demo fund?" busyLabel="Clearing…">Start a new demo fund</ActionButton>
+          <p className="t-sm muted">
+            {view.tours
+              ? 'Starts a new demo fund for this browser. The current one stays on the ledger, but this browser stops showing it.'
+              : 'Starts a new demo fund. The current one stays on the ledger, but the app stops showing it.'}
+          </p>
+          <StartOverButton>Start a new demo fund</StartOverButton>
         </div>
       </details>
     </>

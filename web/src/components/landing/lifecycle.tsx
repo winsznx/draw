@@ -57,8 +57,8 @@ const STEPS: { title: string; who: string; text: string; stage: ReactNode }[] = 
   },
   {
     title: 'Verify',
-    who: 'Independent verifier',
-    text: 'A separate read-only login reads the settlement back. Only then does it count as deployable.',
+    who: 'Verifier',
+    text: 'A separate step reads the settlement back from the ledger. Only then does it count as deployable. On LocalNet that step has its own read-only login.',
     stage: (
       <div className={`${styles.card} ${styles.cardDark}`}>
         <div className={styles.cardHead}><span className={styles.icon}><IconCheckCircle size={18} /></span><span>Verified funded<small>Read back by the verifier</small></span></div>

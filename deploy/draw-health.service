@@ -1,0 +1,10 @@
+[Unit]
+Description=DRAW API health check, restarts draw.service after two failures in a row
+After=draw.service
+
+[Service]
+Type=oneshot
+# The app's .env, for PORT and DRAW_SERVICE_TOKEN. Change the path if the app lives elsewhere.
+EnvironmentFile=/opt/draw/app/.env
+StateDirectory=draw-health
+ExecStart=/usr/local/bin/draw-health

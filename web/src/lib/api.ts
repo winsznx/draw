@@ -1,4 +1,5 @@
-import type { Proof, Role, View } from './types';
+import { tourHeaders } from './tour';
+import type { NoticePlace, Proof, Role, View } from './types';
 
 export class ActionError extends Error {
   readonly detail: string | undefined;
@@ -10,6 +11,11 @@ export class ActionError extends Error {
 }
 
 export class AccessCodeNeeded extends ActionError {}
+
+// The server turned the action away for now: too many came in a short time,
+// too many are already waiting, or the demo is full. Nothing was submitted,
+// and reading still works.
+export class SlowDown extends ActionError {}
 
 export interface SignatureRequest {
   id: string;
@@ -40,34 +46,45 @@ export function rememberAccessCode(code: string): void {
   }
 }
 
+const SLOW_DOWN = 'Too many actions came in a short time. Wait a minute, then try again.';
+
 async function readJson<T>(response: Response): Promise<T> {
   const body = (await response.json()) as T & { error?: string; detail?: string };
+  if (response.status === 429 || response.status === 503) throw new SlowDown(body.error ?? SLOW_DOWN);
   if (!response.ok) throw new ActionError(body.error ?? 'The request failed.', body.detail);
   return body;
 }
 
 export async function fetchView(role: Role, signal?: AbortSignal): Promise<View> {
-  return readJson<View>(await fetch(`/api/view?role=${role}`, { signal, cache: 'no-store' }));
+  return readJson<View>(await fetch(`/api/view?role=${role}`, { signal, cache: 'no-store', headers: tourHeaders() }));
+}
+
+// Where a notice reference sits on this seat's own ledger, for a notice that
+// is not in this browser's demo fund.
+export async function fetchNoticePlace(role: Role, ref: string, signal?: AbortSignal): Promise<NoticePlace> {
+  const query = new URLSearchParams({ role, ref });
+  return (await readJson<{ place: NoticePlace }>(await fetch(`/api/notice?${query}`, { signal, cache: 'no-store', headers: tourHeaders() }))).place;
 }
 
 export async function fetchProof(signal?: AbortSignal): Promise<Proof> {
   return readJson<Proof>(await fetch('/api/proof', { signal }));
 }
 
-async function post(path: string, body: Record<string, unknown>): Promise<ActionReply> {
+function actionHeaders(): Record<string, string> {
   const code = accessCode();
+  return { 'Content-Type': 'application/json', ...tourHeaders(), ...(code ? { 'x-draw-access': code } : {}) };
+}
+
+async function post(path: string, body: Record<string, unknown>): Promise<ActionReply> {
   let response: Response;
   try {
-    response = await fetch(path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(code ? { 'x-draw-access': code } : {}) },
-      body: JSON.stringify(body),
-    });
+    response = await fetch(path, { method: 'POST', headers: actionHeaders(), body: JSON.stringify(body) });
   } catch {
     throw new ActionError('Could not reach DRAW. Check your connection and try again.');
   }
   const json = (await response.json()) as { message?: string; needsSignature?: SignatureRequest; error?: string; detail?: string };
   if (response.status === 401) throw new AccessCodeNeeded(json.error ?? 'Actions on this demo need an access code.');
+  if (response.status === 429 || response.status === 503) throw new SlowDown(json.error ?? SLOW_DOWN);
   if (response.status === 202 && json.needsSignature) return { kind: 'sign', request: json.needsSignature };
   if (!response.ok) throw new ActionError(json.error ?? 'The request failed.', json.detail);
   return { kind: 'done', message: json.message ?? 'Done.' };
@@ -80,10 +97,9 @@ export const postSignature = (id: string, body: { signature: string } | { cancel
 // Starts sign-up with a browser key: the node builds the onboarding
 // transactions for this public key and returns the hash to sign.
 export async function startOnboarding(role: Role, publicKeySpki: string): Promise<{ partyId: string; fingerprint: string; multiHash: string }> {
-  const code = accessCode();
   const response = await fetch('/api/actions/onboardstart', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(code ? { 'x-draw-access': code } : {}) },
+    headers: actionHeaders(),
     body: JSON.stringify({ role, publicKeySpki }),
   });
   if (response.status === 401) throw new AccessCodeNeeded('Creating an account on this demo needs an access code.');

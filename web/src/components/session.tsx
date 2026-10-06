@@ -3,8 +3,9 @@
 import { QueryClient, QueryClientProvider, keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
-import { AccessCodeNeeded, ActionError, fetchView, postAction, postSignature, rememberAccessCode, type SignatureRequest } from '@/lib/api';
+import { AccessCodeNeeded, ActionError, SlowDown, fetchView, postAction, postSignature, rememberAccessCode, type SignatureRequest } from '@/lib/api';
 import { signHash } from '@/lib/keys';
+import { startNewTour } from '@/lib/tour';
 import type { Role, View } from '@/lib/types';
 
 const ROLES: readonly Role[] = ['admin', 'lpA', 'lpB', 'lpC', 'outsider'];
@@ -68,19 +69,23 @@ export function useView(role: Role | null | undefined) {
 }
 
 // ---------------------------------------------------------------- actions
+// `wait` is for a request turned away for now, which works if tried again later.
+export type ToastTone = 'plain' | 'bad' | 'wait';
+
 export interface Toast {
   id: number;
   message: string;
   detail?: string;
-  error: boolean;
+  tone: ToastTone;
 }
 
 interface Actions {
   busy: string | null;
   act: (name: string, body: Record<string, unknown>, key?: string) => Promise<boolean>;
+  startOver: () => Promise<boolean>;
   toasts: Toast[];
   dismiss: (id: number) => void;
-  notify: (message: string, error?: boolean, detail?: string) => void;
+  notify: (message: string, tone?: ToastTone, detail?: string) => void;
   signRequest: SignatureRequest | null;
   answerSign: (approve: boolean) => void;
   accessPrompt: boolean;
@@ -99,10 +104,10 @@ function ActionsProvider({ children }: { children: ReactNode }) {
   const accessDecision = useRef<((code: string | null) => void) | null>(null);
   const nextId = useRef(0);
 
-  const notify = useCallback((message: string, error = false, detail?: string) => {
+  const notify = useCallback((message: string, tone: ToastTone = 'plain', detail?: string) => {
     const id = (nextId.current += 1);
-    setToasts((list) => [...list.slice(-2), { id, message, error, detail }]);
-    window.setTimeout(() => setToasts((list) => list.filter((t) => t.id !== id)), error ? 15000 : 6000);
+    setToasts((list) => [...list.slice(-2), { id, message, tone, detail }]);
+    window.setTimeout(() => setToasts((list) => list.filter((t) => t.id !== id)), tone === 'plain' ? 6000 : 15000);
   }, []);
 
   const dismiss = useCallback((id: number) => setToasts((list) => list.filter((t) => t.id !== id)), []);
@@ -158,7 +163,7 @@ function ActionsProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       const failure = error instanceof ActionError ? error : new ActionError('The action failed.');
-      notify(failure.message, true, failure.detail);
+      notify(failure.message, failure instanceof SlowDown ? 'wait' : 'bad', failure.detail);
       return false;
     } finally {
       setBusy(null);
@@ -166,9 +171,18 @@ function ActionsProvider({ children }: { children: ReactNode }) {
     }
   }, [askForAccess, askToSign, notify, queryClient]);
 
+  // The server forgets this browser's fund, which stays on the ledger, and the
+  // browser moves to a new tour that has no fund yet.
+  const startOver = useCallback(async (): Promise<boolean> => {
+    if (!(await act('reset', {}, 'reset'))) return false;
+    startNewTour();
+    await queryClient.resetQueries({ queryKey: ['view'] });
+    return true;
+  }, [act, queryClient]);
+
   const value = useMemo(
-    () => ({ busy, act, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess }),
-    [busy, act, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess],
+    () => ({ busy, act, startOver, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess }),
+    [busy, act, startOver, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess],
   );
   return <ActionsContext.Provider value={value}>{children}</ActionsContext.Provider>;
 }

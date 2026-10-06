@@ -22,6 +22,8 @@ export const INTERFACES = {
   AllocationRequest: '#splice-api-token-allocation-request-v1:Splice.Api.Token.AllocationRequestV1:AllocationRequest',
 };
 
+const ACS_PAGE_SIZE = 500;
+
 export class LedgerError extends Error {
   constructor(status, path, body) {
     super(`${path} -> HTTP ${status}: ${typeof body === 'string' ? body : JSON.stringify(body)}`);
@@ -115,17 +117,29 @@ export class LedgerClient {
   }
 
   // Active contracts visible to `party`, read through this client's own token.
+  // Paged, so a party with more than the node's list limit (200 on Canton
+  // 3.5's JSON API) still reads in full. Every page uses the same snapshot
+  // offset. Nodes without the paged endpoint fall back to the plain one.
   async activeContracts(party, filter) {
     const activeAtOffset = await this.ledgerEnd();
-    const result = await this.request('POST', '/v2/state/active-contracts', {
-      json: {
-        activeAtOffset,
-        eventFormat: {
-          verbose: false,
-          filtersByParty: { [party]: { cumulative: [LedgerClient.identifierFilter(filter)] } },
-        },
-      },
-    });
+    const eventFormat = {
+      verbose: false,
+      filtersByParty: { [party]: { cumulative: [LedgerClient.identifierFilter(filter)] } },
+    };
+    let result = [];
+    try {
+      let pageToken;
+      do {
+        const page = await this.request('POST', '/v2/state/active-contracts-page', {
+          json: { activeAtOffset, eventFormat, maxPageSize: ACS_PAGE_SIZE, ...(pageToken ? { pageToken } : {}) },
+        });
+        result.push(...(page.activeContracts ?? []));
+        pageToken = page.nextPageToken || undefined;
+      } while (pageToken);
+    } catch (error) {
+      if (error.status !== 404) throw error;
+      result = await this.request('POST', '/v2/state/active-contracts', { json: { activeAtOffset, eventFormat } });
+    }
     return result
       .map((entry) => entry.contractEntry?.JsActiveContract?.createdEvent)
       .filter(Boolean)

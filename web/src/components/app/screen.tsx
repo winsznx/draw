@@ -15,9 +15,17 @@ import { ZeroState } from './ui';
 export function Screen({ adminOnly = false, children }: { adminOnly?: boolean; children: (view: ViewWithSession) => ReactNode }) {
   const { role, view } = useSeatView();
   if (!view.session) {
-    return role === 'admin'
-      ? <StartFund network={view.network} browserKeys={view.browserKeys} />
-      : <ZeroState title="The fund is not set up yet"><p>The fund manager creates the demo fund first. Your invitation appears here once they do.</p></ZeroState>;
+    if (role === 'admin') return <StartFund network={view.network} browserKeys={view.browserKeys} />;
+    return view.tours ? (
+      <ZeroState title="This browser has no demo fund yet" action={<Link href="/onboard" className="btn btn-primary">Create the demo fund</Link>}>
+        <p>
+          Each browser gets its own demo fund, so nobody else will create this one.{' '}
+          {role === 'outsider' ? 'Create it, then come back to see what an unrelated party can read about it.' : `Create it, then come back as ${ROLE_NAME[role]} to accept your invitation.`}
+        </p>
+      </ZeroState>
+    ) : (
+      <ZeroState title="The fund is not set up yet"><p>The fund manager creates the demo fund first. Your invitation appears here once they do.</p></ZeroState>
+    );
   }
   if (!view.onboarded) {
     return <ZeroState title="This seat has no party yet" action={<Link href="/onboard" className="btn btn-primary">Create your party</Link>}><p>Create your party and key first.</p></ZeroState>;

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
-import { coin, roleName, units, usd } from '@/lib/format';
-import { loadProof } from '@/lib/server-proof';
+import { coin, networkNote, roleName, units, usd } from '@/lib/format';
+import { loadConfig, loadProof } from '@/lib/server-api';
 import type { Suites } from '@/lib/types';
 
 import styles from './proof.module.css';
@@ -105,7 +105,7 @@ function SuiteSections({ suites, env }: { suites: Suites; env: string }) {
 }
 
 export default async function ProofPage() {
-  const proof = await loadProof();
+  const [proof, config] = await Promise.all([loadProof(), loadConfig()]);
   if (!proof) {
     return (
       <div className={styles.page}>
@@ -125,6 +125,7 @@ export default async function ProofPage() {
           What the scripted runs produced. A script wrote every number on this page into a result file, and every file is linked. LocalNet and
           DevNet results are kept apart.
         </p>
+        {config && <p className="t-sm muted">{networkNote(config)}</p>}
       </header>
 
       {!c ? <p className="panel">No canonical run on {proof.network} yet.</p> : (
@@ -172,7 +173,12 @@ export default async function ProofPage() {
             </Section>
           )}
 
-          <Section id="settlements" title="Settlements, checked by a separate verifier" env={proof.network}>
+          <Section
+            id="settlements"
+            title="Settlements, read back by a separate step"
+            env={proof.network}
+            lead="After each settlement, a separate step reads the transaction and the fund's holdings back from the ledger and issues the receipt before the notice counts as funded. On DevNet that step uses the same shared login as every seat. On LocalNet it has its own read-only login."
+          >
             <div className={styles.receipts}>
               {c.receipts.map((r) => (
                 <div key={r.obligationRef} className={`sheet sheet-pad stack-3 ${styles.receipt}`}>

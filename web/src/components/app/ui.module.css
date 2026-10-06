@@ -232,6 +232,10 @@
   color: #fff;
 }
 
+.toastWait {
+  box-shadow: inset 5px 0 0 var(--waiting), var(--shadow-float);
+}
+
 .toast :global(details.more) > summary {
   color: inherit;
   opacity: 0.8;

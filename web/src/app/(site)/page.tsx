@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { IconCheckCircle, IconCoin, IconEyeOff, IconLayers, IconLock, IconNotice, IconShield, IconSpark } from '@/components/icons';
 import { CallSheet } from '@/components/landing/call-sheet';
 import { Lifecycle } from '@/components/landing/lifecycle';
-import { loadProof } from '@/lib/server-proof';
+import { loadConfig, loadProof } from '@/lib/server-api';
 import type { Proof } from '@/lib/types';
 
 import styles from './landing.module.css';
@@ -38,7 +38,7 @@ function Cell({ count, total }: { count: number | null; total: number }) {
 }
 
 export default async function Landing() {
-  const proof = await loadProof();
+  const [proof, config] = await Promise.all([loadProof(), loadConfig()]);
   const run = proof?.canonical ?? null;
   const receipt = run?.receipts[0] ?? null;
   const local = proof?.localnet ?? null;
@@ -59,13 +59,16 @@ export default async function Landing() {
             <span className={styles.heroEyebrow}><IconLayers size={15} />Private capital calls on Canton</span>
             <h1 className={styles.heroTitle}>Capital calls only the right investor can read.</h1>
             <p className={styles.heroLead}>
-              Each LP gets a private notice and pays it in Canton Coin. The fund counts the money as deployable only after an independent
-              check confirms it arrived.
+              Each LP gets a private notice and pays it in Canton Coin. The fund counts the money as deployable only after a separate
+              read-back step confirms it arrived.
             </p>
             <div className={styles.ctas}>
               <Link href="/onboard" className="btn btn-light btn-lg">Take a seat in the demo fund</Link>
               <Link href="/proof" className="btn btn-ghost-light btn-lg">See the DevNet proof</Link>
             </div>
+            {config?.accessCode && (
+              <p className={styles.accessCode}>Demo access code: <code>{config.accessCode}</code></p>
+            )}
           </div>
 
           <div className={styles.scene}>
@@ -92,7 +95,7 @@ export default async function Landing() {
           <li><span className={styles.stripMark}><IconCoin size={16} /></span>Canton Coin</li>
           <li><span className={styles.stripMark}><IconShield size={16} /></span>Daml contracts</li>
           <li><span className={styles.stripMark}><IconLock size={16} /></span>Token allocations</li>
-          <li><span className={styles.stripMark}><IconCheckCircle size={16} /></span>Independent read-back</li>
+          <li><span className={styles.stripMark}><IconCheckCircle size={16} /></span>Separate read-back</li>
         </ul>
       </section>
 
@@ -143,8 +146,8 @@ export default async function Landing() {
           </article>
           <article className={styles.tile}>
             <span className={styles.tileIcon}><IconCheckCircle size={18} /></span>
-            <h3 className={styles.tileTitle}>Checked by someone else</h3>
-            <p className={styles.tileText}>A separate read-only verifier fetches each settlement. Deployable means it agreed, not that a button was pressed.</p>
+            <h3 className={styles.tileTitle}>Read back before it counts</h3>
+            <p className={styles.tileText}>A separate verifier step reads each settlement back from the ledger. Deployable means it agreed, not that a button was pressed.</p>
             <div className={styles.mini}>
               <div className={styles.miniRow}><span>Deployable now</span><b className={styles.miniGood}>$750,000</b></div>
               <div className={styles.miniRow}><span>Unresolved</span><b>$250,000</b></div>
@@ -226,6 +229,7 @@ export default async function Landing() {
               ['Why Canton?', 'Canton gives each contract a fixed set of parties who can read it, and settles a token transfer and a state change in one transaction. Those two properties are what make a private notice and a provable funded status possible.'],
               ['What does the fund manager see?', 'Every notice in its fund, the payments waiting against them, and two totals: deployable now and unresolved.'],
               ['Can an LP see the other LPs?', 'No. An LP’s ledger returns its own commitment and notices only. Opening another LP’s notice link shows nothing, because the ledger returns nothing.'],
+              ['Who can see the payment?', 'The notice and the commitment are private. Only the fund’s party and that LP’s party can read them, plus the node that hosts them. On DevNet one hackathon login reads for every seat. They don’t appear in the network’s Scan service. The Canton Coin transfer that pays a notice is visible to Scan, under a random reference, with both party ids. Those ids carry readable hints such as draw-lpa. In production the fund would settle in a tokenized dollar through the same Token Standard allocation interface. The USDCx registry lists that interface, but DRAW hasn’t been run with USDCx.'],
             ].map(([q, a]) => (
               <details key={q} className={styles.qa}>
                 <summary>{q}<span aria-hidden="true" /></summary>

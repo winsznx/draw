@@ -1,14 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
 
-import { dismissToast, evidence, openOnboarding, startDemoIfNeeded, type Seat } from './helpers';
+import { ACCESS_CODE, dismissToast, evidence, openOnboarding, startDemoIfNeeded, type Seat } from './helpers';
 
 // A capital call the way people use the site: each person takes their seat,
 // the fund manager issues a call, LP A pays its notice, LP B opening LP A's
 // link sees nothing, the fund manager settles, and LP A's notice shows
-// verified funded. Skipped in browser-key mode, which has its own journey.
+// verified funded. Every run is a fresh browser, so it starts its own demo
+// fund, and a second browser at the end must not see that fund. Last, the
+// fund manager starts over, which withdraws the invitations nobody accepted,
+// and LP A's old notice link then asks for a new demo fund. Skipped in
+// browser-key mode, which has its own journey.
 test.skip(process.env.DRAW_PARTY_MODE === 'external', 'browser-key mode runs browser-keys.spec.ts');
 
-const ACCESS = process.env.DRAW_ACCESS_CODE ?? '';
 const ev = evidence('journey');
 const CALL = `Call ${ev.run.slice(8, 12)}`;
 
@@ -19,7 +22,8 @@ async function sit(page: Page, seat: Seat) {
   await page.getByRole('button', { name: 'Continue' }).click();
   const access = page.getByLabel('Access code');
   if (await access.isVisible().catch(() => false)) {
-    await access.fill(ACCESS);
+    // A public code is already filled in. DRAW_ACCESS_CODE, when set, replaces it.
+    if (ACCESS_CODE) await access.fill(ACCESS_CODE);
     await page.getByRole('button', { name: 'Save and continue' }).click();
   }
   await page.getByRole('button', { name: 'Open the app' }).click();
@@ -35,7 +39,7 @@ async function acceptIfInvited(page: Page) {
   }
 }
 
-test('capital call journey', async ({ page }, info) => {
+test('capital call journey', async ({ page, browser }, info) => {
   try {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Capital calls');
@@ -94,7 +98,31 @@ test('capital call journey', async ({ page }, info) => {
     await expect(page.getByText('Verified funded').first()).toBeVisible();
     await ev.shot(page, 'lp-verified');
     ev.record('LP A sees verified funded');
+
+    const visitor = await browser.newContext();
+    try {
+      const other = await visitor.newPage();
+      await other.goto('/onboard');
+      await expect(other.getByText('This browser has no demo fund yet')).toBeVisible();
+      await ev.shot(other, 'second-browser');
+    } finally {
+      await visitor.close();
+    }
+    ev.record('a second browser gets its own demo fund');
+
+    await sit(page, 'Fund manager');
+    await page.goto('/app/investors');
+    await page.getByText('Start over', { exact: true }).click();
+    page.once('dialog', (dialog) => void dialog.accept());
+    await page.getByRole('button', { name: 'Start a new demo fund' }).click();
+    await dismissToast(page, 'Cleared. Start a new demo fund.');
+    await expect(page.getByRole('heading', { name: 'Start the demo fund' })).toBeVisible();
+    await page.evaluate(() => localStorage.setItem('draw-seat', 'lpA'));
+    await page.goto(noticeUrl);
+    await expect(page.getByRole('heading', { name: 'This browser has no demo fund yet' })).toBeVisible();
+    await ev.shot(page, 'started-over');
+    ev.record('starting over leaves this browser without a fund');
   } finally {
-    ev.write(info, 8);
+    ev.write(info, 10);
   }
 });

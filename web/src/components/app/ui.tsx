@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
-import { useActions } from '@/components/session';
+import { useActions, type ToastTone } from '@/components/session';
 import { ADMIN_STATUS, LP_STATUS, STAGE_NAME, TONE, dateTime, roleName, units } from '@/lib/format';
 import type { Obligation, Receipt, Status, TimelineEntry } from '@/lib/types';
 
@@ -143,7 +143,7 @@ export function ReceiptCard({ receipt }: { receipt: Receipt }) {
       </div>
       <p className="t-sm muted">
         {verified
-          ? <>An independent read-only verifier fetched the settlement and confirmed {units(receipt.receivedAmount)} CC reached the fund.</>
+          ? <>A separate read-back step fetched the settlement from the ledger and confirmed {units(receipt.receivedAmount)} CC reached the fund.</>
           : <>The verifier did not confirm this settlement. Failed: {failed.map((c) => c.name).join(', ')}.</>}
       </p>
       <details className="more">
@@ -254,38 +254,69 @@ export function SignDialog() {
   );
 }
 
-export function AccessDialog() {
+// `publicCode` is set when the operator prints the code for every visitor. The
+// form then starts filled in with it.
+export function AccessDialog({ publicCode }: { publicCode?: string | null }) {
   const { accessPrompt, answerAccess } = useActions();
-  const [code, setCode] = useState('');
   if (!accessPrompt) return null;
   return (
     <Dialog labelledBy="access-title" onClose={() => answerAccess(null)}>
-      <form
-        className="stack-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          answerAccess(code.trim() || null);
-          setCode('');
-        }}
-      >
-        <h2 id="access-title" className="t-h3">Enter the access code</h2>
-        <p className="t-sm muted">The demo fund is on a shared network, so actions need a code from the DRAW team. Reading needs none.</p>
-        <input autoFocus className="input" aria-label="Access code" autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} />
-        <div className="row">
-          <button type="submit" className="btn btn-primary" disabled={!code.trim()}>Continue</button>
-          <button type="button" className="btn btn-quiet" onClick={() => answerAccess(null)}>Cancel</button>
-        </div>
-      </form>
+      <AccessForm publicCode={publicCode ?? null} onAnswer={answerAccess} />
     </Dialog>
   );
 }
+
+function AccessForm({ publicCode, onAnswer }: { publicCode: string | null; onAnswer: (code: string | null) => void }) {
+  const [code, setCode] = useState(publicCode ?? '');
+  return (
+    <form
+      className="stack-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onAnswer(code.trim() || null);
+      }}
+    >
+      <h2 id="access-title" className="t-h3">Enter the access code</h2>
+      <p className="t-sm muted">
+        {publicCode
+          ? <>The demo fund is on a shared network, so actions need an access code. This demo&rsquo;s code is public: <strong className="mono">{publicCode}</strong>. Reading needs none.</>
+          : 'The demo fund is on a shared network, so actions need a code from the DRAW team. Reading needs none.'}
+      </p>
+      <input autoFocus className="input" aria-label="Access code" autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} />
+      <div className="row">
+        <button type="submit" className="btn btn-primary" disabled={!code.trim()}>Continue</button>
+        <button type="button" className="btn btn-quiet" onClick={() => onAnswer(null)}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
+// Moves this browser to a new demo fund. The current fund stays on the ledger.
+export function StartOverButton({ className = 'btn btn-sm btn-danger', children }: { className?: string; children: ReactNode }) {
+  const { startOver, busy } = useActions();
+  return (
+    <button
+      type="button"
+      className={className}
+      disabled={busy !== null}
+      aria-busy={busy === 'reset'}
+      onClick={() => {
+        if (window.confirm('Start over with a new demo fund?')) void startOver();
+      }}
+    >
+      {busy === 'reset' ? <><Spinner />Clearing…</> : children}
+    </button>
+  );
+}
+
+const TOAST_TONE: Record<ToastTone, string> = { plain: '', bad: styles.toastBad ?? '', wait: styles.toastWait ?? '' };
 
 export function Toasts() {
   const { toasts, dismiss } = useActions();
   return (
     <div className={styles.toasts} role="status" aria-live="polite">
       {toasts.map((toast) => (
-        <div key={toast.id} className={`${styles.toast} ${toast.error ? styles.toastBad : ''}`}>
+        <div key={toast.id} className={`${styles.toast} ${TOAST_TONE[toast.tone]}`}>
           <p>{toast.message}</p>
           {toast.detail && (
             <details className="more">

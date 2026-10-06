@@ -1,12 +1,14 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { LP_STATUS, PAYMENT_KIND, coin, dateTime, relative, roleName, units, usd } from '@/lib/format';
-import type { Obligation, Status, ViewWithSession } from '@/lib/types';
+import { fetchNoticePlace } from '@/lib/api';
+import { LP_STATUS, PAYMENT_KIND, assetNote, coin, dateTime, relative, roleName, units, usd } from '@/lib/format';
+import type { Obligation, Role, Status, ViewWithSession } from '@/lib/types';
 
-import { IconNotice } from '@/components/icons';
+import { IconCoin, IconNotice, IconShield } from '@/components/icons';
 
 import { ActionButton, LedgerDetails, PageHead, ReceiptCard, StatusMark, Timeline, ZeroState } from './ui';
 import styles from './screens.module.css';
@@ -22,7 +24,7 @@ export function InvestorHome({ view }: { view: ViewWithSession }) {
   if (invitation) {
     return (
       <>
-        <PageHead title="You have an invitation" lead="Only you and the fund manager can see this commitment." />
+        <PageHead title="You have an invitation" lead={`Only you and the fund manager can see this commitment. ${assetNote(view.network)}`} />
         <article className={styles.notice}>
           <div className={styles.letterhead}>{invitation.fundName}<small>For {name}</small></div>
           <div className={styles.noticeBody}>
@@ -43,7 +45,7 @@ export function InvestorHome({ view }: { view: ViewWithSession }) {
       <PageHead
         title="Your notices"
         lead={commitment
-          ? `You committed ${usd(commitment.committedUsd)} to ${view.fundName}. ${usd(commitment.calledUsd)} has been called so far.`
+          ? `You committed ${usd(commitment.committedUsd)} to ${view.fundName}. ${usd(commitment.calledUsd)} has been called so far. ${assetNote(view.network)}`
           : 'The fund has not invited you yet.'}
       />
       {notices.length === 0 ? (
@@ -78,34 +80,65 @@ function Steps({ o }: { o: Obligation }) {
     <ol className={styles.steps} aria-label="Payment progress">
       <li className={cls(locked || settled, !locked && !settled && o.status !== 'due')}>Payment locked</li>
       <li className={cls(settled, locked && !settled)}>Settled by the fund</li>
-      <li className={cls(verified, settled && !verified)}>Independently verified</li>
+      <li className={cls(verified, settled && !verified)}>Verified by read-back</li>
     </ol>
   );
 }
 
 const CALLOUT: Partial<Record<Status, { tone: 'wait' | 'bad' | 'plain'; text: string }>> = {
   mismatched: { tone: 'bad', text: 'Your payment does not match the amount due, so the fund cannot settle it. Withdraw it below and pay the exact amount.' },
-  submitted: { tone: 'wait', text: 'Your coin is locked for the fund. Nothing has moved yet. It counts as funded once the fund settles it and an independent check confirms it.' },
+  submitted: { tone: 'wait', text: 'Your coin is locked for the fund. Nothing has moved yet. It counts as funded once the fund settles it and a separate read-back confirms it.' },
   pending: { tone: 'wait', text: 'The fund is settling your payment. It is not funded until the transfer is verified.' },
   'overdue-paid': { tone: 'wait', text: 'This is past due, but your payment is locked and waiting for the fund to settle it.' },
   overdue: { tone: 'bad', text: 'This is past due. You can still pay. The fund decides how to handle late capital.' },
-  verifying: { tone: 'wait', text: 'The fund settled your payment. The independent check has not confirmed it yet.' },
+  verifying: { tone: 'wait', text: 'The fund settled your payment. The read-back check has not confirmed it yet.' },
   review: { tone: 'plain', text: 'The fund is reviewing this notice. The outcome appears here.' },
   waived: { tone: 'plain', text: 'The fund waived this notice. Nothing is owed.' },
   contradicted: { tone: 'bad', text: 'The fund is checking this settlement. It does not count as funded until verification passes.' },
 };
 
+// A notice that is not in this browser's demo fund. The view shows only this
+// browser's fund, so this seat's own ledger read says whether the notice is in
+// another demo fund on the same party or not there at all.
+function MissingNotice({ role, obligationRef }: { role: Role; obligationRef: string }) {
+  const place = useQuery({
+    queryKey: ['notice-place', role, obligationRef],
+    queryFn: ({ signal }) => fetchNoticePlace(role, obligationRef, signal),
+  });
+  const back = <Link href="/app" className="btn">Your notices</Link>;
+  if (place.isError) {
+    return (
+      <ZeroState title="Could not check this notice" action={<button type="button" className="btn" onClick={() => void place.refetch()}>Try again</button>}>
+        <p>{place.error.message} Nothing was submitted.</p>
+      </ZeroState>
+    );
+  }
+  if (place.data === 'elsewhere') {
+    return (
+      <ZeroState title="This notice is in another demo fund" action={back}>
+        <p>
+          {roleName(role)}&rsquo;s ledger has this notice, but it belongs to another demo fund, from another browser or from before you
+          started over. This browser shows only its own demo fund.
+        </p>
+      </ZeroState>
+    );
+  }
+  if (place.data === 'absent') {
+    return (
+      <ZeroState title="Not on your ledger" action={back}>
+        <p>No notice with this reference is visible to {roleName(role)}. A notice belongs only to the investor who owes it, so another LP&rsquo;s link opens nothing.</p>
+      </ZeroState>
+    );
+  }
+  // Still reading, or the notice was just issued and the view has not caught up.
+  return <ZeroState title="Looking for this notice"><p>Reading {roleName(role)}&rsquo;s ledger.</p></ZeroState>;
+}
+
 export function NoticePage({ view, obligationRef }: { view: ViewWithSession; obligationRef: string }) {
   const o = view.calls.flatMap((c) => c.obligations).find((x) => x.ref === obligationRef);
   const [otherOpen, setOtherOpen] = useState(false);
   const [other, setOther] = useState(() => (o ? String(Math.max(o.units - 5, 1)) : ''));
-  if (!o) {
-    return (
-      <ZeroState title="Not on your ledger" action={<Link href="/app" className="btn">Your notices</Link>}>
-        <p>No notice with this reference is visible to {roleName(view.role)}. A notice belongs only to the investor who owes it, so another LP&rsquo;s link opens nothing.</p>
-      </ZeroState>
-    );
-  }
+  if (!o) return <MissingNotice role={view.role} obligationRef={obligationRef} />;
   const canPay = PAYABLE.includes(o.status) && !o.payments.some((p) => p.kind === 'match');
   const callout = CALLOUT[o.status];
   const short = view.balance !== null && view.balance < o.units;
@@ -127,6 +160,10 @@ export function NoticePage({ view, obligationRef }: { view: ViewWithSession; obl
             <dt>Due</dt><dd>{dateTime(o.dueAt)} <span className="faint">{relative(o.dueAt)}</span></dd>
             <dt>Status</dt><dd>{LP_STATUS[o.status]}</dd>
           </dl>
+          <div className={styles.assurances}>
+            <p><IconShield size={16} />This notice is a contract the fund&rsquo;s party signed on Canton. You pay it from your own balance, so there are no bank details to change.</p>
+            <p><IconCoin size={16} />{assetNote(view.network)}</p>
+          </div>
           <Steps o={o} />
           {callout && <p className={`${styles.callout} ${callout.tone === 'wait' ? styles.calloutWait : callout.tone === 'bad' ? styles.calloutBad : ''}`}>{callout.text}</p>}
           {o.status === 'funded' && o.receipt && <ReceiptCard receipt={o.receipt} />}

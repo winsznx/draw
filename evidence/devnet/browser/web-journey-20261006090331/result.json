@@ -1,0 +1,14 @@
+{
+  "run": "20261006090331",
+  "test": "capital call journey",
+  "site": "https://draw.timjosh507.workers.dev",
+  "steps": [
+    {
+      "step": "landing loads",
+      "at": "2026-10-06T09:03:33.842Z"
+    }
+  ],
+  "expectedSteps": 10,
+  "verdict": "FAIL",
+  "error": null
+}

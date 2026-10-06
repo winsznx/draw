@@ -7,7 +7,7 @@ WORKDIR /draw
 COPY contracts/daml/daml.yaml contracts/daml/daml.yaml
 COPY contracts/dist contracts/dist
 COPY scripts scripts
-COPY app/server.mjs app/relay.mjs app/
+COPY app/*.mjs app/
 COPY docs docs
 COPY claims.yaml ./
 COPY evidence evidence
