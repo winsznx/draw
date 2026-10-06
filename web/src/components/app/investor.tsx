@@ -111,7 +111,7 @@ function Steps({ o }: { o: Obligation }) {
 
 const CALLOUT: Partial<Record<Status, { tone: 'wait' | 'bad' | 'plain'; text: string }>> = {
   mismatched: { tone: 'bad', text: 'Your payment does not match the amount due, so the fund cannot settle it. Withdraw it below and pay the exact amount.' },
-  submitted: { tone: 'wait', text: 'Your coin is locked for the fund. Nothing has moved yet. It counts as funded once the fund settles it and a separate read-back confirms it.' },
+  submitted: { tone: 'wait', text: 'Your coin is locked for the fund. Nothing has moved yet. It counts as funded once the fund settles it and the read-back confirms it.' },
   pending: { tone: 'wait', text: 'The fund is settling your payment. It is not funded until the transfer is verified.' },
   'overdue-paid': { tone: 'wait', text: 'This is past due, but your payment is locked and waiting for the fund to settle it.' },
   overdue: { tone: 'bad', text: 'This is past due. You can still pay. The fund decides how to handle late capital.' },
@@ -201,7 +201,7 @@ export function NoticePage({ view, obligationRef }: { view: ViewWithSession; obl
           </div>
           <Steps o={o} />
           {callout && <p className={`${styles.callout} ${callout.tone === 'wait' ? styles.calloutWait : callout.tone === 'bad' ? styles.calloutBad : ''}`}>{callout.text}</p>}
-          {o.status === 'funded' && o.receipt && <ReceiptCard receipt={o.receipt} />}
+          {o.status === 'funded' && o.receipt && <ReceiptCard receipt={o.receipt} readBack={view} />}
 
           {canPay && signIn && (
             <div className="stack-3">

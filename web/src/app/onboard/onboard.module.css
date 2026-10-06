@@ -232,6 +232,11 @@
   color: #c8ded5;
 }
 
+/* The note wraps to several lines, which would squeeze the dot into an oval. */
+.network > :global(.live-dot) {
+  flex-shrink: 0;
+}
+
 /* flow */
 .main {
   min-width: 0;

@@ -6,9 +6,8 @@
 import { businessStatus, classifyPayments, obligationOutcome } from '../../../scripts/demo/lib/reconcile.mjs';
 import type { AllocationContract, ObligationContract } from '../../../scripts/demo/lib/reconcile.mjs';
 
-import { ActionError } from './api';
+import { ActionError, getJson } from './api';
 import { SignedOut, activeContracts, exercise, identity, walletAllocate, walletBalance, walletTap, walletWithdraw } from './hackcanton';
-import { tourHeaders } from './tour';
 import type { AllocationRequestView, Call, GuestTour, LedgerState, Obligation, Receipt, SignInConfig, TimelineEntry, Totals, View, ViewNoSession, ViewWithSession } from './types';
 
 interface InstrumentId { admin: string; id: string }
@@ -34,14 +33,8 @@ interface CommitmentPayload extends InvitationPayload { calledScenarioAmount: st
 
 const sum = (values: number[]): number => values.reduce((a, b) => a + b, 0);
 
-async function readJson<T>(response: Response): Promise<T> {
-  const body = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new ActionError(body.error ?? 'The request failed.');
-  return body;
-}
-
 async function fetchRecord(ref: string, signal?: AbortSignal): Promise<{ receipt: Receipt | null; timeline: TimelineEntry[] }> {
-  return readJson(await fetch(`/api/record?ref=${encodeURIComponent(ref)}`, { signal, cache: 'no-store', headers: tourHeaders() }));
+  return getJson(`/api/record?ref=${encodeURIComponent(ref)}`, signal);
 }
 
 function totalsOf(list: Obligation[]): Totals {
@@ -59,7 +52,7 @@ function totalsOf(list: Obligation[]): Totals {
 
 // Which demo fund this browser is in, and which signed-in party joined it.
 export async function fetchGuestTour(signal?: AbortSignal): Promise<GuestTour | ViewNoSession> {
-  return readJson(await fetch('/api/view?role=guest', { signal, cache: 'no-store', headers: tourHeaders() }));
+  return getJson('/api/view?role=guest', signal);
 }
 
 export async function fetchGuestView(signal?: AbortSignal): Promise<View> {

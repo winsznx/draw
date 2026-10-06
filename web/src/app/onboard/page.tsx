@@ -16,6 +16,7 @@ import { networkNote, shortParty, signInNote, usd } from '@/lib/format';
 import { fetchGuestTour } from '@/lib/guest';
 import { signOut, startSignIn } from '@/lib/hackcanton';
 import { backupPem, createKey, hasKey, signHash } from '@/lib/keys';
+import { CALL_USD } from '@/lib/scenario';
 import type { Role, SignInConfig, View } from '@/lib/types';
 
 import styles from './onboard.module.css';
@@ -31,10 +32,13 @@ const SEATS: { role: Role; name: string; what: string }[] = [
 
 const seatName = (role: Role | null) => (role === 'outsider' ? 'Unrelated party' : role === 'guest' ? 'HackCanton LP' : SEATS.find((s) => s.role === role)?.name ?? '');
 
-function stepsFor(browserKeys: boolean): { id: Step; label: string }[] {
-  return browserKeys
+// `askAccess` is false when actions need no code, or when the operator prints
+// it for every visitor and this browser keeps it without asking.
+function stepsFor(browserKeys: boolean, askAccess: boolean): { id: Step; label: string }[] {
+  const steps: { id: Step; label: string }[] = browserKeys
     ? [{ id: 'seat', label: 'Choose your seat' }, { id: 'party', label: 'Create your key' }, { id: 'backup', label: 'Back up your key' }, { id: 'done', label: 'Open the app' }]
     : [{ id: 'seat', label: 'Choose your seat' }, { id: 'party', label: 'Your party' }, { id: 'access', label: 'Access' }, { id: 'done', label: 'Open the app' }];
+  return steps.filter((s) => askAccess || s.id !== 'access');
 }
 
 function seatState(view: View | undefined, role: Role, held: boolean): string | null {
@@ -55,7 +59,8 @@ export default function Onboard() {
   const chosen = useView(role);
   const view = admin.data;
   const browserKeys = view?.browserKeys ?? false;
-  const steps = stepsFor(browserKeys);
+  const askAccess = Boolean(view?.accessCodeRequired && !view.accessCode);
+  const steps = stepsFor(browserKeys, askAccess);
   const at = steps.findIndex((s) => s.id === step);
 
   const tag = view?.session ? view.sessionTag : null;
@@ -89,7 +94,7 @@ export default function Onboard() {
           </ol>
         </div>
         <SeatPreview role={role ?? 'admin'} />
-        {view && <p className={styles.network}><span className="live-dot" /><span>{view.signIn ? signInNote(view) : networkNote(view)}</span></p>}
+        {view && <p className={styles.network}>{!admin.isError && <span className="live-dot" />}<span>{view.signIn ? signInNote(view) : networkNote(view)}</span></p>}
       </aside>
 
       <main id="main" className={styles.main}>
@@ -134,9 +139,10 @@ export default function Onboard() {
             />
           )}
 
-          {step === 'seat' && view?.signIn && view.session && (
+          {step === 'seat' && view?.signIn && (
             <SignInCard
               config={view.signIn}
+              hasFund={view.session}
               onJoined={() => {
                 takeSeat('guest');
                 router.push('/app');
@@ -145,7 +151,16 @@ export default function Onboard() {
           )}
 
           {step === 'party' && role && !browserKeys && (
-            <SharedPartyStep role={role} view={chosen.data} site={view} onBack={() => setStep('seat')} onNext={() => setStep(accessCode() || !view?.accessCodeRequired ? 'done' : 'access')} />
+            <SharedPartyStep
+              role={role}
+              view={chosen.data}
+              site={view}
+              onBack={() => setStep('seat')}
+              onNext={() => {
+                if (view?.accessCode) rememberAccessCode(view.accessCode);
+                setStep(askAccess && !accessCode() ? 'access' : 'done');
+              }}
+            />
           )}
 
           {step === 'party' && role && browserKeys && view?.session && (
@@ -184,46 +199,59 @@ export default function Onboard() {
 
 // An LP with its own HackCanton login joins this browser's demo fund as an
 // extra investor. Its browser signs in with Keycloak, then reads and acts with
-// that login. The server only learns the party id and invites it.
-function SignInCard({ config, onJoined }: { config: SignInConfig; onJoined: () => void }) {
+// that login. The server only learns the party id and invites it. Without a
+// fund yet, joining starts this browser's demo fund first.
+function SignInCard({ config, hasFund, onJoined }: { config: SignInConfig; hasFund: boolean; onJoined: () => void }) {
   const me = useSignedIn();
   const { act, busy } = useActions();
   const [opening, setOpening] = useState(false);
+  // Set while starting the fund and joining it, two actions that leave the
+  // page idle for a moment in between.
+  const [starting, setStarting] = useState(false);
   const tour = useQuery({ queryKey: ['guest-tour'], queryFn: ({ signal }) => fetchGuestTour(signal), enabled: Boolean(me) });
   const joined = Boolean(me && tour.data?.session && tour.data.guest?.party === me.party);
   if (me === undefined) return null;
+
+  async function join(party: string) {
+    if (hasFund) {
+      if (await act('join', { party }, 'join')) onJoined();
+      return;
+    }
+    setStarting(true);
+    try {
+      if ((await act('setup', {}, 'join')) && (await act('join', { party }, 'join'))) onJoined();
+    } finally {
+      setStarting(false);
+    }
+  }
+
   return (
     <div className={styles.callout}>
       <p className="t-h3">Have a HackCanton login?</p>
       {me ? (
         <>
           <p className="t-sm muted">
-            Signed in as <span className="mono" title={me.party}>{shortParty(me.party)}</span>. Join this demo fund as an LP: you accept
-            with your own login and pay each notice from your own Canton wallet.
+            Signed in as <span className="mono" title={me.party}>{shortParty(me.party)}</span>. Join {hasFund ? 'this' : 'a new'} demo fund as
+            an LP: you accept with your own login and pay each notice from your own Canton wallet.
           </p>
           <div className="row">
             {joined ? (
               <button type="button" className="btn btn-primary" onClick={onJoined}>Continue as HackCanton LP</button>
             ) : (
-              <button
-                type="button"
-                className="btn btn-primary"
-                disabled={busy !== null || tour.isPending}
-                onClick={async () => {
-                  if (await act('join', { party: me.party }, 'join')) onJoined();
-                }}
-              >
-                {busy === 'join' ? <><Spinner />Inviting your party…</> : 'Join as an LP'}
+              <button type="button" className="btn btn-primary" disabled={busy !== null || starting || tour.isPending} onClick={() => void join(me.party)}>
+                {busy === 'join' || starting
+                  ? <><Spinner />{starting ? 'Starting the fund and inviting your party…' : 'Inviting your party…'}</>
+                  : hasFund ? 'Join as an LP' : 'Start a demo fund and join as an LP'}
               </button>
             )}
-            <button type="button" className="btn btn-quiet" disabled={busy !== null} onClick={signOut}>Sign out</button>
+            <button type="button" className="btn btn-quiet" disabled={busy !== null || starting} onClick={signOut}>Sign out</button>
           </div>
         </>
       ) : (
         <>
           <p className="t-sm muted">
             Take a seat as yourself instead of a demo LP. Your browser reads your notices with your own login, and you pay from your
-            own Canton wallet. DRAW&rsquo;s server never sees your login.
+            own Canton wallet. DRAW&rsquo;s server never sees your login.{hasFund ? '' : ' Joining starts this browser’s demo fund first.'}
           </p>
           <div>
             <button
@@ -245,22 +273,21 @@ function SignInCard({ config, onJoined }: { config: SignInConfig; onJoined: () =
 }
 
 function SeatPreview({ role }: { role: Role }) {
-  const own = role === 'lpA' ? 'LP A' : role === 'lpB' ? 'LP B' : role === 'lpC' ? 'LP C' : null;
   return (
     <div className={styles.preview} key={role}>
-      <p className={styles.previewLabel}>{role === 'admin' ? 'What the fund manager sees' : role === 'outsider' ? 'What an outsider sees' : `What ${own} sees`}</p>
+      <p className={styles.previewLabel}>{role === 'admin' ? 'Example: what the fund manager sees' : role === 'outsider' ? 'Example: what an outsider sees' : `Example: what ${seatName(role)} sees`}</p>
       {role === 'admin' ? (
         <>
-          <div className={styles.previewRow}><span>LP A</span><b>$400,000</b><em className="mark mark-good">Funded</em></div>
-          <div className={styles.previewRow}><span>LP B</span><b>$350,000</b><em className="mark mark-wait">Locked</em></div>
-          <div className={styles.previewRow}><span>LP C</span><b>$250,000</b><em className="mark">Due</em></div>
-          <div className={styles.previewTotal}><span>Deployable now</span><b>$400,000</b></div>
+          <div className={styles.previewRow}><span>LP A</span><b>{usd(CALL_USD.lpA)}</b><em className="mark mark-good">Funded</em></div>
+          <div className={styles.previewRow}><span>LP B</span><b>{usd(CALL_USD.lpB)}</b><em className="mark mark-wait">Locked</em></div>
+          <div className={styles.previewRow}><span>LP C</span><b>{usd(CALL_USD.lpC)}</b><em className="mark">Due</em></div>
+          <div className={styles.previewTotal}><span>Deployable now</span><b>{usd(CALL_USD.lpA)}</b></div>
         </>
       ) : role === 'outsider' ? (
         <div className={styles.previewEmpty}><IconEyeOff size={18} />The ledger returns nothing about this fund.</div>
       ) : (
         <>
-          <div className={styles.previewRow}><span>{own}</span><b>$400,000</b><em className="mark mark-wait">Due</em></div>
+          <div className={styles.previewRow}><span>{seatName(role)}</span><b>{usd(CALL_USD[role])}</b><em className="mark mark-wait">Due</em></div>
           {['lpA', 'lpB', 'lpC'].filter((r) => r !== role).map((r) => (
             <div key={r} className={`${styles.previewRow} ${styles.previewHidden}`}><i /><span>Not on your ledger</span></div>
           ))}
@@ -276,7 +303,7 @@ function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefi
       <div className="stack-3">
         <h1 className="t-h1">Who are you in this fund?</h1>
         <p className="t-lead">
-          Each seat is a separate Canton party. What you see after this comes from that party&rsquo;s own ledger, so an LP never sees
+          Each seat is a different Canton party. What you see after this comes from that party&rsquo;s own ledger, so an LP never sees
           another LP&rsquo;s notice.
         </p>
       </div>
@@ -287,7 +314,7 @@ function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefi
           <p className="t-sm muted">
             {view.browserKeys
               ? 'Start the demo first. Then each person, the fund manager first, creates their own party and key.'
-              : 'Start one first. It creates a fund for this browser, sends each LP a private invitation, and tops up their test Canton Coin if it is low. Other visitors get their own.'}
+              : `Start one first. It creates a fund for this browser, sends each LP a private invitation, and tops up their test Canton Coin if it is low. Other visitors get their own.${view.accessCodeRequired && !view.accessCode ? ' Creating it needs an access code from the DRAW team.' : ''}`}
           </p>
           <div><ActionButton name="setup" body={{}} busyLabel="Starting on the ledger…">{view.browserKeys ? 'Start the demo' : 'Create the demo fund'}</ActionButton></div>
         </div>
@@ -309,7 +336,7 @@ function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefi
           );
         })}
       </div>
-      {!view?.browserKeys && (
+      {view?.session && !view.browserKeys && (
         <p className="t-sm muted">
           Just looking? <button type="button" className="link" onClick={() => onPick('outsider')}>Sit as an unrelated party</button> to see what
           someone outside the fund can read.
@@ -323,6 +350,19 @@ function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefi
 // seat list already loaded, which says how this site signs.
 function SharedPartyStep({ role, view, site, onBack, onNext }: { role: Role; view: View | undefined; site: View | undefined; onBack: () => void; onNext: () => void }) {
   const party = view?.session && 'queriedAs' in view ? view.queriedAs.party : null;
+  if (view?.session === false) {
+    return (
+      <div className="stack-6">
+        <div className={styles.callout}>
+          <p className="t-h3">This browser has no demo fund yet</p>
+          <p className="t-sm muted">Go back and create the demo fund first. Then each seat reads its own ledger.</p>
+        </div>
+        <div className="row">
+          <button type="button" className="btn btn-quiet" onClick={onBack}>Choose another seat</button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="stack-6">
       <div className="stack-3">
@@ -341,17 +381,14 @@ function SharedPartyStep({ role, view, site, onBack, onNext }: { role: Role; vie
         {!site ? (
           <span className="sk" style={{ width: '100%', height: 42 }} />
         ) : site.seatCredential === 'per-seat' && !site.singleCredential ? (
-          <p className="t-sm muted">
-            This party has its own ledger login on {site.network}, and every read and action uses it. With browser keys turned on, DRAW
-            instead creates a key in your browser and you sign every action yourself.
-          </p>
+          <p className="t-sm muted">This party has its own ledger login on {site.network}, and every read and action uses it.</p>
         ) : (
           <p className="t-sm muted">
             {site.network === 'DevNet' ? 'The shared HackCanton node does not let teams create parties that hold their own keys yet, so ' : 'On this network '}
             {site.seatCredential === 'backend-client' ? 'DRAW’s backend login' : site.network === 'DevNet' ? 'one hackathon login' : 'one login'} submits
-            for every demo party.{site.separateVerifier ? ' A different login reads each settlement back.' : ''} Privacy still comes from the
+            for every demo party.{site.separateVerifier ? ' A different login reads each settlement back.' : ' The same login reads each settlement back.'} Privacy still comes from the
             ledger: each party&rsquo;s reads return only its own records.{site.signIn ? ' To act as yourself, sign in with your own HackCanton login as an LP.' : ''}{' '}
-            On LocalNet with browser keys, DRAW creates a key in your browser and you sign every action yourself.
+            On LocalNet a scripted run had every party sign with its own key.
           </p>
         )}
       </div>

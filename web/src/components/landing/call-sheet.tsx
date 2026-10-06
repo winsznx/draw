@@ -24,9 +24,8 @@ const ROWS: { lp: Exclude<Viewer, 'manager' | 'outsider'>; name: string; usd: nu
 const STAGE_WORD: Record<Stage, string> = { due: 'Due', locked: 'Payment locked', settled: 'Settled, checking', verified: 'Verified funded' };
 const STAGE_TONE: Record<Stage, string> = { due: '', locked: 'mark-wait', settled: 'mark-wait', verified: 'mark-good' };
 
-// One orchestrated moment on load: LP A pays and is verified, LP B locks a
-// payment, LP C has not paid. The final frame is the same story the DevNet
-// run tells, so reduced motion starts there.
+// One orchestrated example on load: LP A pays and is verified, LP B locks a
+// payment, LP C has not paid. Reduced motion starts at the final frame.
 const SEQUENCE: { at: number; lp: string; stage: Stage }[] = [
   { at: 700, lp: 'lpA', stage: 'locked' },
   { at: 1500, lp: 'lpB', stage: 'locked' },
@@ -92,7 +91,7 @@ export function CallSheet() {
             <p className={styles.fund}>Example Ventures I</p>
             <p className={styles.title}>{viewer === 'manager' ? 'Call 3, initial close' : viewer === 'outsider' ? 'No records' : `Notice for ${viewerName}`}</p>
           </div>
-          <p className={styles.due}>Due Oct 9</p>
+          <p className={styles.due}>Example</p>
         </div>
 
         <ul className={styles.rows}>

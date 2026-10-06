@@ -93,7 +93,7 @@ test('capital call journey', async ({ page, browser }, info) => {
     await page.getByRole('button', { name: /^Settle 10/ }).click();
     await expect(page.getByText('Funded', { exact: true }).first()).toBeVisible();
     await ev.shot(page, 'settled');
-    ev.record('fund manager settled, verifier confirmed');
+    ev.record('fund manager settled, read-back confirmed');
 
     await sit(page, 'LP A');
     await page.goto(noticeUrl);

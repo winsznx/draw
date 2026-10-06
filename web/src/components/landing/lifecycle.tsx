@@ -27,7 +27,7 @@ const STEPS: { title: string; who: string; text: string; stage: ReactNode }[] = 
       <div className={styles.card}>
         <div className={styles.cardHead}><span className={styles.icon}><IconNotice size={18} /></span><span>Capital call notice<small>Call 3, for LP A only</small></span></div>
         <p className={styles.big}>$400,000</p>
-        <div className={styles.kv}><span>Pay</span><b>40 CC</b><span>Due</span><b>Oct 9, 17:00</b></div>
+        <div className={styles.kv}><span>Pay</span><b>40 CC</b><span>Due</span><b>In 10 days</b></div>
       </div>
     ),
   },
@@ -38,7 +38,7 @@ const STEPS: { title: string; who: string; text: string; stage: ReactNode }[] = 
     stage: (
       <div className={styles.card}>
         <div className={styles.cardHead}><span className={styles.icon}><IconLock size={18} /></span><span>Payment locked<small>Canton Coin allocation</small></span></div>
-        <div className={styles.kv}><span>Amount</span><b>40 CC</b><span>Reference</span><b className={styles.mono}>DRAW-c287df72</b><span>To</span><b>Fund manager</b></div>
+        <div className={styles.kv}><span>Amount</span><b>40 CC</b><span>Reference</span><b className={styles.mono}>DRAW-example</b><span>To</span><b>Fund manager</b></div>
         <span className="mark mark-wait">Waiting for the fund</span>
       </div>
     ),
@@ -57,11 +57,11 @@ const STEPS: { title: string; who: string; text: string; stage: ReactNode }[] = 
   },
   {
     title: 'Verify',
-    who: 'Verifier',
-    text: 'A separate step reads the settlement back from the ledger. Only then does it count as deployable. On LocalNet that step has its own read-only login.',
+    who: 'Read-back step',
+    text: 'A read-back step reads the settlement from the ledger and checks it. Only then does it count as deployable. In the LocalNet runs it had a read-only login of its own.',
     stage: (
       <div className={`${styles.card} ${styles.cardDark}`}>
-        <div className={styles.cardHead}><span className={styles.icon}><IconCheckCircle size={18} /></span><span>Verified funded<small>Read back by the verifier</small></span></div>
+        <div className={styles.cardHead}><span className={styles.icon}><IconCheckCircle size={18} /></span><span>Verified funded<small>Read back by DRAW</small></span></div>
         <p className={styles.huge}>14 of 14</p>
         <p className={styles.caption}>checks passed on the settlement transaction</p>
       </div>
@@ -69,7 +69,9 @@ const STEPS: { title: string; who: string; text: string; stage: ReactNode }[] = 
   },
 ];
 
-export function Lifecycle() {
+// readBack names the login the live site's read-back uses. It's null when the
+// site's setup didn't load, so the Verify step then says nothing about it.
+export function Lifecycle({ readBack }: { readBack?: string | null }) {
   const [active, setActive] = useState(0);
   const step = STEPS[active] ?? STEPS[0];
   return (
@@ -81,14 +83,14 @@ export function Lifecycle() {
               <span className={styles.num}>{String(index + 1).padStart(2, '0')}</span>
               <span className={styles.stepText}>
                 <span className={styles.stepTitle}>{s.title}<small>{s.who}</small></span>
-                <span className={styles.stepBody}>{s.text}</span>
+                <span className={styles.stepBody}>{s.title === 'Verify' && readBack ? `${s.text} ${readBack}` : s.text}</span>
               </span>
             </button>
           </li>
         ))}
       </ol>
       <div className={styles.stage} aria-live="polite">
-        <p className={styles.stageLabel}>{step?.title}, as it appears on the ledger</p>
+        <p className={styles.stageLabel}>Example record: {step?.title}</p>
         <div key={active} className={styles.stageCard}>{step?.stage}</div>
       </div>
     </div>

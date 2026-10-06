@@ -38,17 +38,17 @@ export async function eventually(read, accept = Boolean, attempts = 30) {
 
 // The main package id, read from the DAR's manifest. Manifest lines wrap at 72
 // characters with continuation lines that start with a space.
-function packageIdFromManifest() {
-  const manifest = execFileSync('unzip', ['-p', DAR, 'META-INF/MANIFEST.MF']).toString().replace(/\r?\n /g, '');
+export function packageIdOf(darPath = DAR) {
+  const manifest = execFileSync('unzip', ['-p', darPath, 'META-INF/MANIFEST.MF']).toString().replace(/\r?\n /g, '');
   const mainDalf = manifest.match(/^Main-Dalf:\s*(\S+)/m)?.[1];
   const id = mainDalf?.match(/-([0-9a-f]{64})\//)?.[1];
-  if (!id) throw new Error(`could not read the package id from ${DAR}`);
+  if (!id) throw new Error(`could not read the package id from ${darPath}`);
   return id;
 }
 
 export function packageInfo() {
   const darSha256 = createHash('sha256').update(readFileSync(DAR)).digest('hex');
-  return { packageId: packageIdFromManifest(), darSha256, version: darVersion };
+  return { packageId: packageIdOf(), darSha256, version: darVersion };
 }
 
 const firstCreated = (transaction) => transactionEvents(transaction).find((e) => e.kind === 'created');

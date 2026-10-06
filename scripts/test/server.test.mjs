@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -526,4 +526,226 @@ test('the config says who signs for the demo seats and whether the read-back ste
   assert.equal(seats.seatCredential, 'per-seat');
   assert.equal(seats.separateVerifier, true, 'user-verifier is none of the seats');
   assert.equal(seats.singleCredential, false);
+});
+
+// ---------------------------------------------------------------- settling and the read-back
+const dueSoon = () => new Date(Date.now() + 3_600_000).toISOString();
+const issueToLpA = (call) => act(call, 'issue', { body: { callId: 'Call 1', dueAt: dueSoon(), rows: [{ role: 'lpA', scenarioUsd: 100000, units: 10 }] } });
+const noticeRef = (fake) => fake.acs.find((c) => c.templateId?.endsWith(':CapitalCallObligation')).payload.obligationRef;
+const settle = (call, notice) => act(call, 'settle', { body: notice });
+const readBackAgain = (call, ref) => act(call, 'verify', { body: { ref } });
+const receiptFile = (call, fake, ref) => join(call.evidence, 'local', 'app', fundOf(fake), `receipt-${ref}.json`);
+const adminRow = async (call, ref) => (await call('/api/view?role=admin', { headers: tour() })).body.calls.flatMap((c) => c.obligations).find((o) => o.ref === ref);
+const stages = (row) => row.timeline.map(({ stage, by }) => [stage, by]);
+
+// A fund in which LP A has locked 10 CC, from the 100 CC it holds, against its notice.
+async function paidNotice(call, fake) {
+  fake.holding(party('LPA'), '100.0');
+  assert.equal((await setup(call)).status, 200);
+  assert.equal((await act(call, 'accept', { body: { role: 'lpA' } })).status, 200);
+  assert.equal((await issueToLpA(call)).status, 200);
+  const ref = noticeRef(fake);
+  const paid = await act(call, 'pay', { body: { role: 'lpA', ref } });
+  assert.equal(paid.status, 200, JSON.stringify(paid.body));
+  const { allocationCid } = (await call('/api/view?role=admin', { headers: tour() })).body.payments.find((p) => p.obligationRef === ref);
+  return { ref, allocationCid };
+}
+
+test('settling reads the settlement back, and the receipt names who settled and who read it', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake));
+  const notice = await paidNotice(call, fake);
+
+  const settled = await settle(call, notice);
+  assert.equal(settled.status, 200, JSON.stringify(settled.body));
+  assert.equal(settled.body.message, 'Settled and verified funded by a read-back with a login of its own. 10 CC received.');
+  const receipt = JSON.parse(readFileSync(receiptFile(call, fake, notice.ref), 'utf8'));
+  assert.equal(receipt.verdict, 'VERIFIED_FUNDED');
+  assert.equal(receipt.settledBy, 'user-admin');
+  assert.equal(receipt.verifierUser, 'user-verifier');
+
+  const row = await adminRow(call, notice.ref);
+  assert.equal(row.status, 'funded');
+  assert.equal(row.receipt.settledBy, 'user-admin');
+  assert.deepEqual(stages(row), [['ACTION_REQUESTED', 'lpA'], ['ACKNOWLEDGED', 'lpA'], ['TRANSFER_EXECUTED', 'admin'], ['SETTLEMENT_OBSERVED', 'read-back'], ['VERIFIED_FUNDED', 'read-back']]);
+});
+
+test('a read-back on the login that settled says so', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake, { DRAW_VERIFIER_USER: 'user-admin' }));
+  const settled = await settle(call, await paidNotice(call, fake));
+  assert.equal(settled.status, 200, JSON.stringify(settled.body));
+  assert.equal(settled.body.message, 'Settled and verified funded. The read-back ran on the same login that settled. 10 CC received.');
+});
+
+test('a read-back that does not finish leaves the notice unverified until it is read back again, once', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake));
+  const notice = await paidNotice(call, fake);
+
+  fake.failNext('/v2/updates/update-by-id', 503);
+  const settled = await settle(call, notice);
+  assert.equal(settled.status, 200, JSON.stringify(settled.body));
+  assert.equal(settled.body.message, 'Settled on the ledger, but the read-back did not finish, so this notice does not count as funded yet. Press Read back again on the notice.');
+  assert.equal(existsSync(receiptFile(call, fake, notice.ref)), false);
+  const waiting = await adminRow(call, notice.ref);
+  assert.equal(waiting.ledgerState, 'Funded');
+  assert.equal(waiting.status, 'verifying');
+  assert.equal(waiting.receipt, null);
+  assert.deepEqual(stages(waiting).at(-1), ['READ_BACK_INCOMPLETE', 'read-back']);
+  assert.match(waiting.timeline.at(-1).error, /HTTP 503/);
+
+  const verified = await readBackAgain(call, notice.ref);
+  assert.equal(verified.status, 200, JSON.stringify(verified.body));
+  assert.equal(verified.body.message, 'Read back and verified funded. 10 CC received.');
+  assert.equal((await adminRow(call, notice.ref)).status, 'funded');
+  const written = readFileSync(receiptFile(call, fake, notice.ref));
+  assert.equal(JSON.parse(written).settledBy, 'user-admin', 'taken from the settlement DRAW recorded');
+
+  const again = await readBackAgain(call, notice.ref);
+  assert.equal(again.status, 200);
+  assert.equal(again.body.message, 'This notice already has a read-back receipt, so nothing was read again.');
+  assert.ok(readFileSync(receiptFile(call, fake, notice.ref)).equals(written), 'the receipt is never rewritten');
+});
+
+test('only a settled notice of this fund with a settlement on record can be read back', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake));
+  const { ref } = await paidNotice(call, fake);
+  const refusal = async (body) => {
+    const reply = await act(call, 'verify', { body });
+    assert.equal(reply.status, 422, JSON.stringify(reply.body));
+    return reply.body.error;
+  };
+
+  assert.equal(await refusal({ ref }), 'Only a notice that settled on the ledger can be read back.');
+  assert.equal(await refusal({ ref: '../x' }), 'That is not a notice reference.');
+  assert.equal(await refusal({}), 'That is not a notice reference.');
+  assert.equal(await refusal({ ref: 'DRAW-00000000000000b1' }), 'That obligation was not found for the fund manager.');
+  const fundedUnrecorded = notice({ fundId: fundOf(fake), ref: 'DRAW-00000000000000b2', lp: party('LPA') });
+  fake.add({ ...fundedUnrecorded, payload: { ...fundedUnrecorded.payload, state: 'Funded' } });
+  assert.equal(await refusal({ ref: 'DRAW-00000000000000b2' }), 'DRAW has no settlement on record for this notice, so there is nothing to read back.');
+  assert.equal(fake.exercised.filter((e) => e.choice === 'Obligation_Settle').length, 0);
+});
+
+test('faucet top-ups show in the replies and on the notice they paid for', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake, { DRAW_TAP_AMOUNT: '100.0', SCAN_URL: `${fake.url}/api/scan` }));
+  const started = await setup(call);
+  assert.equal(started.status, 200, JSON.stringify(started.body));
+  assert.match(started.body.message, /is set up\. Each investor has an invitation to accept\. LP A, LP B and LP C got 100 test CC from the faucet first\.$/);
+
+  assert.equal((await act(call, 'accept', { body: { role: 'lpA' } })).status, 200);
+  assert.equal((await issueToLpA(call)).status, 200);
+  const ref = noticeRef(fake);
+  // Another visitor's payment spent LP A's coin since this fund started.
+  for (const spent of fake.acs.filter((c) => c.interface?.endsWith(':Holding') && c.view.owner === party('LPA'))) fake.acs.splice(fake.acs.indexOf(spent), 1);
+  const paid = await act(call, 'pay', { body: { role: 'lpA', ref } });
+  assert.equal(paid.status, 200, JSON.stringify(paid.body));
+  assert.equal(paid.body.message, 'Added 100 test CC from the faucet, then locked 10 CC for the fund. The fund manager settles it next.');
+
+  const row = await adminRow(call, ref);
+  assert.deepEqual(stages(row), [['FAUCET_TOP_UP', 'lpA'], ['ACTION_REQUESTED', 'lpA'], ['ACKNOWLEDGED', 'lpA']]);
+  assert.equal(row.timeline[0].amount, '100.0');
+  assert.ok(row.timeline[0].updateId);
+});
+
+test('a failed ledger read says DRAW could not read it, and a 5xx on an action is never called a refusal', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake));
+  assert.equal((await setup(call)).status, 200);
+
+  fake.failNext('/v2/state/active-contracts-page', 500);
+  const view = await call('/api/view?role=admin', { headers: tour() });
+  assert.equal(view.status, 502);
+  assert.equal(view.body.error, 'DRAW could not read the ledger just now. Try again in a minute.');
+  assert.match(view.body.detail, /HTTP 500/);
+  assert.equal((await call('/api/view?role=admin', { headers: tour() })).status, 200);
+
+  assert.equal((await act(call, 'accept', { body: { role: 'lpA' } })).status, 200);
+  fake.failNext('/v2/commands/submit-and-wait-for-transaction', 503);
+  const issued = await issueToLpA(call);
+  assert.equal(issued.status, 422);
+  assert.equal(issued.body.error, 'The ledger did not answer as expected, so DRAW cannot tell whether this went through. Refresh in a minute to see.');
+  assert.match(issued.body.detail, /HTTP 503/);
+});
+
+// ---------------------------------------------------------------- proof
+// The API on DevNet without any credential: it signs its own tokens and
+// allocates parties only when asked, so the proof needs no ledger.
+const DEVNET_OFFLINE = { DRAW_NETWORK: 'devnet', DRAW_JSON_API: 'http://127.0.0.1:1', LEDGER_AUTH_MODE: 'hs256', DRAW_PARTY_MODE: 'allocate' };
+// The package id in the committed draw-0.2.0.dar.
+const DRAW_0_2_0 = 'a006197eb6af19a5f50b09f70cf084898de9925ddd2b984bac347b1658537496';
+const writeJson = (file, value) => {
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+};
+const PASSING = {
+  gates: { DEVNET_E2E: 'PASS', PRIVACY_CAMPAIGN: 'PASS' },
+  passed: 2,
+  failed: [],
+  custody: 'SERVER_SUBMITS_FOR_PARTIES',
+  skipped: [{ id: 'credential: lpA token cannot read as lpB', reason: 'one backend client acts for every demo seat on this node, so LP credentials cannot be separated here' }],
+  reasonsHidden: ['negative: wrong payer does not fund'],
+  checks: [{ id: 'negative: wrong payer does not fund', ok: true }, { id: 'totals: funded is 750,000 USD scenario', ok: true }],
+};
+
+test('the proof leads with the newest run that passed every check, and lists every newer run that did not', async (t) => {
+  const call = await startApp(t, DEVNET_OFFLINE);
+  const { release } = (await call('/api/config')).body;
+  const runs = join(call.evidence, 'devnet', 'runs');
+  const check = (name, ok) => ({ name, ok });
+  writeJson(join(runs, '20261005T100000Z', 'result.json'), { ...PASSING, packageId: release.packageId, verifierUser: 'user-verifier' });
+  writeJson(join(runs, '20261005T100000Z', 'receipt-lpA.json'), { verdict: 'VERIFIED_FUNDED', checks: [check('a', true), check('b', true), check('c', true)] });
+  writeJson(join(runs, '20261005T100000Z', 'receipt-lpB.json'), { verdict: 'CONTRADICTED', checks: [check('a', true), check('b', false), check('c', true)] });
+  writeJson(join(runs, '20261005T110000Z', 'result.json'), { ...PASSING, gates: { DEVNET_E2E: 'FAIL', PRIVACY_CAMPAIGN: 'PASS' }, passed: 80, failed: ['totals: funded is 750,000 USD scenario', 'settlement[lpA]: read-back verifier returns VERIFIED_FUNDED'] });
+  mkdirSync(join(runs, '20261005T120000Z'));
+  writeFileSync(join(runs, '20261005T120000Z', 'steps.jsonl'), '{"step":"party-scoped users ready"}\n');
+  // Only folders named for a run count, wherever another name sorts.
+  writeJson(join(runs, 'scratch', 'result.json'), PASSING);
+  const probes = join(call.evidence, 'devnet', 'probes');
+  writeJson(join(probes, '20261005T090000Z', 'result.json'), { asExpected: true, probes: [] });
+  const verifierProbe = { id: 'credentials: the verifier\'s client only reads, as the fund\'s party', expectation: 'SUCCEEDED', outcome: 'FAILED' };
+  writeJson(join(probes, '20261005T130000Z', 'result.json'), { asExpected: false, users: { admin: 'user-backend', verifier: 'user-verifier' }, probes: [{ ...verifierProbe, status: 200, detail: 'it acted for another party' }] });
+  writeJson(join(call.evidence, 'local', 'campaign', '20261002T193724Z', 'result.json'), { verdict: 'PASS', seed: 1, metrics: {}, packageId: DRAW_0_2_0 });
+  writeJson(join(call.evidence, 'local', 'daml_core', '20261006T081605Z', 'result.json'), { verdict: 'PASS', packageId: 'f'.repeat(64), tests: [] });
+
+  const proof = (await call('/api/proof')).body;
+  assert.equal(proof.canonical.runId, '20261005T100000Z');
+  assert.equal(proof.canonical.packageVersion, release.version);
+  assert.equal(proof.canonical.custody, 'SERVER_SUBMITS_FOR_PARTIES');
+  assert.equal(proof.canonical.verifierUser, 'user-verifier');
+  assert.deepEqual(proof.canonical.skipped, PASSING.skipped);
+  assert.deepEqual(proof.canonical.reasonsHidden, PASSING.reasonsHidden);
+  assert.deepEqual(proof.canonical.receipts.map(({ verdict, checksPassed, checks }) => [verdict, checksPassed, checks]), [['VERIFIED_FUNDED', 3, 3], ['CONTRADICTED', 2, 3]]);
+  assert.deepEqual(proof.newerRuns, [
+    { runId: '20261005T120000Z', path: 'evidence/devnet/runs/20261005T120000Z', status: 'INCOMPLETE', passed: null, total: null, file: 'steps.jsonl' },
+    { runId: '20261005T110000Z', path: 'evidence/devnet/runs/20261005T110000Z', status: 'FAIL', passed: 80, total: 82, file: 'result.json' },
+  ]);
+  assert.deepEqual(proof.probe, { runId: '20261005T130000Z', path: 'evidence/devnet/probes/20261005T130000Z', asExpected: false, checks: [verifierProbe], verifierUser: 'user-verifier' });
+  assert.deepEqual([proof.localnet.campaign.packageId, proof.localnet.campaign.packageVersion], [DRAW_0_2_0, '0.2.0']);
+  assert.equal(proof.localnet.damlCore.packageVersion, null, 'no known DAR has this package');
+});
+
+test('with no run that passed every check there is no canonical run, and every run folder is listed', async (t) => {
+  const call = await startApp(t, DEVNET_OFFLINE);
+  const runs = join(call.evidence, 'devnet', 'runs');
+  writeJson(join(runs, '20261005T110000Z', 'result.json'), { ...PASSING, passed: 1, failed: ['totals: funded is 750,000 USD scenario'] });
+  writeJson(join(runs, '20261005T100000Z', 'result.json'), { ...PASSING, gates: {} });
+  mkdirSync(join(runs, '20261005T120000Z'));
+
+  const proof = (await call('/api/proof')).body;
+  assert.equal(proof.canonical, null);
+  assert.deepEqual(proof.newerRuns.map(({ runId, status, passed, total, file }) => [runId, status, passed, total, file]), [
+    ['20261005T120000Z', 'INCOMPLETE', null, null, null],
+    ['20261005T110000Z', 'FAIL', 1, 2, 'result.json'],
+    ['20261005T100000Z', 'FAIL', 2, 2, 'result.json'],
+  ]);
+  assert.equal(proof.probe, null);
 });

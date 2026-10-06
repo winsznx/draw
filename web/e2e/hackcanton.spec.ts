@@ -98,7 +98,7 @@ async function settleAndVerify(page: Page, ev: Evidence, call: string, noticeUrl
   await page.getByRole('button', { name: /^Settle 4/ }).click();
   await expect(page.getByText('Funded', { exact: true }).first()).toBeVisible();
   await ev.shot(page, 'settled');
-  ev.record('fund manager settled, verifier confirmed');
+  ev.record('fund manager settled, read-back confirmed');
 
   await sitAsSignedInLp(page);
   await page.goto(noticeUrl);

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { coin, networkNote, roleName, units, usd } from '@/lib/format';
 import { loadConfig, loadProof } from '@/lib/server-api';
-import type { Suites } from '@/lib/types';
+import type { NewerRun, Suites } from '@/lib/types';
 
 import styles from './proof.module.css';
 
@@ -43,6 +43,25 @@ const METRIC_NAME: Record<string, string> = {
   settleRefusals: 'Bad payments refused',
   errors: 'Errors',
 };
+const GATE_NAME: Record<string, string> = {
+  DEVNET_E2E: 'End to end',
+  LOCAL_SETTLEMENT: 'Settlement',
+  PRIVACY_CAMPAIGN: 'Privacy checks',
+  CUSTODY: 'Custody',
+};
+// What a run's result.json says about its ledger logins and keys.
+const SEPARATION_NOTE: Record<string, string> = {
+  VERIFIER_ONLY: 'The demo seats shared one ledger login. The read-back had a login of its own.',
+  TESTED: 'Each demo seat and the read-back had a ledger login of its own.',
+  SEATS_ONLY: 'Each demo seat had a ledger login of its own. The read-back used one of them.',
+  NOT_TESTED_SINGLE_CREDENTIAL: 'One ledger login acted for every demo seat and for the read-back.',
+};
+const CUSTODY_NOTE: Record<string, string> = {
+  SERVER_SUBMITS_FOR_PARTIES: 'The run’s own login submitted for every party. No party held its own key.',
+  EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY: 'Every party signed its own transactions with its own key.',
+};
+// The probe check of the read-back's client, as scripts/demo/probe.mjs names it.
+const PROBE_VERIFIER = "credentials: the verifier's client only reads, as the fund's party";
 
 // Browser journeys, in the order a visitor would try them.
 const JOURNEY_ORDER = ['journey', 'hackcanton-wallet', 'hackcanton', 'browser-keys'];
@@ -62,6 +81,7 @@ function caption(shot: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 const short = (id: string, n = 14) => `${id.slice(0, n)}…`;
+const packageNote = (version: string | null | undefined) => (version ? `, package ${version}` : '');
 
 function Section({ id, title, env, lead, children }: { id: string; title: string; env: string; lead?: ReactNode; children: ReactNode }) {
   return (
@@ -76,11 +96,31 @@ function Section({ id, title, env, lead, children }: { id: string; title: string
   );
 }
 
+// Run folders that did not pass: a result that records a failure, or no result yet.
+function FailedRuns({ title, runs }: { title: string; runs: NewerRun[] }) {
+  return (
+    <>
+      <p className="t-h4">{title}</p>
+      <ul className={styles.facts}>
+        {runs.map((run) => (
+          <li key={run.runId}>
+            <span className="mark mark-bad">{run.status === 'FAIL' ? 'Did not pass' : 'Did not finish'}</span>
+            <span>
+              {run.file ? <a className="link" href={file(run.path, run.file)}>Run {run.runId}</a> : `Run ${run.runId}`}
+              {run.passed !== null && run.total !== null && `, ${run.passed} of ${run.total} checks`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 function SuiteSections({ suites, env }: { suites: Suites; env: string }) {
   return (
     <>
       {suites.campaign && (
-        <Section id={`campaign-${env}`} title="100 generated capital calls" env={env} lead={`Seeded calls with good and bad payments, compared against an independent reference model. Seed ${suites.campaign.seed}, verdict ${suites.campaign.verdict}.`}>
+        <Section id={`campaign-${env}`} title={`${suites.campaign.metrics.cases} generated capital calls`} env={env} lead={`Seeded calls with good and bad payments, compared against an independent reference model. Seed ${suites.campaign.seed}, verdict ${suites.campaign.verdict}${packageNote(suites.campaign.packageVersion)}.`}>
           <div className={`sheet sheet-pad ${styles.metrics}`}>
             {Object.entries(suites.campaign.metrics).map(([k, v]) => (
               <div key={k}><p className="t-xs faint">{METRIC_NAME[k] ?? k}</p><p className={styles.metric}>{v}</p></div>
@@ -111,7 +151,7 @@ function SuiteSections({ suites, env }: { suites: Suites; env: string }) {
       {(suites.damlCore || suites.mutation) && (
         <Section id={`tests-${env}`} title="Contract tests" env={env}>
           <ul className={styles.facts}>
-            {suites.damlCore && <li>Daml Script suites {suites.damlCore.verdict}, {suites.damlCore.tests.length} suites. <a className="link" href={file(suites.damlCore.path, 'result.json')}>result.json</a></li>}
+            {suites.damlCore && <li>Daml Script suites {suites.damlCore.verdict}, {suites.damlCore.tests.length} suites{packageNote(suites.damlCore.packageVersion)}. <a className="link" href={file(suites.damlCore.path, 'result.json')}>result.json</a></li>}
             {suites.mutation && <li>Deliberately broken guards caught by the tests: {suites.mutation.killed} of {suites.mutation.total}. <a className="link" href={file(suites.mutation.path, 'result.json')}>result.json</a></li>}
           </ul>
         </Section>
@@ -132,6 +172,20 @@ export default async function ProofPage() {
   }
   const c = proof.canonical;
   const local = proof.localnet;
+  const newer = proof.newerRuns ?? [];
+  const probe = proof.probe ?? null;
+  const probeCredentials = probe?.checks.filter((check) => check.id.startsWith('credentials:')) ?? [];
+  // The probe's check speaks for this run's read-back only when both read as the same ledger user.
+  const probeVerifier = probe?.verifierUser && probe.verifierUser === c?.verifierUser ? probe.checks.find((check) => check.id === PROBE_VERIFIER) : undefined;
+  const seatsShared = c?.credentialSeparation === 'VERIFIER_ONLY' || c?.credentialSeparation === 'NOT_TESTED_SINGLE_CREDENTIAL';
+  const hidden = c?.reasonsHidden?.length ?? 0;
+  const signing = [
+    c?.credentialSeparation && (SEPARATION_NOTE[c.credentialSeparation] ?? c.credentialSeparation),
+    c?.custody && (CUSTODY_NOTE[c.custody] ?? c.custody),
+    ...(c?.skipped ?? []).map((s) => `Skipped “${s.id}”${s.reason ? `: ${s.reason.replace(/\.$/, '')}` : ''}.`),
+    hidden === 1 ? '1 refusal came back with only a trace id, so the run could not check its reason.' : null,
+    hidden > 1 ? `${hidden} refusals came back with only a trace id, so the run could not check their reason.` : null,
+  ].filter((line): line is string => Boolean(line));
 
   return (
     <div className={styles.page}>
@@ -144,30 +198,64 @@ export default async function ProofPage() {
         {config && <p className="t-sm muted">The live site right now: {networkNote(config)}</p>}
       </header>
 
-      {!c ? <p className="panel">No canonical run on {proof.network} yet.</p> : (
+      {!c ? (
+        <div className="stack-4">
+          <p className="panel">No {proof.network} run has passed every check yet.</p>
+          {newer.length > 0 && <FailedRuns title="Runs that did not pass" runs={newer} />}
+        </div>
+      ) : (
         <>
-          <Section id="runs" title="The canonical run" env={proof.network}>
+          <Section id="runs" title="The canonical run" env={proof.network} lead={`The newest ${proof.network} run that passed every check.`}>
             <div className={`sheet sheet-pad ${styles.runCard}`}>
               <div className={styles.runFig}>
                 <p className="t-figure">{c.passed}/{c.passed + c.failed.length}</p>
                 <p className="t-sm muted">checks passed</p>
                 <div className="row" style={{ gap: 6 }}>
-                  {Object.entries(c.gates).map(([gate, verdict]) => <span key={gate} className={verdict === 'PASS' ? 'mark mark-good' : 'mark mark-bad'}>{gate} {verdict}</span>)}
+                  {Object.entries(c.gates).map(([gate, verdict]) => <span key={gate} className={verdict === 'PASS' ? 'mark mark-good' : 'mark mark-bad'}>{GATE_NAME[gate] ?? gate} {verdict}</span>)}
                 </div>
               </div>
               <dl className="kv">
                 <dt>Run</dt><dd><a className="link" href={file(c.path, 'result.json')}>{c.runId}</a></dd>
                 <dt>Canton</dt><dd>{c.canton}</dd>
                 <dt>Commit</dt><dd className="mono">{c.commit.slice(0, 12)}</dd>
-                <dt>Package</dt><dd className="mono">{short(c.packageId, 20)}</dd>
+                <dt>Package</dt><dd className="mono">{c.packageVersion ? `${c.packageVersion}, ${short(c.packageId, 20)}` : short(c.packageId, 20)}</dd>
                 <dt>Fund</dt><dd className="mono">{c.fundId}</dd>
-                <dt>Instrument id</dt><dd>{c.instrument.id}</dd>
+                {c.instrument.id === 'Amulet'
+                  ? <><dt>Instrument</dt><dd>Amulet, the ledger&rsquo;s name for Canton Coin</dd></>
+                  : <><dt>Instrument id</dt><dd>{c.instrument.id}</dd></>}
               </dl>
             </div>
+            {signing.length > 0 && (
+              <>
+                <p className="t-h4">How this run signed</p>
+                <ul className={styles.facts}>
+                  {signing.map((line) => <li key={line}>{line}</li>)}
+                </ul>
+              </>
+            )}
+            {probe && probeCredentials.length > 0 && (
+              <>
+                <p className="t-h4">What probe {probe.runId} found about DRAW&rsquo;s logins</p>
+                <ul className={styles.facts}>
+                  {probeCredentials.map((check) => (
+                    <li key={check.id}>
+                      <span className={check.outcome === check.expectation ? 'mark mark-good' : 'mark mark-bad'}>{check.outcome === check.expectation ? 'As expected' : 'Not as expected'}</span> {check.id.replace(/^credentials: /, '')}
+                    </li>
+                  ))}
+                </ul>
+                <p className="t-sm"><a className="link" href={file(probe.path, 'result.json')}>result.json</a></p>
+              </>
+            )}
+            {newer.length > 0 && <FailedRuns title="Newer runs that did not pass" runs={newer} />}
           </Section>
 
           {c.visibility && (
-            <Section id="privacy" title="Who could read what" env={proof.network} lead="Each row is one party reading the ledger as itself after the call settled. Leaks counts any contract a party saw that it is not a party to.">
+            <Section
+              id="privacy"
+              title="Who could read what"
+              env={proof.network}
+              lead={`Each row is one party’s own ledger query after the call settled${seatsShared ? ', made through the one login the demo seats shared' : ''}. Leaks counts any contract a party saw that it is not a party to.`}
+            >
               <div className={`sheet sheet-pad ${styles.scroll}`}>
                 <table className="table">
                   <thead><tr><th>Reader</th>{CONTRACTS.map((k) => <th key={k}>{CONTRACT_NAME[k]}</th>)}<th className="num">Leaks</th></tr></thead>
@@ -191,14 +279,18 @@ export default async function ProofPage() {
 
           <Section
             id="settlements"
-            title="Settlements, read back by a separate step"
+            title="Settlements, read back from the ledger"
             env={proof.network}
-            lead={`After each settlement, a separate step reads the transaction and the fund's holdings back from the ledger and issues the receipt before the notice counts as funded. ${
+            lead={`After each settlement, a read-back step reads the transaction and the fund’s holdings from the ledger and writes the receipt before the notice counts as funded. ${
               !c.verifierCheck?.ran
                 ? `In this ${proof.network} run that step read as the same ledger user as the seats.`
                 : c.verifierCheck.ok
                   ? `In this ${proof.network} run that step had a login of its own, and the ledger refused it when it tried to act as the fund.`
                   : `In this ${proof.network} run that step had a login of its own, but the ledger did not refuse it when it tried to act as the fund.`
+            }${
+              probe && c.verifierCheck?.ran && probeVerifier && probeVerifier.outcome !== probeVerifier.expectation
+                ? ` Probe ${probe.runId} did not find that login read-only.`
+                : ''
             }`}
           >
             <div className={styles.receipts}>
@@ -212,7 +304,7 @@ export default async function ProofPage() {
                     <dt>Notice</dt><dd className="mono">{r.obligationRef}</dd>
                     <dt>Business amount</dt><dd>{usd(Number(r.expected.scenarioAmountUsd))}</dd>
                     <dt>State</dt><dd>{r.stateBefore} to {r.stateAfter}</dd>
-                    <dt>Checks</dt><dd>{r.checks} passed</dd>
+                    <dt>Checks</dt><dd>{r.checksPassed === undefined ? `${r.checks} recorded` : `${r.checksPassed} of ${r.checks} passed`}</dd>
                     <dt>Update</dt><dd className="mono">{short(r.claimedUpdateId, 24)}</dd>
                   </dl>
                 </div>
@@ -247,7 +339,7 @@ export default async function ProofPage() {
           id="browser"
           title="In a browser, on the live site"
           env={proof.network}
-          lead="A real browser clicks through the deployed site against the ledger. Each journey wrote its own steps and screenshots as it ran. This is the newest run of each."
+          lead="A real browser clicks through the deployed site against the ledger. Each journey wrote its own steps and screenshots as it ran. This is the newest run of each. The sign-in runs so far all used the team’s own HackCanton login as the LP."
         >
           <div className="stack-4">
             {[...proof.browser].sort((a, b) => JOURNEY_ORDER.indexOf(a.journey) - JOURNEY_ORDER.indexOf(b.journey)).map((run) => (
@@ -274,6 +366,9 @@ export default async function ProofPage() {
                     ? `When it ran: ${networkNote({ network: run.siteSetup.network, browserKeys: false, singleCredential: run.siteSetup.singleCredential ?? true, seatCredential: run.siteSetup.seatCredential, separateVerifier: run.siteSetup.separateVerifier })}`
                     : 'This run did not record how the site signed.'}
                 </p>
+                {run.siteSetup?.separateVerifier === false && run.steps.some((step) => step.includes('verifier confirmed')) && (
+                  <p className="t-sm muted">&ldquo;Verifier confirmed&rdquo; in this run means DRAW&rsquo;s read-back step on that same login.</p>
+                )}
                 <p className="t-sm"><a className="link" href={file(run.path, 'result.json')}>{run.runId}</a>{run.site ? <span className="muted"> against {run.site}</span> : null}</p>
               </div>
             ))}
@@ -286,12 +381,17 @@ export default async function ProofPage() {
       {local && (
         <>
           {local.custody && (
-            <Section id="custody" title="Each party holds its own key" env="LocalNet" lead="The same run with every party signing its own transactions with an Ed25519 key. The participant cannot act for a party without its signature, and another party's key is refused.">
+            <Section
+              id="custody"
+              title="Each party holds its own key"
+              env="LocalNet"
+              lead={`A LocalNet run in which every party signed its own transactions with an Ed25519 key${local.custody.packageVersion ? `, on package ${local.custody.packageVersion}` : ''}. The participant can’t act for a party without its signature, and another party’s key is refused.`}
+            >
               <div className={`sheet sheet-pad ${styles.runCard}`}>
                 <div className={styles.runFig}>
                   <p className="t-figure">{local.custody.passed}/{local.custody.passed + local.custody.failed.length}</p>
                   <p className="t-sm muted">checks passed</p>
-                  <span className={local.custody.gate === 'PASS' ? 'mark mark-good' : 'mark mark-bad'}>CUSTODY {local.custody.gate}</span>
+                  <span className={local.custody.gate === 'PASS' ? 'mark mark-good' : 'mark mark-bad'}>{GATE_NAME.CUSTODY} {local.custody.gate}</span>
                 </div>
                 <dl className="kv">
                   <dt>Run</dt><dd><a className="link" href={file(local.custody.path, 'result.json')}>{local.custody.runId}</a></dd>

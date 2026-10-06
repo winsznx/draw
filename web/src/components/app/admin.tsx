@@ -6,6 +6,7 @@ import { useState, type FormEvent } from 'react';
 
 import { useActions } from '@/components/session';
 import { PAYMENT_KIND, assetNote, coin, dateTime, isPast, relative, roleName, units, usd } from '@/lib/format';
+import { CALL_USD } from '@/lib/scenario';
 import type { Call, Investor, Obligation, ViewWithSession } from '@/lib/types';
 
 import { IconCheck } from '@/components/icons';
@@ -16,12 +17,11 @@ import styles from './screens.module.css';
 
 const SEATED: Investor[] = ['lpA', 'lpB', 'lpC'];
 const DEFAULT_COMMITMENT: Record<Investor, number> = { lpA: 1000000, lpB: 700000, lpC: 500000, guest: 200000 };
-// The demo's standard call for each investor, and the scenario dollars per CC it settles at.
-const CALL_USD: Record<Investor, number> = { lpA: 400000, lpB: 350000, lpC: 250000, guest: 40000 };
 
 // The three demo LPs, plus the LP that signed in with its own login once the fund invited it.
 const investorsOf = (view: ViewWithSession): Investor[] =>
   view.invitations.some((i) => i.investor === 'guest') || view.commitments.some((c) => c.investor === 'guest') ? [...SEATED, 'guest'] : SEATED;
+// The scenario dollars per CC the demo's calls settle at.
 const USD_PER_CC = 10000;
 
 // The first "Call N" name this fund has not used.
@@ -42,6 +42,19 @@ const OPEN = new Set(['Issued', 'PaymentPending', 'Overdue']);
 const hasMatch = (o: Obligation) => o.payments.some((p) => p.kind === 'match');
 const canMarkOverdue = (o: Obligation) => (o.ledgerState === 'Issued' || o.ledgerState === 'PaymentPending') && isPast(o.dueAt) && !hasMatch(o);
 
+// Settled with no receipt, and the read-back isn't still running: it recorded
+// that it didn't finish, or the settle is over a minute old. A settle from
+// before DRAW recorded unfinished read-backs only has the age to go by.
+function readBackStalled(o: Obligation): boolean {
+  const last = o.timeline.at(-1);
+  if (o.status !== 'verifying' || !last) return false;
+  return last.stage === 'READ_BACK_INCOMPLETE' || (last.stage === 'TRANSFER_EXECUTED' && Date.now() - Date.parse(last.at) > 60_000);
+}
+
+// Funded on the ledger with no settle in DRAW's log, such as a settle whose
+// answer never arrived. The read-back needs the logged update id, so it can't run.
+const settleUnrecorded = (o: Obligation) => o.status === 'verifying' && !o.timeline.some((e) => e.stage === 'TRANSFER_EXECUTED');
+
 // ---------------------------------------------------------------- no fund yet
 export function StartFund({ network, browserKeys }: { network: string; browserKeys: boolean }) {
   return (
@@ -54,7 +67,7 @@ export function StartFund({ network, browserKeys }: { network: string; browserKe
       ) : (
         <p>
           This creates a demo fund on {network} for this browser, so other visitors work in their own. Each of the three LPs gets a
-          private invitation to commit, and test Canton Coin from the faucet if its balance is low. It takes about a minute.
+          private invitation to commit, and test Canton Coin from the faucet if its balance is low.
         </p>
       )}
     </ZeroState>
@@ -79,11 +92,13 @@ export function Overview({ view }: { view: ViewWithSession }) {
   const obligations = view.calls.flatMap((c) => c.obligations);
   const ready = view.payments.filter((p) => p.recommendation === 'settle' && p.investor);
   const exceptions = view.payments.filter((p) => p.recommendation === 'manual-review' || p.recommendation === 'payer-withdraws');
+  const stalled = obligations.filter(readBackStalled);
+  const unrecorded = obligations.filter(settleUnrecorded);
   const overdue = obligations.filter(canMarkOverdue);
   const review = obligations.filter((o) => o.ledgerState === 'ManualReview');
   const pendingInvites = view.invitations.length;
   const callOf = (ref: string) => obligations.find((o) => o.ref === ref)?.callId ?? '';
-  const nothingToDo = !ready.length && !exceptions.length && !overdue.length && !review.length && !pendingInvites;
+  const nothingToDo = !ready.length && !stalled.length && !unrecorded.length && !exceptions.length && !overdue.length && !review.length && !pendingInvites;
   const t = view.totals;
 
   return (
@@ -134,6 +149,18 @@ export function Overview({ view }: { view: ViewWithSession }) {
                 <li key={p.allocationCid}>
                   <p>{roleName(p.from)} locked {units(p.amount)} CC for {callOf(p.obligationRef)}</p>
                   <ActionButton className="btn btn-sm btn-primary" name="settle" body={{ ref: p.obligationRef, allocationCid: p.allocationCid }} busyLabel="Settling…">Settle</ActionButton>
+                </li>
+              ))}
+              {stalled.map((o) => (
+                <li key={o.ref}>
+                  <p>{roleName(o.investor)} on {o.callId} is settled, but the read-back has not finished</p>
+                  <ActionButton className="btn btn-sm btn-primary" name="verify" body={{ ref: o.ref }} busyLabel="Reading back…">Read back again</ActionButton>
+                </li>
+              ))}
+              {unrecorded.map((o) => (
+                <li key={o.ref}>
+                  <p>{roleName(o.investor)} on {o.callId} settled on the ledger, but DRAW has no record of the settlement to read back</p>
+                  <Link href={`/app/calls/${encodeURIComponent(o.callId)}`} className="btn btn-sm">Open</Link>
                 </li>
               ))}
               {exceptions.length > 0 && (
@@ -333,6 +360,8 @@ function RowActions({ o }: { o: Obligation }) {
           Settle {units(p.amount)} CC
         </ActionButton>
       ))}
+      {readBackStalled(o) && <ActionButton className="btn btn-sm btn-primary" name="verify" body={{ ref: o.ref }} busyLabel="Reading back…">Read back again</ActionButton>}
+      {settleUnrecorded(o) && <p className="t-sm muted">Settled on the ledger, but DRAW has no record of the settlement to read back.</p>}
       {canMarkOverdue(o) && <ActionButton className="btn btn-sm" name="overdue" body={{ ref: o.ref }} busyLabel="Marking…">Mark overdue</ActionButton>}
       {o.status === 'pending-stale' && <NoteAction name="release" obligationRef={o.ref} label="Release" placeholder="Why the payment went away" />}
       {OPEN.has(o.ledgerState) && !matches.length && <NoteAction name="flag" obligationRef={o.ref} label="Send to review" placeholder="What needs checking" />}
@@ -351,13 +380,14 @@ export function CallDetail({ view, callId }: { view: ViewWithSession; callId: st
   const t = call.totals;
   const share = (n: number) => (t.calledUsd ? `${(n / t.calledUsd) * 100}%` : '0%');
   const waiting = t.calledUsd - t.fundedUsd - t.waivedUsd;
+  const unresolved = call.obligations.filter((o) => o.status !== 'funded' && o.status !== 'waived').length;
   return (
     <>
       <PageHead title={call.callId} back={{ href: '/app/calls', label: 'Calls' }} lead={`${call.description && call.description !== call.callId ? `${call.description}. ` : ''}Due ${dateTime(call.dueAt)}, ${relative(call.dueAt)}.`} />
       <Figures
         items={[
           { label: 'Funded and verified', value: usd(t.fundedUsd), note: `${units(t.fundedUnits)} CC received`, tone: 'good' },
-          { label: 'Unresolved', value: usd(t.unresolvedUsd), note: `${t.count - t.fundedCount} of ${t.count} notices`, tone: t.unresolvedUsd ? 'wait' : undefined },
+          { label: 'Unresolved', value: usd(t.unresolvedUsd), note: `${unresolved} of ${t.count} notices`, tone: t.unresolvedUsd ? 'wait' : undefined },
           { label: 'Called', value: usd(t.calledUsd), note: t.waivedUsd ? `${usd(t.waivedUsd)} waived` : 'Nothing waived' },
         ]}
       />
@@ -402,7 +432,7 @@ export function CallDetail({ view, callId }: { view: ViewWithSession; callId: st
                       </ul>
                     </div>
                   )}
-                  {o.receipt && <ReceiptCard receipt={o.receipt} />}
+                  {o.receipt && <ReceiptCard receipt={o.receipt} readBack={view} />}
                   <div className="stack-3">
                     <p className="t-sm" style={{ fontWeight: 650 }}>Settlement timeline</p>
                     <Timeline entries={o.timeline} />
@@ -472,7 +502,7 @@ export function PaymentsPage({ view }: { view: ViewWithSession }) {
 export function InvestorsPage({ view }: { view: ViewWithSession }) {
   return (
     <>
-      <PageHead title="Investors" lead="Each commitment is a separate contract between the fund and one investor. No investor can see another's." />
+      <PageHead title="Investors" lead="Each commitment is its own contract between the fund and one investor. No investor can see another's." />
       <section className="module module-pad">
         <table className="table table-stack">
           <thead><tr><th>Investor</th><th className="num">Committed</th><th className="num">Called</th><th className="num">Left to call</th></tr></thead>

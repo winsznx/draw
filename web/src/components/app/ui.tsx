@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
 import { useActions, type ToastTone } from '@/components/session';
-import { ADMIN_STATUS, LP_STATUS, STAGE_NAME, TONE, dateTime, roleName, units } from '@/lib/format';
-import type { Obligation, Receipt, Status, TimelineEntry } from '@/lib/types';
+import { ADMIN_STATUS, LP_STATUS, STAGE_NAME, TONE, actorName, dateTime, roleName, units } from '@/lib/format';
+import type { Obligation, Receipt, SiteConfig, Status, TimelineEntry } from '@/lib/types';
 
 import styles from './ui.module.css';
 
@@ -122,7 +122,7 @@ export function Timeline({ entries }: { entries: TimelineEntry[] }) {
           <li key={`${entry.at}-${index}`} className={tone}>
             <p className={styles.tlTitle}>{STAGE_NAME[entry.stage] ?? entry.stage}{entry.amount ? `, ${units(Number(entry.amount))} CC` : ''}</p>
             <p className="t-xs faint">
-              {dateTime(entry.at)} by {roleName(entry.by)}
+              {dateTime(entry.at)} by {actorName(entry.by)}
               {entry.updateId && <>. Update <CopyId value={entry.updateId} /></>}
             </p>
           </li>
@@ -152,9 +152,14 @@ export function CopyId({ value, length = 10 }: { value: string; length?: number 
   );
 }
 
-export function ReceiptCard({ receipt }: { receipt: Receipt }) {
+// A receipt that recorded who settled says itself whether the read-back ran on
+// that same login. An older one goes by the site's setup in `readBack`, where a
+// setting the API doesn't send reads as the same login.
+export function ReceiptCard({ receipt, readBack }: { receipt: Receipt; readBack: Pick<SiteConfig, 'separateVerifier' | 'seatCredential'> }) {
   const verified = receipt.verdict === 'VERIFIED_FUNDED';
   const failed = receipt.checks.filter((c) => !c.ok);
+  const sameLogin = receipt.settledBy ? receipt.settledBy === receipt.verifierUser : !readBack.separateVerifier;
+  const ranOn = readBack.seatCredential === 'backend-client' ? 'It ran on DRAW’s backend login, the same one that settled.' : 'It ran on the same login that settled.';
   return (
     <div className={`${styles.receipt} ${verified ? '' : styles.receiptBad}`}>
       <div className="row between">
@@ -163,8 +168,8 @@ export function ReceiptCard({ receipt }: { receipt: Receipt }) {
       </div>
       <p className="t-sm muted">
         {verified
-          ? <>A separate read-back step fetched the settlement from the ledger and confirmed {units(receipt.receivedAmount)} CC reached the fund.</>
-          : <>The verifier did not confirm this settlement. Failed: {failed.map((c) => c.name).join(', ')}.</>}
+          ? <>{sameLogin ? 'DRAW’s read-back step' : 'A read-back step with a login of its own'} read the settlement from the ledger and confirmed {units(receipt.receivedAmount)} CC reached the fund.{sameLogin && ` ${ranOn}`}</>
+          : <>The read-back did not confirm this settlement. Failed: {failed.map((c) => c.name).join(', ')}.</>}
       </p>
       <details className="more">
         <summary>Verification details</summary>
@@ -172,7 +177,7 @@ export function ReceiptCard({ receipt }: { receipt: Receipt }) {
           <dt>Update</dt><dd><CopyId value={receipt.updateId} length={18} /></dd>
           <dt>Allocation</dt><dd><CopyId value={receipt.allocationCid} length={18} /></dd>
           <dt>Recorded</dt><dd>{receipt.recordTime ? dateTime(receipt.recordTime) : 'Not recorded'}</dd>
-          <dt>Verifier</dt><dd className="mono">{receipt.verifierUser}</dd>
+          <dt>Read-back login</dt><dd><span className="mono">{receipt.verifierUser}</span>{sameLogin ? ', the login that settled' : ''}</dd>
         </dl>
         <ul className={styles.checks}>
           {receipt.checks.map((c) => <li key={c.name} className={c.ok ? '' : styles.checkBad}>{c.name}</li>)}
@@ -300,7 +305,7 @@ function AccessForm({ publicCode, onAnswer }: { publicCode: string | null; onAns
       <p className="t-sm muted">
         {publicCode
           ? <>The demo fund is on a shared network, so actions need an access code. This demo&rsquo;s code is public: <strong className="mono">{publicCode}</strong>. Reading needs none.</>
-          : 'The demo fund is on a shared network, so actions need a code from the DRAW team. Reading needs none.'}
+          : <>The demo fund is on a shared network, so actions need a code from the DRAW team. Reading needs none, and neither does the <Link href="/proof" className="link">proof page</Link>.</>}
       </p>
       <input autoFocus className="input" aria-label="Access code" autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} />
       <div className="row">

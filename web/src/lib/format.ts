@@ -12,6 +12,9 @@ export const ROLE_NAME: Record<Role, string> = {
 export const roleName = (role: string | null | undefined): string =>
   role && role in ROLE_NAME ? ROLE_NAME[role as Role] : 'Unknown party';
 
+// Who took a step on a notice's timeline: a seat, or DRAW's read-back step.
+export const actorName = (by: string): string => (by === 'read-back' ? 'DRAW’s read-back step' : roleName(by));
+
 export const usd = (n: number): string => `$${n.toLocaleString('en-US')}`;
 
 export const units = (n: number): string => n.toLocaleString('en-US', { maximumFractionDigits: 4 });
@@ -39,12 +42,13 @@ export function seatSigner({ network, singleCredential, seatCredential }: Pick<S
 
 // How this network signs, in one sentence shown on every app screen. It says
 // only what the configuration shows: who signs, and whether the read-back step
-// is a different login. Whether that login can act is for the evidence to say.
+// uses a different login. A setting this page doesn't know reads as the same
+// login. Whether that login can act is for the evidence to say.
 export function networkNote({ network, browserKeys, singleCredential, seatCredential, separateVerifier }: Signing): string {
   if (browserKeys) return `${network}. Each party signs with its own key.`;
   if (seatCredential === 'per-seat' && !singleCredential) return `${network}. Each party reads and acts with its own ledger login.`;
-  const readBack = separateVerifier ? ', and a different login reads each settlement back' : '';
-  return `${nodeName(network)}. ${seatSigner({ network, singleCredential, seatCredential })} signs for every demo seat${readBack}.`;
+  const readBack = separateVerifier ? 'a different' : 'the same';
+  return `${nodeName(network)}. ${seatSigner({ network, singleCredential, seatCredential })} signs for every demo seat, and ${readBack} login reads each settlement back.`;
 }
 
 // The same, for a site where an LP can also sign in with its own HackCanton login.
@@ -128,13 +132,15 @@ export const PAYMENT_KIND: Record<PaymentKind, string> = {
 };
 
 export const STAGE_NAME: Record<string, string> = {
+  FAUCET_TOP_UP: 'Test CC added from the faucet',
   ACTION_REQUESTED: 'Investor asked to pay',
   ACKNOWLEDGED: 'Payment locked for the fund',
   FAILED: 'Payment failed',
   TRANSFER_EXECUTED: 'Fund executed the transfer',
-  SETTLEMENT_OBSERVED: 'Verifier read the settlement',
+  SETTLEMENT_OBSERVED: 'Read-back found the settlement on the ledger',
+  READ_BACK_INCOMPLETE: 'Read-back didn’t finish',
   VERIFIED_FUNDED: 'Verified funded',
-  CONTRADICTED: 'Verifier contradicted the claim',
+  CONTRADICTED: 'Read-back contradicted the settlement',
 };
 
 // Canton Coin's instrument id on the ledger is "Amulet". People know it as CC.

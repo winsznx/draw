@@ -20,7 +20,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             <Link href="/#questions">Questions</Link>
           </nav>
           <div className={styles.navEnd}>
-            <span className={`chip ${styles.netChip}`}><span className="live-dot" />Canton DevNet</span>
+            <span className={`chip ${styles.netChip}`}>Canton DevNet</span>
             <ThemeSwitch />
             <Link href="/app" className="btn btn-invert btn-sm">Open app</Link>
           </div>

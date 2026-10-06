@@ -195,6 +195,8 @@ function SeatCard({ role, view }: { role: Role; view: View }) {
 function LedgerContext({ role, view }: { role: Role; view: View }) {
   const party = view.session && 'queriedAs' in view ? view.queriedAs.party : null;
   const guest = role === 'guest';
+  const manager = view.seatCredential === 'backend-client' ? 'DRAW’s backend login' : 'the demo login';
+  const readBack = view.separateVerifier ? ', and a different login reads each settlement back' : ' and reads each settlement back';
   return (
     <div className={styles.context}>
       {party && (
@@ -206,7 +208,7 @@ function LedgerContext({ role, view }: { role: Role; view: View }) {
           </span>
         </p>
       )}
-      <p><IconLayers size={15} /><span>{guest ? `${view.network}, HackCanton shared node. Your login signs for your party, and ${view.seatCredential === 'backend-client' ? 'DRAW’s backend login' : 'the demo login'} signs for the fund manager.` : networkNote(view)}</span></p>
+      <p><IconLayers size={15} /><span>{guest ? `${view.network}, HackCanton shared node. Your login signs for your party, and ${manager} signs for the fund manager${readBack}.` : networkNote(view)}</span></p>
     </div>
   );
 }
@@ -295,7 +297,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <p className={styles.crumb}>{current?.label ?? 'DRAW'}</p>
             <div className={styles.topEnd}>
               {query.isError && <span className={styles.stale}>Showing the last read</span>}
-              <span className="chip"><span className="live-dot" />{view.network}</span>
+              <span className="chip">{!query.isError && <span className="live-dot" />}{view.network}</span>
               <ThemeSwitch />
               <span className={styles.seatPill}><Identicon seed={(view.session && 'queriedAs' in view ? view.queriedAs.party : null) ?? seat} size={24} />{ROLE_NAME[seat]}</span>
             </div>

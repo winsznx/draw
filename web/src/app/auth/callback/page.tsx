@@ -13,9 +13,19 @@ import type { SiteConfig } from '@/lib/types';
 // render of this page must reuse the first exchange instead of starting another.
 const exchanges = new Map<string, Promise<string>>();
 
+// The sign-in settings, or null when DRAW's API did not answer with them.
+async function siteConfig(): Promise<SiteConfig | null> {
+  try {
+    const response = await fetch('/api/config', { cache: 'no-store' });
+    return response.ok ? ((await response.json()) as SiteConfig) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function complete(search: string): Promise<string> {
-  const response = await fetch('/api/config', { cache: 'no-store' });
-  const config = (await response.json()) as SiteConfig;
+  const config = await siteConfig();
+  if (!config) throw new Error('DRAW could not load its sign-in settings just now. Go back and try again.');
   if (!config.signIn) throw new Error('Signing in with HackCanton is not turned on for this demo.');
   return finishSignIn(config.signIn, new URLSearchParams(search));
 }

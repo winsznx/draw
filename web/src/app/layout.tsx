@@ -12,7 +12,7 @@ const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variab
 
 export const metadata: Metadata = {
   title: { default: 'DRAW: private capital calls on Canton', template: '%s | DRAW' },
-  description: 'Each investor sees and pays only its own capital call. The fund sees what is verifiably funded, settled with Canton Coin on the Canton Network.',
+  description: 'Each LP sees and pays only its own capital call, and the fund counts only what a read-back confirms on the ledger. Live on Canton DevNet with test Canton Coin.',
   openGraph: { title: 'DRAW', description: 'Private capital calls, settled and verified on Canton.' },
 };
 

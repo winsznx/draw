@@ -141,9 +141,16 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
           settlement: { allocationCid: allocation.contractId, transferLegId: p.obligationRef, receiverHoldingCids: [received.contractId], settledAmount: transferLeg.amount, settledAfterDue: Date.now() > Date.parse(p.dueAt) },
         },
       });
+      // CIP-0056 makes the executor, the sender and the receiver the controllers of Allocation_ExecuteTransfer.
       return [
-        { ExercisedEvent: { contractId: obligation.contractId, templateId: obligation.templateId, choice: 'Obligation_Settle', consuming: true, choiceArgument } },
-        { ExercisedEvent: { contractId: allocation.contractId, templateId: ALLOCATION, choice: 'Allocation_ExecuteTransfer', consuming: true, choiceArgument: {} } },
+        { ExercisedEvent: { contractId: obligation.contractId, templateId: obligation.templateId, choice: 'Obligation_Settle', consuming: true, choiceArgument, actingParties: [p.admin] } },
+        {
+          ExercisedEvent: {
+            contractId: allocation.contractId, templateId: ALLOCATION, choice: 'Allocation_ExecuteTransfer', consuming: true, choiceArgument: {},
+            actingParties: [settlement.executor, transferLeg.sender, transferLeg.receiver],
+            exerciseResult: { senderHoldingCids: [], receiverHoldingCids: [received.contractId], meta: { values: {} } },
+          },
+        },
         created(funded),
       ];
     },
@@ -175,6 +182,13 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
     return [{ ExercisedEvent: { contractId, choice: 'AllocationFactory_Allocate', consuming: false, exerciseResult: { output: { tag: 'AllocationInstructionResult_Completed', value: { allocationCid: stored.contractId } } } } }];
   }
 
+  // AmuletRules is not a contract in this ledger either. A tap gives the
+  // receiver a new holding of the amount, as the DevNet faucet does.
+  function tap({ contractId, choiceArgument: { receiver, amount } }) {
+    holding(receiver, amount);
+    return [{ ExercisedEvent: { contractId, choice: 'AmuletRules_DevNet_Tap', consuming: false } }];
+  }
+
   function submit({ commands }) {
     const [command] = commands;
     let events;
@@ -184,6 +198,7 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
       const { choice, contractId, choiceArgument } = command.ExerciseCommand;
       exercised.push({ choice, contractId });
       if (choice === 'AllocationFactory_Allocate') events = allocate(command.ExerciseCommand);
+      else if (choice === 'AmuletRules_DevNet_Tap') events = tap(command.ExerciseCommand);
       else if (choices[choice]) events = choices[choice](find(contractId), choiceArgument);
       else throw refuse(400, `the fake ledger has no choice ${choice}`);
     }
@@ -218,6 +233,11 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
   }
 
   const context = { choiceContextData: { values: {} }, disclosedContracts: [] };
+  // Contracts as public Scan returns them, for the faucet's disclosed AmuletRules and open round.
+  const scanContract = (contractId, payload) => ({ contract: { template_id: 'fake', contract_id: contractId, created_event_blob: '', payload }, domain_id: 'fake::synchronizer' });
+  const openRound = scanContract('fake-open-round', { opensAt: new Date(0).toISOString(), round: { number: '1' } });
+  // The next request to each of these paths fails once, with its status.
+  const failures = new Map();
   const server = createServer(async (req, res) => {
     let raw = '';
     for await (const chunk of req) raw += chunk;
@@ -228,6 +248,11 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
     const json = () => (raw ? JSON.parse(raw) : {});
     const path = req.url;
     try {
+      if (failures.has(path)) {
+        const status = failures.get(path);
+        failures.delete(path);
+        return reply(status, { code: 'FAKE_FAILURE' });
+      }
       if (path === '/v2/state/ledger-end') return reply(200, { offset });
       if (path === '/v2/packages' && req.method === 'GET') return reply(200, { packageIds: [pkg] });
       if (path === '/v2/packages' && req.method === 'POST') {
@@ -247,6 +272,10 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
         return reply(200, { factoryId: 'fake-allocation-factory', choiceContext: { ...context, disclosedContracts: [{ templateId: 'fake', contractId: 'fake-allocation-factory', createdEventBlob: '', synchronizerId: 'fake::synchronizer' }] } });
       }
       if (/^\/registry\/allocations\/v1\/[^/]+\/choice-contexts\/(withdraw|execute-transfer)$/.test(path)) return reply(200, context);
+      if (path === '/api/scan/v0/amulet-rules' && req.method === 'POST') return reply(200, { amulet_rules_update: scanContract('fake-amulet-rules', {}) });
+      if (path === '/api/scan/v0/open-and-issuing-mining-rounds' && req.method === 'POST') {
+        return reply(200, { open_mining_rounds: { [openRound.contract.contract_id]: openRound }, issuing_mining_rounds: {} });
+      }
       return reply(404, { error: `the fake ledger has no ${req.method} ${path}` });
     } catch (error) {
       return reply(error.status ?? 500, { code: error.message, cause: error.message });
@@ -259,6 +288,7 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
     acs,
     exercised,
     gate,
+    failNext: (path, status) => { failures.set(path, status); },
     add,
     template: TEMPLATE,
     holding: (owner, amount = '100.0') => holding(owner, amount),

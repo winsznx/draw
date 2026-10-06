@@ -164,7 +164,9 @@ function ActionsProvider({ children }: { children: ReactNode }) {
           return true;
         } catch (error) {
           if (!(error instanceof AccessCodeNeeded) || attempt > 0) throw error;
-          const code = await askForAccess();
+          // A code the operator prints for every visitor is used without asking.
+          const printed = queryClient.getQueriesData<View>({ queryKey: ['view'] }).map(([, view]) => view?.accessCode).find(Boolean);
+          const code = printed ?? (await askForAccess());
           if (!code) throw new ActionError('Nothing was submitted. Actions on this demo need an access code.');
           rememberAccessCode(code);
         }

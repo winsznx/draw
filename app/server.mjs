@@ -10,7 +10,7 @@ import { dirname, extname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { INTERFACES, TEMPLATES } from '../scripts/demo/lib/ledger.mjs';
-import { DAR, DrawSession, LPS, credentialFacts, eventually, newRef, packageInfo, providedParties, providedUsers, sum } from '../scripts/demo/lib/draw.mjs';
+import { DAR, DrawSession, LPS, credentialFacts, eventually, newRef, packageIdOf, packageInfo, providedParties, providedUsers, sum } from '../scripts/demo/lib/draw.mjs';
 import { ROLES, ROOT, network } from '../scripts/demo/lib/network.mjs';
 import { businessStatus, classifyPayments, obligationOutcome } from '../scripts/demo/lib/reconcile.mjs';
 import { LedgerClient } from '../scripts/demo/lib/ledger.mjs';
@@ -122,6 +122,8 @@ async function resolveCredentials(attempt = 1) {
 void resolveCredentials();
 // A Canton party id: a hint, "::", and the namespace's SHA-256 fingerprint.
 const isPartyId = (value) => typeof value === 'string' && /^[\w:.-]{1,185}::1220[0-9a-f]{64}$/.test(value);
+// A notice reference also names its receipt file, so nothing that could leave the folder passes.
+const isNoticeRef = (value) => typeof value === 'string' && /^[A-Za-z0-9-]{1,80}$/.test(value);
 
 const bucketsFor = (action) => (['setup', 'issue', 'faucet'].includes(action) ? ['action', action] : ['action']);
 
@@ -213,13 +215,16 @@ function receiptFor(session, ref) {
 }
 
 // Execution stages from the app's own log. Outcome truth comes from the ledger
-// and the verifier, see obligationOutcome.
-const STAGE = { 'auto-settle-refused': 'FAILED', pay: 'ACTION_REQUESTED', 'pay-locked': 'ACKNOWLEDGED', 'pay-failed': 'FAILED', settle: 'TRANSFER_EXECUTED', observed: 'SETTLEMENT_OBSERVED', verify: null };
+// and the verifier, see obligationOutcome. A faucet tap shows up only when it
+// was made for a notice's payment, since only those carry its reference.
+const STAGE = { 'auto-settle-refused': 'FAILED', faucet: 'FAUCET_TOP_UP', pay: 'ACTION_REQUESTED', 'pay-locked': 'ACKNOWLEDGED', 'pay-failed': 'FAILED', settle: 'TRANSFER_EXECUTED', observed: 'SETTLEMENT_OBSERVED', verify: null, 'verify-error': 'READ_BACK_INCOMPLETE' };
+// The entries DRAW's read-back step writes, which no seat takes.
+const READ_BACK_STEPS = new Set(['observed', 'verify', 'verify-error']);
 function timelineFor(ref, log) {
   return log.filter((entry) => entry.ref === ref && entry.action in STAGE).map((entry) => ({
     at: entry.at,
     stage: entry.action === 'verify' ? entry.verdict : STAGE[entry.action],
-    by: entry.role ?? 'admin',
+    by: READ_BACK_STEPS.has(entry.action) ? 'read-back' : entry.role ?? 'admin',
     updateId: entry.updateId,
     amount: entry.amount,
     error: entry.error,
@@ -247,12 +252,19 @@ const FRIENDLY = [
   [/HTTP 403/, 'This party is not allowed to do that.'],
   [/ECONNREFUSED|fetch failed/, 'The ledger is not reachable. Check that the network is running.'],
 ];
-function explain(error) {
+function explain(error, { reading = false } = {}) {
   const detail = error.message ?? String(error);
+  const answer = (message) => ({ error: message, detail: detail.slice(0, 1200) });
   const match = FRIENDLY.find(([pattern]) => pattern.test(detail));
+  if (match) return answer(match[1]);
+  if (reading) return answer('DRAW could not read the ledger just now. Try again in a minute.');
+  // A 5xx answer leaves open whether the ledger committed the action, so it is never called a refusal.
+  if (error.status >= 500 || /HTTP 5\d\d/.test(detail)) {
+    return answer('The ledger did not answer as expected, so DRAW cannot tell whether this went through. Refresh in a minute to see.');
+  }
   // Errors thrown by this server's own input checks are already plain language.
   const ownMessage = !/HTTP \d{3}|Interpretation error|https?:\/\//.test(detail) && detail.length < 200;
-  return { error: match ? match[1] : ownMessage ? detail : 'The ledger refused this action.', detail: detail.slice(0, 1200) };
+  return answer(ownMessage ? detail : 'The ledger refused this action.');
 }
 
 // ---------------------------------------------------------------- views
@@ -282,6 +294,7 @@ const receiptView = (receipt) => receipt && {
   receivedAmount: receipt.receivedAmount,
   verifiedAt: receipt.verifiedAt,
   verifierUser: receipt.verifierUser,
+  settledBy: receipt.settledBy ?? null,
   recordTime: receipt.recordTime,
   checks: receipt.checks,
 };
@@ -511,8 +524,42 @@ async function topUp(draw, role, needed) {
   return draw.tap(role, network.tapAmount);
 }
 
+// DRAW's read-back of a committed settlement. Only the verifier's result
+// becomes a receipt. A read-back that does not finish is recorded instead, and
+// the notice stays unverified until the verify action reads it back again.
+async function readBack({ session, draw }, { ref, updateId, callId, stateBefore, settledBy }) {
+  let receipt;
+  try {
+    receipt = await draw.verifier.verify({ obligationRef: ref, claimedUpdateId: updateId });
+  } catch (error) {
+    record(session, 'verify-error', { ref, updateId, error: String(error.message ?? error).slice(0, 300) });
+    return null;
+  }
+  if (receipt.checks.find((c) => c.name === 'claimed update is a transaction')?.ok) record(session, 'observed', { ref, updateId, recordTime: receipt.recordTime });
+  writeFileSync(join(appEvidenceDir(session), `receipt-${ref}.json`), `${JSON.stringify({
+    environment: network.name, fundId: session.fundId, callId, packageId: session.packageId,
+    stateBefore, settledBy, ...receipt, verifiedAt: new Date().toISOString(),
+  }, null, 2)}\n`);
+  record(session, 'verify', { ref, verdict: receipt.verdict, updateId });
+  return receipt;
+}
+
+// The sentence that says the read-back ran on the login that settled, or null
+// when it had a login of its own. Without both users on record, the
+// configuration decides.
+function sameLoginNote(settledBy, receipt) {
+  const same = settledBy && receipt.verifierUser ? settledBy === receipt.verifierUser : !credentials.verifierSeparate;
+  if (!same) return null;
+  return network.seatCredential === 'backend-client'
+    ? 'The read-back ran on DRAW’s backend login, the same one that settled.'
+    : 'The read-back ran on the same login that settled.';
+}
+
+const failedChecks = (receipt) => receipt.checks.filter((c) => !c.ok).map((c) => c.name).join(', ');
+
 const pendingOnboarding = new Map();
 const timeTag = () => new Date().toISOString().replace(/\D/g, '').slice(0, 14);
+const listed = (names) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]);
 
 const actions = {
   async setup(tour, { fundName = 'Example Ventures I (demo)' }) {
@@ -554,7 +601,9 @@ const actions = {
     const session = { ...next.state, tag, fundId, fundCid, fundName, packageId };
     store(tour.id, session);
     record(session, 'setup', { fundId, parties: next.party, users: next.users, packageId, taps });
-    return { message: `${fundName} is set up. Each investor has an invitation to accept.` };
+    const tapped = LPS.filter((role) => taps[role]).map((role) => ROLE_LABEL[role]);
+    const faucetNote = tapped.length ? ` ${listed(tapped)} got ${Number(network.tapAmount)} test CC from the faucet first.` : '';
+    return { message: `${fundName} is set up. Each investor has an invitation to accept.${faucetNote}` };
   },
 
   // Step 1 of sign-up: the participant builds the onboarding transactions for
@@ -694,7 +743,7 @@ const actions = {
       { role, lists: ['Holding'], add: 1 },
     ], FULL.pay);
     const tapped = await topUp(draw, role, Number(value));
-    if (tapped) record(session, 'faucet', { role, updateId: tapped, before: 'pay' });
+    if (tapped) record(session, 'faucet', { role, ref, updateId: tapped, amount: network.tapAmount, before: 'pay' });
     record(session, 'pay', { role, ref, amount: value });
     relay.describe(`Lock ${Number(value)} CC for the fund against notice ${ref}, as ${ROLE_LABEL[role]}`);
     try {
@@ -704,6 +753,7 @@ const actions = {
       record(session, 'pay-failed', { role, ref, amount: value, error: error.message.slice(0, 300) });
       throw error;
     }
+    if (tapped) return { message: `Added ${Number(network.tapAmount)} test CC from the faucet, then locked ${Number(value)} CC for the fund. The fund manager settles it next.` };
     return { message: `${Number(value)} CC locked for the fund. The fund manager settles it next.` };
   },
 
@@ -733,20 +783,36 @@ const actions = {
     }
     relay.describe(`Settle notice ${ref}: move the payment to the fund and mark it funded, as the fund manager`);
     const settled = await draw.settle(obligation.contractId, allocationCid);
+    // The settlement has committed. From here on a failed read-back is
+    // recorded and answered as unfinished, never as a refusal.
     const updateId = settled.transaction.updateId;
-    record(session, 'settle', { ref, allocationCid, updateId });
+    const settledBy = draw.client.admin.requestSubject;
+    record(session, 'settle', { ref, allocationCid, updateId, stateBefore, settledBy });
 
-    const receipt = await draw.verifier.verify({ obligationRef: ref, claimedUpdateId: updateId });
-    if (receipt.checks.find((c) => c.name === 'claimed update is a transaction')?.ok) record(session, 'observed', { ref, updateId, recordTime: receipt.recordTime });
-    writeFileSync(join(appEvidenceDir(session), `receipt-${ref}.json`), `${JSON.stringify({
-      environment: network.name, fundId: session.fundId, callId: obligation.payload.callId, packageId: session.packageId,
-      stateBefore, ...receipt, verifiedAt: new Date().toISOString(),
-    }, null, 2)}\n`);
-    record(session, 'verify', { ref, verdict: receipt.verdict, updateId });
-    if (receipt.verdict !== 'VERIFIED_FUNDED') {
-      return { message: `Settled on the ledger, but the verifier did not confirm it: ${receipt.checks.filter((c) => !c.ok).map((c) => c.name).join(', ')}` };
-    }
-    return { message: `Settled and verified by a separate read-back. ${receipt.receivedAmount} CC received.` };
+    const receipt = await readBack(tour, { ref, updateId, callId: obligation.payload.callId, stateBefore, settledBy });
+    if (!receipt) return { message: 'Settled on the ledger, but the read-back did not finish, so this notice does not count as funded yet. Press Read back again on the notice.' };
+    if (receipt.verdict !== 'VERIFIED_FUNDED') return { message: `Settled on the ledger, but the read-back did not confirm it: ${failedChecks(receipt)}` };
+    const loginNote = sameLoginNote(settledBy, receipt);
+    if (loginNote) return { message: `Settled and verified funded. ${loginNote} ${receipt.receivedAmount} CC received.` };
+    return { message: `Settled and verified funded by a read-back with a login of its own. ${receipt.receivedAmount} CC received.` };
+  },
+
+  // Reads back a settlement whose read-back did not finish. A receipt, once
+  // written, is never read again or replaced.
+  async verify(tour, { ref }) {
+    const { session } = tour;
+    if (!isNoticeRef(ref)) throw new Error('That is not a notice reference.');
+    if (receiptFor(session, ref)) return { message: 'This notice already has a read-back receipt, so nothing was read again.' };
+    const obligation = await adminObligation(tour, ref);
+    if (obligation.payload.state !== 'Funded') throw new Error('Only a notice that settled on the ledger can be read back.');
+    const settled = actionLog(session).findLast((entry) => entry.action === 'settle' && entry.ref === ref && entry.updateId);
+    if (!settled) throw new Error('DRAW has no settlement on record for this notice, so there is nothing to read back.');
+    const settledBy = settled.settledBy ?? null;
+    const receipt = await readBack(tour, { ref, updateId: settled.updateId, callId: obligation.payload.callId, stateBefore: settled.stateBefore ?? null, settledBy });
+    if (!receipt) return { message: 'The read-back did not finish again, so this notice still does not count as funded. Try again in a minute.' };
+    if (receipt.verdict !== 'VERIFIED_FUNDED') return { message: `The read-back did not confirm this settlement: ${failedChecks(receipt)}` };
+    const loginNote = sameLoginNote(settledBy, receipt);
+    return { message: `Read back and verified funded. ${loginNote ? `${loginNote} ` : ''}${receipt.receivedAmount} CC received.` };
   },
 
   async overdue(tour, { ref }) {
@@ -914,6 +980,53 @@ function latest(dir) {
   return { id, dir: join(dir, id), path: evidencePath(join(dir, id)), result: JSON.parse(readFileSync(join(dir, id, 'result.json'), 'utf8')) };
 }
 
+// Run folders are named for the time the run started, so they sort by age.
+const RUN_ID = /^\d{8}T\d{6}Z$/;
+const passedEveryCheck = (result) => Object.keys(result.gates ?? {}).length > 0
+  && Object.values(result.gates).every((gate) => gate === 'PASS') && Array.isArray(result.failed) && result.failed.length === 0;
+
+// The canonical run is the newest that passed every gate with no failed check.
+// Every run folder newer than it comes along, so a later run that failed or
+// never finished is never hidden behind an older pass.
+function canonicalRun(dir) {
+  const newer = [];
+  const ids = existsSync(dir) ? readdirSync(dir).filter((id) => RUN_ID.test(id)).sort().reverse() : [];
+  for (const id of ids) {
+    const runDir = join(dir, id);
+    const path = evidencePath(runDir);
+    if (!existsSync(join(runDir, 'result.json'))) {
+      newer.push({ runId: id, path, status: 'INCOMPLETE', passed: null, total: null, file: existsSync(join(runDir, 'steps.jsonl')) ? 'steps.jsonl' : null });
+      continue;
+    }
+    const result = JSON.parse(readFileSync(join(runDir, 'result.json'), 'utf8'));
+    if (passedEveryCheck(result)) return { run: { id, dir: runDir, path, result }, newer };
+    const counted = Number.isInteger(result.passed) && Array.isArray(result.failed);
+    newer.push({ runId: id, path, status: 'FAIL', passed: counted ? result.passed : null, total: counted ? result.passed + result.failed.length : null, file: 'result.json' });
+  }
+  return { run: null, newer };
+}
+
+// Which DRAW release a package id belongs to, from the DARs committed under
+// contracts/dist and the one this server submits with. Built on first use,
+// since each DAR is read with unzip.
+let releases = null;
+function versionOf(packageId) {
+  if (!releases) {
+    releases = new Map([[RELEASE.packageId, RELEASE.version]]);
+    const dist = join(ROOT, 'contracts', 'dist');
+    for (const name of existsSync(dist) ? readdirSync(dist) : []) {
+      const version = name.match(/^draw-(.+)\.dar$/)?.[1];
+      if (!version) continue;
+      try {
+        releases.set(packageIdOf(join(dist, name)), version);
+      } catch (error) {
+        console.error(`reading the package id of contracts/dist/${name}: ${error.message}`);
+      }
+    }
+  }
+  return releases.get(packageId) ?? null;
+}
+
 // The test suites under one evidence directory: seeded campaign, ablation,
 // Daml core tests, and mutation testing.
 function suites(base) {
@@ -922,9 +1035,12 @@ function suites(base) {
   const core = latest(join(base, 'daml_core'));
   const mutation = latest(join(base, 'mutation'));
   return {
-    campaign: campaign && { path: campaign.path, seed: campaign.result.seed, verdict: campaign.result.verdict, metrics: campaign.result.metrics, commit: campaign.result.commit },
+    campaign: campaign && {
+      path: campaign.path, seed: campaign.result.seed, verdict: campaign.result.verdict, metrics: campaign.result.metrics, commit: campaign.result.commit,
+      packageId: campaign.result.packageId ?? null, packageVersion: versionOf(campaign.result.packageId),
+    },
     ablation: ablation && { path: ablation.path, verdict: ablation.result.verdict, comparison: ablation.result.comparison },
-    damlCore: core && { path: core.path, verdict: core.result.verdict, packageId: core.result.packageId, tests: core.result.tests },
+    damlCore: core && { path: core.path, verdict: core.result.verdict, packageId: core.result.packageId, packageVersion: versionOf(core.result.packageId), tests: core.result.tests },
     mutation: mutation && { path: mutation.path, verdict: mutation.result.verdict, killed: mutation.result.mutants.filter((m) => m.status === 'KILLED').length, total: mutation.result.mutants.length },
   };
 }
@@ -939,7 +1055,10 @@ function custodyRun() {
   });
   if (!id) return null;
   const result = JSON.parse(readFileSync(join(dir, id, 'result.json'), 'utf8'));
-  return { path: evidencePath(join(dir, id)), runId: id, gate: result.gates.CUSTODY, passed: result.passed, failed: result.failed };
+  return {
+    path: evidencePath(join(dir, id)), runId: id, gate: result.gates.CUSTODY, passed: result.passed, failed: result.failed,
+    packageId: result.packageId ?? null, packageVersion: versionOf(result.packageId),
+  };
 }
 
 // The newest run of each browser journey on this network, passed or not, with
@@ -978,9 +1097,21 @@ function verifierCheck(result) {
   return { ran: false, ok: false, reason: skipped?.reason ?? null };
 }
 
+// The newest probe of what the node lets each configured credential do.
+function newestProbe(base) {
+  const probe = latest(join(base, 'probes'));
+  return probe && {
+    runId: probe.id,
+    path: probe.path,
+    asExpected: probe.result.asExpected === true,
+    checks: (probe.result.probes ?? []).map(({ id, expectation, outcome }) => ({ id, expectation, outcome })),
+    verifierUser: probe.result.users?.verifier ?? null,
+  };
+}
+
 function proof() {
   const base = join(EVIDENCE, NETWORK_DIR);
-  const run = latest(join(base, 'runs'));
+  const { run, newer } = canonicalRun(join(base, 'runs'));
   const runFile = (name) => (run && existsSync(join(run.dir, name)) ? JSON.parse(readFileSync(join(run.dir, name), 'utf8')) : null);
   const visibility = runFile('visibility-final.json');
   return {
@@ -990,25 +1121,33 @@ function proof() {
       runId: run.id,
       commit: run.result.commit,
       packageId: run.result.packageId,
+      packageVersion: versionOf(run.result.packageId),
       canton: run.result.canton,
       credentialSeparation: run.result.credentialSeparation ?? null,
       seatCredential: run.result.seatCredential ?? null,
+      custody: run.result.custody ?? null,
       // The run's own test of the read-back credential: whether it ran, and held.
       verifierCheck: verifierCheck(run.result),
+      verifierUser: run.result.verifierUser ?? null,
       fundId: run.result.fundId,
       instrument: run.result.instrument,
       gates: run.result.gates,
       passed: run.result.passed,
       failed: run.result.failed,
+      skipped: run.result.skipped,
+      reasonsHidden: run.result.reasonsHidden,
       visibility: visibility?.matrix ?? visibility,
       leaks: visibility?.leaks ?? null,
       receipts: ['lpA', 'lpB'].map((role) => runFile(`receipt-${role}.json`)).filter(Boolean).map((r) => ({
         payer: r.payer, obligationRef: r.obligationRef, verdict: r.verdict, claimedUpdateId: r.claimedUpdateId, allocationCid: r.allocationCid,
-        stateBefore: r.stateBefore, stateAfter: r.stateAfter, receivedAmount: r.receivedAmount, expected: r.expected, checks: r.checks.length,
+        stateBefore: r.stateBefore, stateAfter: r.stateAfter, receivedAmount: r.receivedAmount, expected: r.expected,
+        checks: r.checks.length, checksPassed: r.checks.filter((c) => c.ok).length,
       })),
       totals: runFile('totals.json'),
       negative: run.result.checks.filter((c) => /^(negative|deadline|unpaid|authority|credential)/.test(c.id)).map((c) => ({ id: c.id, ok: c.ok })),
     },
+    newerRuns: newer,
+    probe: newestProbe(base),
     browser: browserRuns(base),
     ...suites(base),
     // LocalNet evidence, shown separately and labelled as LocalNet when the
@@ -1112,7 +1251,7 @@ createServer(async (req, res) => {
     // the notice itself from the ledger and asks here only for these.
     if (req.method === 'GET' && url.pathname === '/api/record') {
       const ref = url.searchParams.get('ref') ?? '';
-      if (!/^[A-Za-z0-9-]{1,80}$/.test(ref)) return send(res, 400, { error: 'That is not a notice reference.' });
+      if (!isNoticeRef(ref)) return send(res, 400, { error: 'That is not a notice reference.' });
       const tour = await tourFor(tourId);
       if (!tour.session) return send(res, 409, { error: 'Start a demo fund first.' });
       return send(res, 200, { ref, receipt: receiptView(receiptFor(tour.session, ref)), timeline: timelineFor(ref, actionLog(tour.session)) });
@@ -1121,7 +1260,7 @@ createServer(async (req, res) => {
       const role = url.searchParams.get('role');
       const ref = url.searchParams.get('ref') ?? '';
       if (!ROLES.includes(role)) return send(res, 400, { error: 'Unknown role.' });
-      if (!/^[A-Za-z0-9-]{1,80}$/.test(ref)) return send(res, 400, { error: 'That is not a notice reference.' });
+      if (!isNoticeRef(ref)) return send(res, 400, { error: 'That is not a notice reference.' });
       const tour = await tourFor(tourId);
       if (!tour.session) return send(res, 409, { error: 'Start a demo fund first.' });
       return send(res, 200, { role, ref, place: await noticePlace(tour, role, ref) });
@@ -1169,6 +1308,6 @@ createServer(async (req, res) => {
     }
     send(res, 404, { error: 'Not found.' });
   } catch (error) {
-    send(res, 502, explain(error));
+    send(res, 502, explain(error, { reading: req.method === 'GET' }));
   }
 }).listen(PORT, () => console.log(`DRAW on ${NETWORK_LABEL}: http://localhost:${PORT}, ${TOURS ? 'a demo fund per browser' : 'one shared demo fund'}${AUTO_SETTLE ? ', automatic settlement on' : ''}`));

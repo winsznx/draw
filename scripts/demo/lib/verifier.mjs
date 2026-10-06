@@ -1,7 +1,12 @@
-// Independent settlement verifier. It holds its own ledger user, which may
-// only read and cannot submit. It takes a claimed update id and an obligation
+// Settlement read-back. It takes a claimed update id and an obligation
 // reference, re-reads everything from the ledger itself, and only then issues
 // VERIFIED_FUNDED. It never sees the submitter's response.
+//
+// It reads with the ledger user it is given. That is a login of its own when
+// DRAW_VERIFIER_* names one, or the read-only user DRAW creates when it
+// allocates the parties. Otherwise it is the login the demo seats act
+// through, the one that submitted the settlement. The receipt records which
+// user read.
 //
 // When the fund names a verifier party (draw 0.3.0), it reads through that
 // party: the obligations it observes and the settlement transaction it
@@ -50,6 +55,10 @@ export class SettlementVerifier {
     try {
       update = await this.client.updateById(reader.party, claimedUpdateId, { holdingViews: ownParty });
     } catch (error) {
+      // Only a ledger that answered and refused this read speaks against the
+      // claim. Any other failure may be temporary, so it throws instead of
+      // becoming a receipt that contradicts the settlement for good.
+      if (![400, 403, 404].includes(error.status)) throw error;
       check('claimed update readable by verifier', false, error.message);
     }
     const transaction = update?.update?.Transaction?.value;
@@ -105,7 +114,12 @@ export class SettlementVerifier {
     ), this.instrument);
     check('received amount equals amount due', decimalEquals(receivedAmount, funded?.amountDue),
       { received: receivedAmount, due: funded?.amountDue });
-    check('payer is the obligated LP', funded?.lp === current?.payload?.lp, funded?.lp);
+    // Allocation_ExecuteTransfer is controlled by the executor, the sender and
+    // the receiver (CIP-0056 allocationControllers). The fund is executor and
+    // receiver, so the one other party acting on it is the one that paid.
+    const payers = [...new Set(executeTransfer?.actingParties ?? [])].filter((p) => p !== this.adminParty);
+    const obligatedLp = current?.payload?.lp;
+    check('payer is the obligated LP', payers.length === 1 && payers[0] === obligatedLp, { payers, lp: obligatedLp });
 
     const verdict = checks.every((c) => c.ok) ? 'VERIFIED_FUNDED' : 'CONTRADICTED';
     if (verdict === 'VERIFIED_FUNDED') this.consumedUpdateIds.set(claimedUpdateId, obligationRef);

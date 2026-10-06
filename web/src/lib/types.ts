@@ -43,7 +43,10 @@ export interface Payment {
 
 export interface TimelineEntry {
   at: string;
+  // ACTION_REQUESTED, ACKNOWLEDGED, FAILED, FAUCET_TOP_UP or TRANSFER_EXECUTED from DRAW's own log, then
+  // SETTLEMENT_OBSERVED, READ_BACK_INCOMPLETE or the verdict from the read-back.
   stage: string;
+  // A seat's Role, or 'read-back' for DRAW's read-back step.
   by: string;
   updateId?: string;
   amount?: string;
@@ -62,6 +65,8 @@ export interface Receipt {
   receivedAmount: number;
   verifiedAt: string;
   verifierUser: string;
+  // The ledger user that submitted the settlement. Missing or null on receipts written before DRAW recorded it.
+  settledBy?: string | null;
   recordTime: string;
   checks: Check[];
 }
@@ -258,22 +263,56 @@ export interface ProofReceipt {
   stateAfter: string;
   receivedAmount: number;
   expected: { amount: string; scenarioAmountUsd: string; instrument: { id: string } };
+  // How many checks the receipt recorded, and how many of them held. Older APIs don't send checksPassed.
   checks: number;
+  checksPassed?: number;
+}
+
+// A run folder newer than the canonical run that did not pass: one whose
+// result records a failure, or one with no result yet.
+export interface NewerRun {
+  runId: string;
+  path: string;
+  status: 'FAIL' | 'INCOMPLETE';
+  passed: number | null;
+  total: number | null;
+  file: 'result.json' | 'steps.jsonl' | null;
+}
+
+// The newest probe of what the node lets each configured credential do.
+export interface Probe {
+  runId: string;
+  path: string;
+  asExpected: boolean;
+  checks: { id: string; expectation: string; outcome: string }[];
+  // The ledger user the probe checked as the read-back's. Older APIs don't send it.
+  verifierUser?: string | null;
 }
 
 export interface Proof {
   network: string;
+  // The newest run that passed every check, or null when none has.
   canonical: {
     path: string;
     runId: string;
     commit: string;
     packageId: string;
+    // The release that package belongs to, or null when no known DAR has it.
+    packageVersion?: string | null;
     canton: string;
     // How the run's credentials were separated: TESTED, VERIFIER_ONLY, SEATS_ONLY or NOT_TESTED_SINGLE_CREDENTIAL.
     credentialSeparation: string | null;
     seatCredential: string | null;
+    // Who signed for the parties: SERVER_SUBMITS_FOR_PARTIES or EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY.
+    custody?: string | null;
+    // Checks the run could not make on its setup, each with the reason it gave.
+    skipped?: { id: string; reason: string | null }[];
+    // Ids of the checks whose refusal came back with only a trace id, so the run could not check its reason.
+    reasonsHidden?: string[];
     // The run's own test that the read-back credential cannot act as the fund.
     verifierCheck: { ran: boolean; ok: boolean; reason?: string | null };
+    // The ledger user the run's read-back read as. Older APIs don't send it.
+    verifierUser?: string | null;
     fundId: string;
     instrument: { admin: string; id: string };
     gates: Record<string, string>;
@@ -293,13 +332,16 @@ export interface Proof {
     } | null;
     negative: { id: string; ok: boolean }[];
   } | null;
+  // Run folders newer than the canonical run, newest first. Every run folder when there is no canonical run.
+  newerRuns?: NewerRun[];
+  probe?: Probe | null;
   // The newest run of each browser journey on this network, with its steps and screenshots.
   browser?: BrowserRun[];
-  campaign: { path: string; seed: number; verdict: string; commit: string; metrics: Record<string, number> } | null;
+  campaign: { path: string; seed: number; verdict: string; commit: string; metrics: Record<string, number>; packageId?: string | null; packageVersion?: string | null } | null;
   ablation: { path: string; verdict: string; comparison: { attack: string; counterfactualA: string; treatment: string }[] } | null;
-  damlCore: { path: string; verdict: string; packageId: string; tests: { name: string; result: string }[] } | null;
+  damlCore: { path: string; verdict: string; packageId: string; packageVersion?: string | null; tests: { name: string; result: string }[] } | null;
   mutation: { path: string; verdict: string; killed: number; total: number } | null;
-  localnet: (Suites & { custody: { path: string; runId: string; gate: string; passed: number; failed: string[] } | null }) | null;
+  localnet: (Suites & { custody: { path: string; runId: string; gate: string; passed: number; failed: string[]; packageId?: string | null; packageVersion?: string | null } | null }) | null;
 }
 
 export type Suites = Pick<Proof, 'campaign' | 'ablation' | 'damlCore' | 'mutation'>;
