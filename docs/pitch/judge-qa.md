@@ -4,7 +4,7 @@ Short answers for the deck notes, the async judging window and a possible live f
 
 Labels, word for word:
 
-- DevNet: "DevNet, HackCanton shared node. One hackathon login signs for every seat."
+- DevNet: "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat."
 - LocalNet: "LocalNet. Each party signs with its own key."
 - Asset: "Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario."
 - Production asset: "Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx."
@@ -33,9 +33,9 @@ Backed by: `docs/WORKLOAD_ECONOMICS.md`, `evidence/local/workload/20261002T18535
 
 ### Isn't the privacy just your server choosing which party to show?
 
-The ledger returns nothing to LP B, even when it's asked for LP A's notice by contract id. On DevNet we checked each party's own reads and its own transaction stream, and no party received an event about another party's records. On LocalNet each party has its own login, or its own key, with the same result. The single DevNet login for the demo seats is a limit of the shared hackathon node, which gives one team login act-as on every party it creates. An LP that signs in with its own HackCanton login reads its notices from the ledger in its own browser with its own token, so the server isn't choosing anything for it. Our runs of that used the team's own login.
+The ledger returns nothing to LP B, even when it's asked for LP A's notice by contract id. On DevNet we checked each party's own reads and its own transaction stream, and no party received an event about another party's records. On LocalNet each party has its own login, or its own key, with the same result. On DevNet the demo seats share one backend client that the node operator issued for DRAW, so LP-from-LP credential separation is shown on LocalNet only. An LP that signs in with its own HackCanton login reads its notices from the ledger in its own browser with its own token, so the server isn't choosing anything for it. Our runs of that used the team's own login as the LP.
 
-Backed by: [devnet] (`evidence/devnet/runs/20261006T091531Z/streams.json`, the check "lpA cannot fetch lpB obligation by contract id"), [signed-in-lp], [private-obligations], [non-custodial].
+Backed by: [devnet] (`evidence/devnet/runs/20261006T131900Z/streams.json`, the check "lpA cannot fetch lpB obligation by contract id"), [signed-in-lp], [private-obligations], [non-custodial].
 
 ### Can the fund manager see every LP?
 
@@ -65,13 +65,19 @@ Backed by: [private-obligations] limits, [non-custodial] limits.
 
 ### Who holds the keys?
 
-On the DevNet node, the node holds every party's key. One hackathon login acts for all the demo seats, and an LP that signs in with HackCanton acts with its own login, which DRAW's server never receives. On LocalNet each party can hold its own key: the participant prepares each transaction, the party's key signs it, and the participant can't act for the party without that signature. Another party's key is refused. 76 of 76 checks. In the browser demo each person creates a key in the browser and backs it up.
+On the DevNet node, the node holds every party's key. DRAW's server acts for the five demo seats through a backend client the node operator issued for DRAW, which can act for those five parties and nothing else. An LP that signs in with HackCanton acts with its own login, which DRAW's server never receives, and nothing the server holds can act for that LP's party. On LocalNet each party can hold its own key: the participant prepares each transaction, the party's key signs it, and the participant can't act for the party without that signature. Another party's key is refused. 76 of 76 checks. In the browser demo each person creates a key in the browser and backs it up.
 
-Backed by: [non-custodial], `evidence/local/runs/20261004T183146Z/result.json`.
+Backed by: [non-custodial], `evidence/local/runs/20261004T183146Z/result.json`, [devnet] and probe `evidence/devnet/probes/20261006T133219Z` for the backend client's rights.
+
+### Is the read-back login separate from the seats?
+
+In the scripted DevNet run, yes. It used a verifier client the node operator issued for DRAW, a different ledger user from the seats. The run tried to submit as the fund with it and the ledger refused, and each receipt records that the read-back ran as that client's own user. That client isn't read-only, though: the node reports it can also act and read as the team's personal wallet party, and we've asked the operator to remove that. So we don't call it read-only, and the live site doesn't use it. There the read-back reads with the backend login, the same credential as the seats. On LocalNet the read-back is a read-only login that can't submit.
+
+Backed by: [devnet] (`evidence/devnet/runs/20261006T131900Z/result.json`, `credentialSeparation: VERIFIER_ONLY`), probe `evidence/devnet/probes/20261006T133219Z`, [real-token-settlement].
 
 ### How do you know a settlement actually happened?
 
-A read-back step fetches the settlement from the ledger and runs 14 checks. Among them: the update exercises `Obligation_Settle`, the same transaction executes and consumes the referenced allocation, the fund's holdings are active and in the right instrument, they add up to the amount due, and the payer is the obligated LP. Only a receipt that passes all 14 counts as verified funded. On LocalNet that step runs as a read-only login that can't submit. On DevNet it runs with the same shared login. Since package 0.3.0 a fund can also name a verifier party that reads the fund, every call and every obligation, and the ledger refuses it when it tries to act. That has run in Daml Script only.
+A read-back step fetches the settlement from the ledger and runs 14 checks. Among them: the update exercises `Obligation_Settle`, the same transaction executes and consumes the referenced allocation, the fund's holdings are active and in the right instrument, they add up to the amount due, and the payer is the obligated LP. Only a receipt that passes all 14 counts as verified funded. On LocalNet that step runs as a read-only login that can't submit. On DevNet it ran on a login of its own in the scripted run, and on the live site it reads with the backend login (see the question above). Since package 0.3.0 a fund can also name a verifier party that reads the fund, every call and every obligation, and the ledger refuses it when it tries to act. That has run in Daml Script only.
 
 Backed by: [devnet], [real-token-settlement], [verifier-party], `docs/PROOF.md` ("Reading a receipt").
 
@@ -97,9 +103,9 @@ Backed by: `docs/LIMITATIONS.md`.
 
 On the HackCanton node, yes, if the wallet is on that node. Each LP's call reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation. An LP with a HackCanton login signs in on the node's Keycloak, and the node's Canton Coin wallet lists the capital call under Allocations with Accept and Reject. Pressing Accept locked the coin for the fund, the fund manager settled, and the LP's notice showed verified funded. The LP can also pay from DRAW, which asks its wallet to fund the request through the same wallet API call. DRAW's server never receives the LP's token.
 
-Two limits. Our runs signed in with the team's own login, which the server also uses for the demo seats, so two different people's logins still need a second person. And the LP's wallet party sits on the same node as the fund, which has DRAW's package. Every participant that confirms a DRAW transaction must have vetted DRAW's package, and the LP co-signs its obligation, so a wallet on another validator would need DRAW's package vetted there first.
+Two limits. Every run signed in with the team's own login as the LP. In the newest runs the server held only the backend client, which can't act for that party, but it's still the same person on both sides, so a second person's login is still to show. And the LP's wallet party sits on the same node as the fund, which has DRAW's package. Every participant that confirms a DRAW transaction must have vetted DRAW's package, and the LP co-signs its obligation, so a wallet on another validator would need DRAW's package vetted there first.
 
-Backed by: [signed-in-lp] (`evidence/devnet/browser/web-hackcanton-wallet-20261006101052`, `evidence/devnet/browser/web-hackcanton-20261006100912`), [wallet-request], Canton docs on package vetting by confirming participants.
+Backed by: [signed-in-lp] (`evidence/devnet/browser/web-hackcanton-wallet-20261006132730`, `evidence/devnet/browser/web-hackcanton-20261006132613`, and earlier runs), [wallet-request], Canton docs on package vetting by confirming participants.
 
 ### What stops a fake DRAW notice?
 
@@ -167,13 +173,13 @@ Backed by: [non-custodial] limits, [signed-in-lp].
 
 | Number | Network | Source |
 |---|---|---|
-| 79 of 79 checks, package 0.3.0 | DevNet | `evidence/devnet/runs/20261006T091531Z/result.json` |
-| $750,000 funded, $250,000 unresolved (75 CC and 25 CC) | DevNet, scenario dollars | `evidence/devnet/runs/20261006T091531Z/totals.json` |
+| 82 of 82 checks, package 0.3.0, the seats on the backend client and the read-back on a client of its own | DevNet | `evidence/devnet/runs/20261006T131900Z/result.json` |
+| $750,000 funded, $250,000 unresolved (75 CC and 25 CC) | DevNet, scenario dollars | `evidence/devnet/runs/20261006T131900Z/totals.json` |
 | 14 of 14 checks per receipt | DevNet and LocalNet | receipts in the runs |
-| 6.8 s for LP A and 4.5 s for LP B, settlement record time to the read-back receipt, the verifier's clock against the ledger's | DevNet | `receipt-lpA.json`, `receipt-lpB.json` |
-| 7 of 7 payment request checks, each LP's call reaching it as a CIP-0056 AllocationRequest | DevNet, with the shared login | the `wallet` checks in the same `result.json` |
-| 10 of 10 steps, live-site browser journey with a demo fund per browser | DevNet | `evidence/devnet/browser/web-journey-20261006101224/result.json` |
-| 7 of 7 and 9 of 9 steps, an LP signed in with HackCanton paying from its own Canton wallet, from DRAW and with Accept in the node's wallet | DevNet, with the team's own login | `evidence/devnet/browser/web-hackcanton-20261006100912/result.json`, `evidence/devnet/browser/web-hackcanton-wallet-20261006101052/result.json` |
+| 6.8 s for LP A and 4.5 s for LP B, settlement record time to the read-back receipt, the verifier's clock against the ledger's | DevNet, the shared-login run | `receipt-lpA.json`, `receipt-lpB.json` in `evidence/devnet/runs/20261006T091531Z` |
+| 7 of 7 payment request checks, each LP's call reaching it as a CIP-0056 AllocationRequest | DevNet | the `wallet` checks in the same `result.json` |
+| 10 of 10 steps, live-site browser journey with a demo fund per browser, the seats on the backend client | DevNet | `evidence/devnet/browser/web-journey-20261006132858/result.json` |
+| 7 of 7 and 9 of 9 steps, an LP signed in with HackCanton paying from its own Canton wallet, from DRAW and with Accept in the node's wallet | DevNet, with the team's own login as the LP, the server on the backend client | `evidence/devnet/browser/web-hackcanton-20261006132613/result.json`, `evidence/devnet/browser/web-hackcanton-wallet-20261006132730/result.json` |
 | 76 of 76 checks, each party signing with its own key | LocalNet | `evidence/local/runs/20261004T183146Z/result.json` |
 | 100 of 100 seeded calls, 191 notices | LocalNet | `evidence/local/campaign/20261002T193724Z/result.json` |
 | 4 of 5 attacks through a database, 0 through DRAW | LocalNet | `evidence/local/ablation/20261002T193830Z/result.json` |
@@ -182,4 +188,4 @@ Backed by: [non-custodial] limits, [signed-in-lp].
 
 ## Never say
 
-MainNet, real money, or settlement in USDCx. Customers, pilots, partners or letters of intent. Two different people's logins on DevNet: the sign-in runs used the team's own login, which the server also uses for the demo seats. LP-held keys on DevNet. That payments are hidden from the network. That the server holds no credentials. A scheduler, partial payments, notifications or KYC. That judges can hold their own key on DevNet. That any Canton wallet can pay a DRAW request: the node's own Canton Coin wallet did, for a party on the fund's node. "Independent" for the DevNet read-back.
+MainNet, real money, or settlement in USDCx. Customers, pilots, partners or letters of intent. A second person's login on DevNet: every sign-in run used the team's own login as the LP. LP-held keys on DevNet. That payments are hidden from the network. That the server holds no credentials: it holds the backend client for every demo seat. A scheduler, partial payments, notifications or KYC. That judges can hold their own key on DevNet. That any Canton wallet can pay a DRAW request: the node's own Canton Coin wallet did, for a party on the fund's node. "Independent" or "read-only" for the DevNet read-back.

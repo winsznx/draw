@@ -9,7 +9,7 @@ The matrix below was designed before the templates were written (it is the Phase
 | Actor | Daml party | Notes |
 |---|---|---|
 | Admin | `admin` | fund administrator, executor and receiver of every settlement |
-| LP A, LP B, LP C | `lpA`, `lpB`, `lpC` | one party each, each with its own credential on LocalNet. On the DevNet node one hackathon login acts for all the demo seats |
+| LP A, LP B, LP C | `lpA`, `lpB`, `lpC` | one party each, each with its own credential on LocalNet. On the DevNet node one backend client acts for all the demo seats (see "Credentials on DevNet" below) |
 | Signed-in LP (DevNet) | the wallet party of a HackCanton login | joins a demo fund as itself and acts only with its own login, from its browser. See "Sign in with HackCanton" below |
 | Unrelated | `outsider` | allocated on the same network, no relationship |
 | Verifier (optional, 0.3.0) | `verifier` | named on a fund when it is created, and an observer of that fund, its calls and its obligations. Daml Script only so far |
@@ -74,9 +74,9 @@ Admin: Obligation_Settle                                        (one transaction
 Second reader, separate token: read update by id + admin holdings -> evidence VERIFIED_FUNDED
 ```
 
-On the DevNet node the second reader uses the same shared hackathon login as every other step, so there the read-back is a separate step with the same credential. When a fund names a verifier party, the second reader reads through that party instead of the admin. The verifier party's view is tested in Daml Script only, and no ledger run has read back through it yet.
+On the DevNet node the second reader's credential depends on the setup. In the canonical run, `20261006T131900Z`, it is the verifier client, a different ledger user from the seats, and the ledger refused it when it tried to act as the fund. On the live site it reads through the backend user, the same credential as the seats. The earlier DevNet runs used one shared hackathon login for every step. When a fund names a verifier party, the second reader reads through that party instead of the admin. The verifier party's view is tested in Daml Script only, and no ledger run has read back through it yet.
 
-The payment request's settlement and leg are exactly what `Obligation_Settle` checks, so an allocation created from the request passes unchanged (`test_payment_request`). On DevNet, LP A paid that way in run `20261006T091531Z`, through the run script with the shared login, using the same factory call a wallet makes. A signed-in LP paid from its own Canton wallet in the sign-in runs, once from DRAW and once with Accept in the node's Canton Coin wallet (next section).
+The payment request's settlement and leg are exactly what `Obligation_Settle` checks, so an allocation created from the request passes unchanged (`test_payment_request`). On DevNet, LP A paid that way in runs `20261006T091531Z` and `20261006T131900Z`, through the run script with the shared login and then the backend client, using the same factory call a wallet makes. A signed-in LP paid from its own Canton wallet in the sign-in runs, either from DRAW or with Accept in the node's Canton Coin wallet (next section).
 
 The UI may show FUNDED only for obligations whose evidence is `VERIFIED_FUNDED`.
 
@@ -86,10 +86,10 @@ Replay: `Allocation_ExecuteTransfer` is consuming, so the same allocation cannot
 
 ## Sign in with HackCanton (DevNet)
 
-An LP with its own HackCanton login can join a demo fund as itself. The API turns this on with `DRAW_SIGN_IN=true`, and only when each browser has its own demo fund. Both runs of it, `evidence/devnet/browser/web-hackcanton-20261006100912` and `web-hackcanton-wallet-20261006101052`, signed in with the team's own login.
+An LP with its own HackCanton login can join a demo fund as itself. The API turns this on with `DRAW_SIGN_IN=true`, and only when each browser has its own demo fund. Every run of it signed in with the team's own login as the LP. The newest two, `evidence/devnet/browser/web-hackcanton-20261006132613` and `web-hackcanton-wallet-20261006132730`, ran with the server on the backend client and the browser on DRAW's own web client, as their `siteSetup` records. The first four used NODERS' public web-app client `web-app-ui-hackcanton-01-devnet`.
 
 ```text
-LP's browser -> node's Keycloak (realm noders-appsfactory, public client web-app-ui-hackcanton-01-devnet)
+LP's browser -> node's Keycloak (realm noders-appsfactory, DRAW's public client xidoncapitals-web-app-hackcanton-01-devnet)
                 authorization code with PKCE, back to https://draw.timjosh507.workers.dev/auth/callback
                 token kept in this tab's sessionStorage, renewed with the refresh token
 LP's browser -> JSON Ledger API GET /v2/authenticated-user     -> primaryParty, the login's wallet party
@@ -100,7 +100,7 @@ LP's browser -> JSON Ledger API, with its own token:
                                                                CapitalCallObligation, Allocation and
                                                                AllocationRequest interfaces
                 POST /v2/commands/submit-and-wait-for-transaction  Invitation_Accept
-Fund manager seat (demo login) issues the call               -> obligation + PaymentRequest for the LP
+Fund manager seat (backend client) issues the call           -> obligation + PaymentRequest for the LP
 LP pays from its own Canton wallet, with its own token:
                 DRAW's Pay button -> POST {validator}/api/validator/v0/allocations
                 or Accept on the request under Allocations in the node's Canton Coin wallet
@@ -113,12 +113,30 @@ Who reads what:
 | Reader | Credential | Reads |
 |---|---|---|
 | The signed-in LP's browser | its own HackCanton token | its invitation, commitment, notices, payment requests and allocations, from the JSON Ledger API. Its balance from `GET /api/validator/v0/wallet/balance`. It classifies its own payments with `scripts/demo/lib/reconcile.mjs`, the module the server uses |
-| DRAW's API | the shared demo login, as the fund manager party | the fund's own records, which include the LP's commitment, notices and the payments addressed to the fund, since the fund is a party to each. It keeps DRAW's own record per notice, the read-back receipt and logged steps, and serves only that to the LP at `GET /api/record?ref=` |
+| DRAW's API | the backend client, as the fund manager party | the fund's own records, which include the LP's commitment, notices and the payments addressed to the fund, since the fund is a party to each. It keeps DRAW's own record per notice, the read-back receipt and logged steps, and serves only that to the LP at `GET /api/record?ref=` |
 | The node's Canton Coin wallet | the LP's own login | each DRAW notice as a V1 allocation request, with Accept, Reject and, after Accept, Withdraw |
 
 The LP pays, withdraws its own payment (`POST /api/validator/v0/allocations/{cid}/withdraw`) and taps test CC (`POST /api/validator/v0/wallet/tap`) through its wallet's API. A late LP can still pay from DRAW: the wallet call gets a fresh one-hour allocate window, which works because `Obligation_Settle` checks reference, leg id, executor, payer, receiver, instrument and amount, and no times. When a demo fund closes, on start over or when the API forgets the tour, the fund manager withdraws its open payment requests with `AllocationRequest_Withdraw` as the executor, so no LP's wallet keeps offering a closed fund's notice. An LP withdraws its own locked coin in its wallet.
 
 The LP's party is its login's wallet party on the same NODERS participant as the fund, which has DRAW's package vetted. A login with no wallet party yet has to onboard in the node's wallet first.
+
+## Credentials on DevNet
+
+NODERS issued DRAW three Keycloak clients on 2026-10-06. The backend and verifier clients get client-credentials tokens, which carry the node's audience, scope `daml_ledger_api` and a 3-hour expiry.
+
+| Client | Kind | Used for | Rights the node reports |
+|---|---|---|---|
+| `xidoncapitals-web-app-hackcanton-01-devnet` | public, PKCE, with the live site's origin and `localhost:3100` as web origins | an LP's own sign-in in its browser | the signed-in user's own |
+| `xidoncapitals-backend-hackcanton-01-devnet` | client credentials, with a secret | every demo seat, on the live server since about 13:25 UTC on 2026-10-06 and in run `20261006T131900Z` | acts for the five demo parties and reads as `draw-admin`, nothing else (probe `20261006T133219Z`) |
+| `xidoncapitals-verifier-hackcanton-01-devnet` | client credentials, with a secret | the read-back step in run `20261006T131900Z`. Not on the live server | reads as `draw-admin`, and also acts and reads as the team's personal wallet party, so the probe's read-only check fails. NODERS has been asked to remove that |
+
+How a run and the site decide what they can claim:
+
+- Settings: `DRAW_BACKEND_CLIENT_ID` and `DRAW_BACKEND_CLIENT_SECRET` for the seats, `DRAW_VERIFIER_CLIENT_ID` and `DRAW_VERIFIER_CLIENT_SECRET` for the read-back. User ids are optional, since each is read from its token's subject. A `DRAW_*_USER` that is set and disagrees with its token stops a run, a probe and the server's credential report.
+- With a shared login, every role resolves to that login's own ledger user, whatever user ids are set.
+- `seatCredential` says who acts for the demo seats: `shared-login`, `backend-client`, `shared-user` or `per-seat`. `credentialSeparation` is `TESTED`, `VERIFIER_ONLY`, `SEATS_ONLY` or `NOT_TESTED_SINGLE_CREDENTIAL`, decided from the resolved ledger users, not from the settings. Run `20261006T131900Z` records `backend-client` and `VERIFIER_ONLY`.
+- A resumed demo fund takes its users from the current settings, never from ids stored with the fund.
+- `/api/config` reports `seatCredential` and `separateVerifier`. The live site reports `backend-client` and `false`. The site says "a different login reads each settlement back" only when the read-back user differs from the seats', and never calls it read-only. The proof page's sentence about the read-back comes from the canonical run's own verifier check.
 
 ## States
 

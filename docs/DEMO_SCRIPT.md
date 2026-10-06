@@ -1,14 +1,14 @@
 # Demo script
 
-About three and a half minutes on the live DevNet site, https://draw.timjosh507.workers.dev, then a short LocalNet segment. It opens on the fund's question and gets to Canton later. Click paths follow the web app at commit `ae2508d` (2026-10-06), which gives each browser its own demo fund and has Sign in with HackCanton. Check them against the site on the day you record, since the site is still changing.
+About three and a half minutes on the live DevNet site, https://draw.timjosh507.workers.dev, then a short LocalNet segment. It opens on the fund's question and gets to Canton later. Click paths follow the web app at commit `de2c4b2` (2026-10-06), which gives each browser its own demo fund, has Sign in with HackCanton, and names who signs from the API's own settings. Check them against the site on the day you record, since the site is still changing.
 
 Use these labels on screen and in the narration. The deck and the video use the same words, and `claims.yaml` is their ceiling.
 
-- DevNet: "DevNet, HackCanton shared node. One hackathon login signs for every seat."
+- DevNet, the site's network note since about 13:25 UTC on 2026-10-06: "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat." With sign-in on, the site adds: "An LP that signs in with its own HackCanton login signs only for its own party." Footage from before 13:25 UTC shows the older note, "One hackathon login signs for every demo seat", so caption it as the earlier setup.
 - LocalNet: "LocalNet. Each party signs with its own key."
 - Asset: "Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario."
 - Production asset: "Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx."
-- Sign-in segment, when you sign in with the team's own login: "Signed in with the team's own HackCanton login, which the demo seats also use."
+- Sign-in segment, when you sign in with the team's own login: "The LP here is signed in with the team's own HackCanton login."
 
 ## Before recording
 
@@ -29,7 +29,7 @@ Click "Take a seat in the demo fund".
 
 Screen: "Who are you in this fund?" Choose Fund manager. The next screen, "Your party on DevNet", shows the party id and a box called "How signing works here". Point at it.
 
-> Each seat is its own Canton party, and every screen after this is read from the ledger as that party. On this shared DevNet node one hackathon login signs for every seat. At the end, LocalNet gives each party its own key.
+> Each seat is its own Canton party, and every screen after this is read from the ledger as that party. On this shared DevNet node DRAW's backend login, a client the node operator issued for DRAW, signs for every demo seat. At the end, LocalNet gives each party its own key.
 
 Click Continue, enter the access code, then "Open the app".
 
@@ -49,7 +49,7 @@ Click "Switch seat" and choose LP A. Under "Your notices", open Call 1: $400,000
 
 Switch seat to LP B and paste LP A's notice address. The page says "Not on your ledger".
 
-> LP B opens LP A's exact link. Queried as LP B, the ledger returns nothing for it. On this shared node the same login could query as LP A, which is why we repeated this on LocalNet with a separate login per party, and the result was the same.
+> LP B opens LP A's exact link. Queried as LP B, the ledger returns nothing for it. On this shared node the same backend login could query as LP A, which is why we repeated this on LocalNet with a separate login per party, and the result was the same.
 
 Optional: on the seat page, "Sit as an unrelated party". Its ledger returns nothing about the fund.
 
@@ -63,7 +63,7 @@ Still as LP B, open its own notice from "Your notices". Click "Pay a different a
 
 Switch seat to Fund manager and open Calls, then Call 1. Click "Settle 40 CC", and "Settle 35 CC" if LP B paid. The obligations show Funded and "Deployable now" goes up. Switch seat to LP A and open the notice: "Verified funded", with the receipt.
 
-> Settling moves the coin and marks the notice funded in one transaction. A separate read-back step then reads that settlement and the fund's holdings from the ledger, here with the same shared login, before the dollars count as deployable.
+> Settling moves the coin and marks the notice funded in one transaction. A separate read-back step then reads that settlement and the fund's holdings from the ledger, here with the same backend login, before the dollars count as deployable. In our scripted DevNet run it used a login of its own, which the ledger refused when it tried to act as the fund.
 
 ## 3:00 The investor who didn't pay (optional)
 
@@ -73,11 +73,11 @@ Once the due time has passed, LP C shows under "Needs your attention" as Fund ma
 
 ## Optional: an LP that signs in as itself (about 60 seconds)
 
-This needs a HackCanton login whose party is already onboarded in the node's Canton Coin wallet, with a few test CC in it. If you sign in with the team's own login, put the sign-in label on screen, since the demo seats use that login too. The evidence for this segment is `evidence/devnet/browser/web-hackcanton-20261006100912` (paid from DRAW) and `evidence/devnet/browser/web-hackcanton-wallet-20261006101052` (paid with Accept in the Canton Coin wallet).
+This needs a HackCanton login whose party is already onboarded in the node's Canton Coin wallet, with a few test CC in it. If you sign in with the team's own login, put the sign-in label on screen: it's the same person on both sides, even though the server now holds only the backend client, which can't act for that party. The evidence for this segment is `evidence/devnet/browser/web-hackcanton-20261006132613` (paid from DRAW) and `evidence/devnet/browser/web-hackcanton-wallet-20261006132730` (paid with Accept in the Canton Coin wallet), both on the live site's current setup.
 
 On the seat screen, under "Have a HackCanton login?", click "Sign in with HackCanton" and sign in on the node's login page. Back on the seat screen, click "Join as an LP", then "Accept commitment". The line at the top of the app reads "Read from the ledger as ... by this browser, with your own HackCanton login".
 
-> This LP signed in with its own HackCanton login. Its browser reads its notices from the ledger with its own token, and it accepts with that login. DRAW's server only learned its party id.
+> This LP signed in with its own HackCanton login. Its browser reads its notices from the ledger with its own token, and it accepts with that login. DRAW's server only learned its party id, and nothing the server holds can act for that party.
 
 Switch seat to Fund manager, click "Create capital call", fill in an amount for HackCanton LP and its Canton Coin, and issue it. Go back to the seat screen, click "Continue as HackCanton LP" and open the notice. Either click "Pay ... from your wallet", or click "Approve it in your Canton wallet", which opens the wallet's Allocations page, and press Accept on the capital call there.
 
@@ -115,5 +115,5 @@ End on the proof page, https://draw.timjosh507.workers.dev/proof, as where to ch
 - "Switch seat" signs out. The next seat reads the ledger as a different party, so say which seat you're in each time.
 - Don't open the proof page in the first 30 seconds.
 - Dollar amounts are the scenario. Canton Coin is what moves, and the UI labels both.
-- Never say two different people's logins were used on DevNet, never say LPs hold their own keys on DevNet, never say USDCx settled, and never say MainNet. The sign-in segment shows an LP with its own login, and on our recordings that login is the team's own.
+- Never say two different people's logins were used on DevNet, never say LPs hold their own keys on DevNet, never call the read-back login read-only on DevNet, never say USDCx settled, and never say MainNet. The sign-in segment shows an LP with its own login, and on our recordings that login is the team's own.
 - If an LP's balance is short, "Add test CC" on its seat card taps the faucet.

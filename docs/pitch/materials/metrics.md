@@ -4,19 +4,20 @@ Two kinds of evidence go here. Test evidence exists today, and every number belo
 
 ## 1. Test evidence, today
 
-DevNet means "DevNet, HackCanton shared node. One hackathon login signs for every seat." Dollar figures are the scenario. On DevNet the asset is Canton Coin from the faucet, on LocalNet it's Amulet.
+DevNet means "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat." That's the site's own note since about 13:25 UTC on 2026-10-06. The earlier DevNet runs used one hackathon login for every seat. Dollar figures are the scenario. On DevNet the asset is Canton Coin from the faucet, on LocalNet it's Amulet.
 
 | Metric | Value | Network | Evidence |
 |---|---|---|---|
-| Checks passed in the full scripted call, package 0.3.0 | 79 of 79 (2 credential checks skipped: one login acts for every party). The first run, on 0.2.0, passed 72 of 72 | DevNet | `evidence/devnet/runs/20261006T091531Z/result.json` |
-| Funded and unresolved after the call | $750,000 funded (75 CC), $250,000 unresolved (25 CC, LP C overdue). The fund received exactly 75 CC | DevNet | `evidence/devnet/runs/20261006T091531Z/totals.json` |
+| Checks passed in the full scripted call, package 0.3.0, with the demo seats on the backend client NODERS issued for DRAW and the read-back on a client of its own | 82 of 82 (1 credential check skipped: one backend client acts for every demo seat). Earlier: 79 of 79 on one shared login, and 72 of 72 on 0.2.0 | DevNet | `evidence/devnet/runs/20261006T131900Z/result.json` |
+| The read-back login tried to submit as the fund | Refused (HTTP 403), and both receipts were read as that login's own ledger user. The login isn't read-only: it can also act for the team's personal party | DevNet | the `credential` and `settlement` checks in the same run, probe `evidence/devnet/probes/20261006T133219Z/result.json` |
+| Funded and unresolved after the call | $750,000 funded (75 CC), $250,000 unresolved (25 CC, LP C overdue). The fund received exactly 75 CC | DevNet | `evidence/devnet/runs/20261006T131900Z/totals.json` |
 | Checks per settlement receipt | 14 of 14 for LP A and for LP B | DevNet | `receipt-lpA.json`, `receipt-lpB.json` in the same run |
-| Settlement record time to the read-back receipt | 6.8 seconds for LP A, 4.5 seconds for LP B (the verifier's clock against the ledger's record time) | DevNet | `receipt-lpA.json`: `recordTime` 09:17:02.501Z, `verifiedAt` 09:17:09.338Z. `receipt-lpB.json`: 09:18:07.811Z, 09:18:12.302Z |
-| Transaction events about another party's records, in each party's own stream | 0 for all five parties | DevNet | `evidence/devnet/runs/20261006T091531Z/streams.json` |
-| Payment request checks: each LP sees exactly its own request, the outsider sees none, LP A reads its call as a CIP-0056 AllocationRequest with the exact settlement and leg, and LP A's and LP B's requests close when their calls settle | 7 of 7 `wallet` checks. LP A paid by creating its allocation from the request, through the run script with the shared login | DevNet | same `result.json` |
-| Live-site browser journey | 10 of 10 steps passed, 2026-10-06, including a second browser that gets its own demo fund, on the release with sign-in. Earlier: 10 of 10 that morning, and 8 of 8 on 2026-10-05 | DevNet | `evidence/devnet/browser/web-journey-20261006101224/result.json` |
-| An LP signed in with its own HackCanton login: signs in on the node's Keycloak, accepts with its own login, pays from its own Canton wallet through DRAW, the fund manager settles, the LP sees verified funded | 7 of 7 steps passed, 2026-10-06, with the team's own login | DevNet | `evidence/devnet/browser/web-hackcanton-20261006100912/result.json` |
-| The same, paid by pressing Accept on the request in the node's Canton Coin wallet, and DRAW reading the payment from the LP's own ledger | 9 of 9 steps passed, 2026-10-06, with the team's own login | DevNet | `evidence/devnet/browser/web-hackcanton-wallet-20261006101052/result.json` |
+| Settlement record time to the read-back receipt, in the shared-login run | 6.8 seconds for LP A, 4.5 seconds for LP B (the verifier's clock against the ledger's record time) | DevNet | `evidence/devnet/runs/20261006T091531Z`: `receipt-lpA.json` `recordTime` 09:17:02.501Z, `verifiedAt` 09:17:09.338Z. `receipt-lpB.json`: 09:18:07.811Z, 09:18:12.302Z |
+| Transaction events about another party's records, in each party's own stream | 0 for all five parties | DevNet | `evidence/devnet/runs/20261006T131900Z/streams.json` |
+| Payment request checks: each LP sees exactly its own request, the outsider sees none, LP A reads its call as a CIP-0056 AllocationRequest with the exact settlement and leg, and LP A's and LP B's requests close when their calls settle | 7 of 7 `wallet` checks. LP A paid by creating its allocation from the request, through the run script | DevNet | the same 82-check run, and the 79-check run before it |
+| Live-site browser journey | 10 of 10 steps passed, 2026-10-06, including a second browser that gets its own demo fund, with the demo seats on the backend client, as the run's `siteSetup` records. Earlier: 10 of 10 twice that day on the shared login, and 8 of 8 on 2026-10-05 | DevNet | `evidence/devnet/browser/web-journey-20261006132858/result.json` |
+| An LP signed in with its own HackCanton login: signs in on the node's Keycloak, accepts with its own login, pays from its own Canton wallet through DRAW, the fund manager settles, the LP sees verified funded | 7 of 7 steps passed, 2026-10-06, with the team's own login as the LP and the server on the backend client | DevNet | `evidence/devnet/browser/web-hackcanton-20261006132613/result.json` |
+| The same, paid by pressing Accept on the request in the node's Canton Coin wallet, and DRAW reading the payment from the LP's own ledger | 9 of 9 steps passed, 2026-10-06, with the team's own login as the LP and the server on the backend client | DevNet | `evidence/devnet/browser/web-hackcanton-wallet-20261006132730/result.json` |
 | Checks with each party signing its own transactions | 76 of 76 | LocalNet | `evidence/local/runs/20261004T183146Z/result.json` |
 | Browser journey, every action signed with a key made in the browser | 10 of 10 steps passed, 2026-10-05 | LocalNet | `evidence/local/browser/web-browser-keys-20261005005304/result.json` |
 | Seeded capital calls | 100 of 100 passed, 191 notices | LocalNet | `evidence/local/campaign/20261002T193724Z/result.json` |
@@ -31,8 +32,9 @@ DevNet means "DevNet, HackCanton shared node. One hackathon login signs for ever
 
 Limits that come with these numbers:
 
-- On DevNet one hackathon login acts for every demo party and for the read-back step, so DevNet shows party-scoped reads and real settlement. Separate logins and keys held by each party are shown on LocalNet.
-- The sign-in runs used the team's own HackCanton login, which the server also uses for the demo seats. They show the LP's reads, acceptance and payment coming from its browser with its own token, and two different people's logins still need a second person.
+- On DevNet one backend client acts for every demo party, so DevNet shows party-scoped reads and real settlement, and LP-from-LP credential separation is shown on LocalNet only, with keys held by each party.
+- The read-back step's own DevNet client isn't read-only and isn't on the live server, where the read-back reads with the backend login.
+- Every sign-in run used the team's own HackCanton login as the LP. In the newest runs the server held only the backend client, so the same person held both sides with different credentials. They show the LP's reads, acceptance and payment coming from its browser with its own token, and a second person's login is still to show.
 - The timing figures are not production latency. They come from one run each.
 - Campaign cases call at most three LPs.
 - Traffic cost per transaction on DevNet or MainNet hasn't been measured.
@@ -82,7 +84,7 @@ What would change our plan: if the people we reach say matching takes minutes, o
 
 ## 3. Usability tests on the live DevNet site
 
-Goal: 2 to 3 people, 15 minutes each, on https://draw.timjosh507.workers.dev. Any technical person can take part. We tell them it's a demo on a test network where one login signs for every seat.
+Goal: 2 to 3 people, 15 minutes each, on https://draw.timjosh507.workers.dev. Any technical person can take part. We tell them it's a demo on a test network where one backend login signs for every demo seat. Someone with a HackCanton login can also take an LP seat with it, which would be the first run with a second person's login.
 
 Tasks:
 

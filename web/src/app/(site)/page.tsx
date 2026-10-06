@@ -153,7 +153,7 @@ export default async function Landing() {
           <article className={styles.tile}>
             <span className={styles.tileIcon}><IconCheckCircle size={18} /></span>
             <h3 className={styles.tileTitle}>Read back before it counts</h3>
-            <p className={styles.tileText}>A separate verifier step reads each settlement back from the ledger. Deployable means it agreed, not that a button was pressed.</p>
+            <p className={styles.tileText}>A separate read-back step checks each settlement on the ledger. Deployable means it agreed, not that a button was pressed.</p>
             <div className={styles.mini}>
               <div className={styles.miniRow}><span>Deployable now</span><b className={styles.miniGood}>$750,000</b></div>
               <div className={styles.miniRow}><span>Unresolved</span><b>$250,000</b></div>

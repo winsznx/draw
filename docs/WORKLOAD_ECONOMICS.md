@@ -32,7 +32,7 @@ Canonical call with three investors, two paying and one not: 7 setup, 1 issue, 6
 
 LP B: 1,037 ms end to end. Issuing a call to three investors: 461 ms.
 
-On the HackCanton DevNet node, in run `20261006T091531Z` on package 0.3.0, the read-back receipts are stamped 6.8 seconds (LP A) and 4.5 seconds (LP B) after the settlements' record times (`receipt-lpA.json` and `receipt-lpB.json`, `recordTime` against `verifiedAt`, so the verifier's clock against the ledger's record time). That is the only DevNet timing measured, and it comes from one run.
+On the HackCanton DevNet node, in run `20261006T091531Z` on package 0.3.0, the read-back receipts are stamped 6.8 seconds (LP A) and 4.5 seconds (LP B) after the settlements' record times (`receipt-lpA.json` and `receipt-lpB.json`, `recordTime` against `verifiedAt`, so the verifier's clock against the ledger's record time). That run used one shared login for every party and the read-back. The receipts of the newer run, `20261006T131900Z`, carry the same two fields, and no other DevNet timing has been recorded. Each figure comes from one run.
 
 The 100-case campaign drove 191 obligations, about 400 ledger transactions plus reads and verifications, in 238 seconds.
 

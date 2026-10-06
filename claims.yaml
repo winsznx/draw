@@ -1,5 +1,6 @@
 # Ceiling for README, UI, deck, video, materials, and submission text. Statuses follow evidence.
-# LocalNet and DevNet claims stay separate. On DevNet one hackathon login acts for every party.
+# LocalNet and DevNet claims stay separate. On DevNet the demo seats share one credential: one hackathon login
+# in the earlier runs, the backend client NODERS issued for DRAW since 2026-10-06.
 claims:
   - id: private-obligations
     text: "Each LP can read only its own capital-call obligation and commitment. Other LPs and unrelated parties cannot read it, even with its contract id."
@@ -65,7 +66,7 @@ claims:
     limits: "LocalNet Amulet from the DevNet-style tap, 40 and 35 units. The 1,047 ms comes from single-machine LocalNet with a scripted admin acting at once, so it says nothing about production latency. The DevNet settlement is the devnet claim. Not MainNet, no real money."
 
   - id: devnet
-    text: "DRAW runs end to end on the HackCanton DevNet node, passing 82 of 82 checks on package 0.3.0. The demo seats act through a backend client NODERS issued for DRAW, which the node reports as holding rights on the five demo parties and nothing else. The read-back step uses a separate client: the run tried to submit as the fund with it, and the ledger refused. Canton Coin from the DevNet faucet settles two LPs' obligations, each in the transaction that executes its allocation, and the read-back step confirms each settlement with a 14-check receipt, recorded as read by its own ledger user, before it counts. A wrong amount, wrong payer, wrong reference and replayed payment are refused, overdue is refused before the due time, and the unpaid LP goes overdue after it. The fund's totals match the coin it received, and each party's view and transaction history contain only its own records."
+    text: "DRAW runs end to end on the HackCanton DevNet node, passing 82 of 82 checks on package 0.3.0. The demo seats act through a backend client NODERS issued for DRAW, which the node reports as holding rights on the five demo parties and nothing else. The read-back step uses a separate client: the run tried to submit as the fund with it, and the ledger refused. Canton Coin from the DevNet faucet settles two LPs' obligations, each in the transaction that executes its allocation, and the read-back step confirms each settlement with a 14-check receipt, recorded as read by its own ledger user, before it counts. A wrong amount, wrong payer, wrong reference and replayed payment are refused, overdue is refused before the due time, and the unpaid LP goes overdue after it. The fund's totals match the coin it received, and each party's view and transaction history contain only its own records. The read-back receipts are stamped 6.4 seconds (LP A) and 5.1 seconds (LP B) after the settlements' record times."
     status: devnet_verified
     environments: [devnet]
     evidence:
@@ -75,23 +76,24 @@ claims:
       - evidence/devnet/runs/20261006T131900Z/streams.json
       - evidence/devnet/runs/20261006T131900Z/totals.json
       - evidence/devnet/probes/20261006T133219Z/result.json
-    limits: "One backend client acts for all five demo parties, so LP-from-LP credential separation was not tested on DevNet (it was on LocalNet), and that check was skipped with the reason recorded. The verifier's client is not read-only: probe 20261006T133219Z records it failing that check, because it can also act and read as the team's personal wallet party, which NODERS has been asked to remove. It cannot act as the fund, which is what the run tested. Party-scoped reads, transaction streams, and settlement were tested. Wrong executor, wrong call, and wrong instrument were not run on DevNet. Canton Coin from the DevNet faucet has no monetary value, and the dollar figures are the scenario. Per the Splice Scan API docs, the Canton Coin leg of each payment involves the DSO and appears in Scan, with its random reference and the party ids, whose hints such as draw-lpa are readable, while the obligation contracts don't. That is inferred from the docs and has not been checked against Scan. Earlier DevNet runs used one shared hackathon login for every party and the read-back: 72 of 72 on package 0.2.0 (evidence/devnet/runs/20261004T120110Z) and 79 of 79 on 0.3.0 (evidence/devnet/runs/20261006T091531Z)."
+    limits: "One backend client acts for all five demo parties, so LP-from-LP credential separation was not tested on DevNet (it was on LocalNet), and that check was skipped with the reason recorded. The verifier's client is not read-only: probe 20261006T133219Z records it failing that check, because it can also act and read as the team's personal wallet party, which NODERS has been asked to remove. It cannot act as the fund, which is what the run tested. Party-scoped reads, transaction streams, and settlement were tested. Wrong executor, wrong call, and wrong instrument were not run on DevNet. Canton Coin from the DevNet faucet has no monetary value, and the dollar figures are the scenario. Per the Splice Scan API docs, the Canton Coin leg of each payment involves the DSO and appears in Scan, with its random reference and the party ids, whose hints such as draw-lpa are readable, while the obligation contracts don't. That is inferred from the docs and has not been checked against Scan. The 6.4 and 5.1 seconds compare the verifier's clock with the ledger's record time. Earlier DevNet runs used one shared hackathon login for every party and the read-back: 72 of 72 on package 0.2.0 (evidence/devnet/runs/20261004T120110Z) and 79 of 79 on 0.3.0 (evidence/devnet/runs/20261006T091531Z)."
 
   - id: wallet-request
     text: "Each LP's capital call also reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation, naming the settlement, payer, receiver, amount and instrument. Other LPs and outsiders can't see it. On DevNet, LP A's request matched its notice field by field, and LP A paid by creating the allocation from that request, the same factory call a wallet makes, and the request closed when the call settled."
     status: devnet_verified
     environments: [daml-script, devnet]
     evidence:
+      - evidence/devnet/runs/20261006T131900Z/result.json
       - evidence/devnet/runs/20261006T091531Z/result.json
       - evidence/local/daml_core/20261006T081605Z/result.json
-    limits: "The run script created LP A's allocation with the shared hackathon login. LP B paid with a plain allocation carrying the reference, which settles the same way. A wallet listing and approving a DRAW request is the signed-in-lp claim."
+    limits: "The run script created LP A's allocation through the demo seats' shared credential: the backend client in run 20261006T131900Z, the shared hackathon login in run 20261006T091531Z. LP B paid with a plain allocation carrying the reference, which settles the same way. A wallet listing and approving a DRAW request is the signed-in-lp claim."
 
   - id: verifier-party
     text: "A fund can name a verifier party. It can read the fund, every call and every obligation, including the settled amount, and LP privacy is unchanged. When it tries to act on an obligation or the fund, the ledger refuses."
     status: local_verified
     environments: [daml-script]
     evidence: [evidence/local/daml_core/20261006T081605Z/result.json]
-    limits: "Daml Script only. On DevNet the read-back step reads as the fund's own party with the shared login, until a separate verifier login exists."
+    limits: "Daml Script only. On DevNet the read-back step reads as the fund's own party: through the verifier client in run 20261006T131900Z, and through the backend client on the live site."
 
   - id: signed-in-lp
     text: "On the deployed site, an LP with its own HackCanton login joins a demo fund as itself. It signs in on the node's Keycloak from the browser, its browser reads its notices from the ledger with its own token, and it accepts its commitment with that login. It pays from its own Canton wallet, either from DRAW, which calls the wallet's allocate API, or by pressing Accept on the request in the node's Canton Coin wallet. The fund manager settles, and the LP's notice shows verified funded once the read-back step confirms it. DRAW's server learns only the LP's party id and never receives its token. In the newest runs the server's only ledger credential was a backend client with rights on the five demo parties and nothing else, so nothing the server held could act for the LP's party."
@@ -146,7 +148,7 @@ claims:
       - evidence/devnet/browser/web-journey-20261006091011/result.json
       - evidence/devnet/browser/web-journey-20261006101224/result.json
       - evidence/devnet/browser/web-journey-20261006132858/result.json
-    limits: "Shared hackathon login on the NODERS node, so one credential acts for every demo party, and the read-back step uses that same login. Actions on the public site need an access code. The second run is on the redesigned web app, the third adds a demo fund per browser, the fourth ran on the release with sign-in, and the fifth ran with the demo seats on the backend client NODERS issued for DRAW. The demo funds share the same five parties, so keeping one browser out of another's fund is the app's doing, while keeping each LP out of the others' records is the ledger's."
+    limits: "One credential acts for every demo party: the shared hackathon login in the first four runs, and the backend client NODERS issued for DRAW in the fifth. In every run the read-back step used that same credential. Actions on the public site need an access code. The second run is on the redesigned web app, the third adds a demo fund per browser, the fourth ran on the release with sign-in, and the fifth ran with the demo seats on the backend client NODERS issued for DRAW. The demo funds share the same five parties, so keeping one browser out of another's fund is the app's doing, while keeping each LP out of the others' records is the ledger's."
 
   - id: non-custodial
     text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused. The scripted run passed 76 of 76 checks."

@@ -19,7 +19,7 @@ Recorded 2026-10-01 on the build machine. No secrets are stored here.
 
 | Item | Value |
 |---|---|
-| DevNet credentials | A HackCanton login in `.env` since 2026-10-04, never committed |
+| DevNet credentials | A HackCanton login in `.env` since 2026-10-04, and the backend and verifier client secrets NODERS issued for DRAW since 2026-10-06. None of them committed |
 | NODERS material | The HackCanton DevNet quickstart, shared by the organizers on 2026-10-04 (`DEVNET_DEPLOYMENT.md`) |
 | Web app | Next.js 15.5 on Cloudflare Workers through `@opennextjs/cloudflare` 1.20 and Wrangler 4.147, since 2026-10-05 |
 | Hosting | Cloudflare Workers for the web, a Hostinger VPS with 4 GB of RAM behind Caddy for the API (`DEPLOY.md`) |

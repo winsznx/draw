@@ -473,7 +473,7 @@ img, svg { display: block; }
           <div class="viewers" aria-hidden="true"><span class="on">Fund manager</span><span>LP A</span><span>LP B</span><span>LP C</span><span>Anyone else</span></div>
           <div class="cs-head">
             <div>
-              <p class="cs-run">DevNet run 20261006T091531Z</p>
+              <p class="cs-run">DevNet run 20261006T131900Z</p>
               <p class="cs-title">Call 1, three LPs</p>
             </div>
             <p class="cs-due">Due time passed</p>
@@ -489,7 +489,7 @@ img, svg { display: block; }
           </div>
         </div>
       </div>
-      <figcaption class="cover-note">DevNet, HackCanton shared node. One hackathon login signs for every seat.<br>Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</figcaption>
+      <figcaption class="cover-note">DevNet, HackCanton shared node. DRAW’s backend login signs for every demo seat.<br>Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</figcaption>
     </figure>
   </div>
   <footer class="foot">
@@ -580,7 +580,7 @@ img, svg { display: block; }
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">docs/BUSINESS_BRIEF.md, docs/PRODUCT.md, from public sources. Who pays, and what a call costs them in time, stay assumptions until the interviews on slide 8 test them.</span>
+    <span class="src">docs/BUSINESS_BRIEF.md, docs/PRODUCT.md, from public sources. Who pays, and what a call costs them in time, stay assumptions until the interviews on slide 9 test them.</span>
     <span class="num">3 / 11</span>
   </footer>
 </section>
@@ -614,7 +614,7 @@ img, svg { display: block; }
       <div class="step-top"><span class="step-n">04</span><span class="who">Read-back</span></div>
       <p class="name">Verify</p>
       <p class="body">A separate step reads the settlement back and runs 14 checks. Only then does the money count as deployable.</p>
-      <p class="led">Read-only login on LocalNet, the shared login on DevNet</p>
+      <p class="led">Read-only login on LocalNet, a login of its own in the DevNet run</p>
     </li>
   </ol>
   <p class="unpaid"><span class="mark bad">Overdue</span>An LP that doesn’t pay stays unresolved. Before the due time the ledger refuses to mark it overdue. After it, the fund can. The fund can also send a notice to review, or waive an overdue or reviewed one, each with a note.</p>
@@ -633,11 +633,11 @@ img, svg { display: block; }
       <h2 class="title">It runs on DevNet today.</h2>
       <p class="lead">The deployed app in a real browser, against the HackCanton node, where its latest journey passed 10 of 10 steps.</p>
       <div class="labels">
-        <p class="label">DevNet, HackCanton shared node. One hackathon login signs for every seat.</p>
+        <p class="label">DevNet, HackCanton shared node. DRAW’s backend login signs for every demo seat.</p>
         <p class="label">Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</p>
       </div>
       <p class="url">draw.timjosh507.workers.dev</p>
-      <p class="limits"><span class="strong">Have a HackCanton login?</span> An LP can join as itself, read its notices with its own token, and pay with Accept in its own Canton Coin wallet. DRAW never gets the token. Our runs used the team’s own login.</p>
+      <p class="limits"><span class="strong">Have a HackCanton login?</span> An LP can join as itself, read its notices with its own token, and pay with Accept in its own Canton Coin wallet. DRAW never gets the token. Every run used the team’s own login as the LP.</p>
     </div>
     <!-- 1, 2 and 4 are crops of 03-call-issued, 04-lp-paid and 06-settled from the run in the footer, boxes (270,96)-(1254,757), (287,84)-(1028,582) and (270,96)-(1254,757). -->
     <div class="grid4">
@@ -661,7 +661,7 @@ img, svg { display: block; }
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-journey-20261005214111</span>, the 2026-10-05 UI. 1, 2 and 4 are cropped. On DevNet the read-back step runs with the same shared login. Sign-in runs: <span class="path">web-hackcanton-20261006100912</span> and <span class="path">web-hackcanton-wallet-20261006101052</span>.</span>
+    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-journey-20261005214111</span>, the 2026-10-05 UI, when one hackathon login signed for every seat. 1, 2 and 4 are cropped. Latest journey: <span class="path">web-journey-20261006132858</span>. The live site reads each settlement back with the backend login.</span>
     <span class="num">5 / 11</span>
   </footer>
 </section>
@@ -674,10 +674,10 @@ img, svg { display: block; }
       <h2 class="title">An LP pays from its own Canton wallet.</h2>
       <p class="lead">Each capital call also reaches the LP as a CIP-0056 allocation request. The node’s Canton Coin wallet lists it, and Accept pays it.</p>
       <div class="labels">
-        <p class="label">DevNet, HackCanton shared node. The LP signs in with its own HackCanton login. The fund manager seat uses the demo login.</p>
-        <p class="label">DRAW’s server learns only the LP’s party id. Both runs used the team’s own login, which the demo seats also use.</p>
+        <p class="label">DevNet, HackCanton shared node. The LP signs in with its own HackCanton login. The fund manager seat uses DRAW’s backend login.</p>
+        <p class="label">DRAW’s server learns only the LP’s party id. Every run used the team’s own login as the LP.</p>
       </div>
-      <p class="limits"><span class="strong">9 of 9 steps</span> on the live site, from sign-in to verified funded. Paying from DRAW instead of the wallet passed 7 of 7.</p>
+      <p class="limits"><span class="strong">9 of 9 steps</span> on the live site, from sign-in to verified funded. Paying from DRAW instead of the wallet passed 7 of 7. In the newest runs the server held nothing that could act for the LP’s party.</p>
     </div>
     <div class="grid4">
       <figure>
@@ -700,7 +700,7 @@ img, svg { display: block; }
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-hackcanton-wallet-20261006101052</span>. 2 and 3 show the top of the wallet page. The DRAW-pay run is <span class="path">web-hackcanton-20261006100912</span>.</span>
+    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-hackcanton-wallet-20261006132730</span>, with the server on the backend client. 2 and 3 show the top of the wallet page. Paying from DRAW instead: <span class="path">web-hackcanton-20261006132613</span>.</span>
     <span class="num">6 / 11</span>
   </footer>
 </section>
@@ -754,9 +754,9 @@ img, svg { display: block; }
     <div class="tiles">
       <div class="module tile">
         <span class="net">DevNet</span>
-        <p class="fig">79/79</p>
+        <p class="fig">82/82</p>
         <p class="what">checks on the HackCanton node</p>
-        <p class="small">Two LPs funded in test Canton Coin, bad payments refused, the unpaid LP overdue. 2 credential checks skipped because one login signs for every seat.</p>
+        <p class="small">Two LPs funded in test Canton Coin, bad payments refused, the unpaid LP overdue. The read-back’s own login was refused as the fund. 1&nbsp;check skipped: one backend login signs for every seat.</p>
       </div>
       <div class="module tile">
         <span class="net local">LocalNet</span>
@@ -782,14 +782,14 @@ img, svg { display: block; }
       <div class="shot"><img src="img/localnet-05-call-issued-crop.png" alt="LocalNet: the fund manager's view of Call 1 to LP A and LP B, with the seat card reading Signs with your browser key"></div>
       <p class="label">LocalNet. Each party signs with its own key.</p>
       <div class="speed">
-        <div><b>6.8 s</b><span class="net">DevNet</span><p>Settlement record time to LP A’s read-back receipt, 4.5 s for LP B. The verifier’s clock against the ledger’s record time</p></div>
+        <div><b>6.8 s</b><span class="net">DevNet</span><p>Settlement record time to LP A’s read-back receipt, 4.5 s for LP B, in the shared-login run. The verifier’s clock against the ledger’s</p></div>
         <div><b>1,047 ms</b><span class="net local">LocalNet</span><p>Payment locked to verified funded. One machine, scripted fund manager, not production latency</p></div>
       </div>
     </div>
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Runs: DevNet <span class="path">20261006T091531Z</span> on package 0.3.0, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
+    <span class="src">Runs: DevNet <span class="path">20261006T131900Z</span> on package 0.3.0, the 6.8 s from DevNet <span class="path">20261006T091531Z</span>, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
     <span class="num">8 / 11</span>
   </footer>
 </section>
@@ -805,7 +805,7 @@ img, svg { display: block; }
       <ul>
         <li>An LP industry body, three law firms, two banks, a regulator, an incident responder and four vendors.</li>
         <li>2 cut against us: LP defaults are rare. So we lead with late versus funded, and leave chasing defaulters out.</li>
-        <li>Test evidence on DevNet and LocalNet, slide 7.</li>
+        <li>Test evidence on DevNet and LocalNet, slide 8.</li>
       </ul>
     </div>
     <div class="module col">
@@ -846,7 +846,7 @@ img, svg { display: block; }
     </div>
     <div class="module">
       <p class="h3">How we reach them</p>
-      <p class="body">Direct outreach to fund ops people and administrators, introductions from people who run funds, and Canton ecosystem events. The interviews on slide 8 are the first pipeline.</p>
+      <p class="body">Direct outreach to fund ops people and administrators, introductions from people who run funds, and Canton ecosystem events. The interviews on slide 9 are the first pipeline.</p>
     </div>
     <div class="module">
       <p class="h3">Pricing <span class="mark wait">Hypothesis</span></p>
@@ -887,12 +887,12 @@ img, svg { display: block; }
     <li class="now">
       <p class="when">Now</p>
       <p class="h3">DevNet and LocalNet</p>
-      <p class="body">The full call on the shared HackCanton node. A key per party on LocalNet.</p>
+      <p class="body">The full call on the shared HackCanton node, and LP sign-in with a HackCanton login. A key per party on LocalNet.</p>
     </li>
     <li>
       <p class="when">Next</p>
       <p class="h3">Shadow pilot</p>
-      <p class="body">One real call alongside a fund or administrator. Separate DevNet logins if the node operator enables them.</p>
+      <p class="body">One real call alongside a fund or administrator. On DevNet, a read-back login that only reads, and a second person signing in.</p>
     </li>
     <li>
       <p class="when">Then</p>
@@ -902,7 +902,7 @@ img, svg { display: block; }
     <li>
       <p class="when">After a pilot</p>
       <p class="h3">MainNet</p>
-      <p class="body">LP sign-in where our server holds no LP credentials, export to the administrator’s system, then Featured App review.</p>
+      <p class="body">LPs on validators they trust, export to the administrator’s system, then Featured App review.</p>
     </li>
   </ol>
   <div class="askrow">

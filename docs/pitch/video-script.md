@@ -8,11 +8,11 @@ Use these exactly. They stay inside [`claims.yaml`](../../claims.yaml), and the 
 
 | Label | Text | When it's on screen |
 |---|---|---|
-| DevNet | DevNet, HackCanton shared node. One hackathon login signs for every seat. | 0:00 to 2:40, top bar or lower third |
+| DevNet | DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat. | 0:00 to 2:40, top bar or lower third. It's the site's own network note since about 13:25 UTC on 2026-10-06. Footage from before that shows "One hackathon login signs for every demo seat", so caption it as the earlier setup |
 | Asset | Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario. | 0:00 to 0:20 and 0:42 to 1:52 |
 | LocalNet | LocalNet. Each party signs with its own key. | 2:40 to 3:10 |
 | Production asset | Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx. | 3:22 to 3:34 |
-| Sign-in | This LP signed in with the team's own HackCanton login, which the demo seats also use. | the optional sign-in scene, whenever you film it with the team's login |
+| Sign-in | The LP here is signed in with the team's own HackCanton login. | the optional sign-in scene, whenever you film it with the team's login |
 
 ## Before recording
 
@@ -25,8 +25,8 @@ Use these exactly. They stay inside [`claims.yaml`](../../claims.yaml), and the 
 - Enter the access code off camera, unless it's public by then.
 - Keep the seat card in the bottom left in frame. It shows which party every screen is read as.
 - Film each scene as its own take. If a step fails on camera, don't stage it. Use the evidence file named in that scene instead and say what it shows.
-- For DevNet backups, use the screenshots from 2026-10-06 in `evidence/devnet/browser/web-journey-20261006091011` first. They show the current wording: the settle toast says "Settled and verified by a separate read-back", and LP A's steps bar ends in "Verified by read-back". Their call is $100,000 to LP A alone, paid as 10 CC, so match the voiceover to it if you use them.
-- The older backup screenshots from 2026-10-05, in `evidence/devnet/browser/web-journey-20261005214111` and `evidence/local/browser/web-browser-keys-20261005005304`, show the old wording "Independently verified" and "An independent read-only verifier". If you use one, crop that text out, or caption it "Screens from the 2026-10-05 UI." followed by "On DevNet the read-back runs with the same shared login." or "On LocalNet the read-back runs as a separate read-only login."
+- For DevNet backups, use the screenshots in `evidence/devnet/browser/web-journey-20261006132858` first. That run is on the current setup, with the demo seats on the backend client, as its `siteSetup` records, and shows the current wording: the settle toast says "Settled and verified by a separate read-back", and LP A's steps bar ends in "Verified by read-back". Its call is $100,000 to LP A alone, paid as 10 CC, so match the voiceover to it if you use them. The screenshots in `web-journey-20261006091011` have the same wording on the earlier setup, with the network note naming one hackathon login.
+- The older backup screenshots from 2026-10-05, in `evidence/devnet/browser/web-journey-20261005214111` and `evidence/local/browser/web-browser-keys-20261005005304`, show the old wording "Independently verified" and "An independent read-only verifier". If you use one, crop that text out, or caption it "Screens from the 2026-10-05 UI." followed by "On DevNet the read-back then ran with the same shared login." or "On LocalNet the read-back runs as a separate read-only login."
 
 ## Scenes
 
@@ -74,7 +74,7 @@ Voiceover:
 
 On screen: switch seat to Fund manager, open the call, click "Settle 40 CC". LP A turns Funded. Go to the overview: "Deployable now" goes up.
 
-Captions: "One transaction: the coin moves and the notice turns funded." Then: "Read-back step: 14 checks. On DevNet it runs with the same shared login."
+Captions: "One transaction: the coin moves and the notice turns funded." Then: "Read-back step: 14 checks. On the live site it reads with the same backend login."
 
 Voiceover:
 
@@ -88,7 +88,7 @@ Voiceover:
 
 > LP A sees the same result: verified funded, fourteen of fourteen checks.
 
-Backup if a step fails: `evidence/devnet/browser/web-journey-20261006091011` (the same journey, 10 of 10 steps, 2026-10-06, with screenshots in the current wording), or `evidence/devnet/browser/web-journey-20261005214111` (8 of 8 steps, 2026-10-05, older wording).
+Backup if a step fails: `evidence/devnet/browser/web-journey-20261006132858` (the same journey, 10 of 10 steps, 2026-10-06, on the backend client, with screenshots in the current wording), or `evidence/devnet/browser/web-journey-20261005214111` (8 of 8 steps, 2026-10-05, older wording and the shared login).
 
 ### 1:52 to 2:15 Privacy
 
@@ -98,15 +98,15 @@ Captions: "Queried as LP B". Then "Queried as an unrelated party".
 
 Voiceover:
 
-> Here's LP A's notice link, opened as LP B. LP B's own ledger query comes back empty, so the page has nothing to show. An unrelated party gets nothing at all. On this shared DevNet node, one hackathon login signs for every seat. Separate logins per party run on LocalNet.
+> Here's LP A's notice link, opened as LP B. LP B's own ledger query comes back empty, so the page has nothing to show. An unrelated party gets nothing at all. On this shared DevNet node, one backend login signs for every demo seat. Separate logins per party run on LocalNet.
 
-Backup: `evidence/devnet/runs/20261006T091531Z/streams.json`, where each party's own transaction stream holds no event about another party's records.
+Backup: `evidence/devnet/runs/20261006T131900Z/streams.json`, where each party's own transaction stream holds no event about another party's records.
 
 ### 2:15 to 2:40 A wrong amount, and an LP that doesn't pay
 
 On screen: as LP B, open its notice, click "Pay a different amount", pay 30. The notice says the payment doesn't match the amount due. As Fund manager, the payment shows as a mismatch, and the app offers no Settle button for it. After the due time, "Mark overdue" on LP C. LP C shows Overdue and stays in the unresolved total.
 
-The app hides both buttons, so the camera never shows the ledger refusing. While the voiceover names each refusal, overlay the ledger's own words from the DevNet run, `evidence/devnet/runs/20261006T091531Z/result.json`, in the mono font:
+The app hides both buttons, so the camera never shows the ledger refusing. While the voiceover names each refusal, overlay the ledger's own words from the DevNet run, `evidence/devnet/runs/20261006T131900Z/result.json`, in the mono font:
 
 - Check `negative: wrong amount does not fund`. DAML_FAILURE in `Obligation_Settle`: "allocation amount does not equal amount due".
 - Check `deadline: overdue refused before due time`. DAML_FAILURE in `Obligation_MarkOverdue`: "obligation is not yet due".
@@ -117,7 +117,7 @@ Voiceover:
 
 > If LP B pays the wrong amount, the app gives the fund nothing to settle. Our DevNet run tried anyway, and the ledger refused it. LP C hasn't paid at all. The ledger won't mark it overdue before the due time. After that the fund can, and LP C stays on the unresolved list instead of quietly going missing.
 
-Backup: the `negative`, `deadline` and `unpaid` checks in `evidence/devnet/runs/20261006T091531Z/result.json`.
+Backup: the `negative`, `deadline` and `unpaid` checks in `evidence/devnet/runs/20261006T131900Z/result.json`.
 
 ### 2:40 to 3:10 LocalNet: each party holds its own key
 
@@ -145,7 +145,7 @@ Voiceover:
 
 > An LP with its own HackCanton login can join as itself. Its browser reads its notice from the ledger with its own login. The call also shows up in its Canton Coin wallet as an allocation request, and Accept there locks the coin for the fund. DRAW's server only learns its party id.
 
-Backup: the screenshots in `evidence/devnet/browser/web-hackcanton-wallet-20261006101052`, among them `04-wallet-request.png` and `05-wallet-accepted.png`. That run used the team's own login, so keep the sign-in label on.
+Backup: the screenshots in `evidence/devnet/browser/web-hackcanton-wallet-20261006132730`, among them `04-wallet-request.png` and `05-wallet-accepted.png`, from a run on the current setup. That run used the team's own login as the LP, so keep the sign-in label on.
 
 ### 3:10 to 3:34 Why Canton, and the honest line
 
@@ -177,18 +177,18 @@ The second version adds about 8 seconds and ends near 3:58.
 
 - MainNet, real money, or settlement in USDCx.
 - Customers, pilots, partners or letters of intent.
-- Two different people's logins on DevNet. The sign-in runs used the team's own login, which the server also uses for the demo seats.
+- A second person's login on DevNet. Every sign-in run used the team's own login as the LP.
 - LP-held keys on DevNet.
 - That payments are hidden from the network. Canton Coin transfers appear in Scan.
-- That the server holds no credentials. The demo server holds every demo seat's.
+- That the server holds no credentials. The demo server holds the backend client for every demo seat.
 - A scheduler, partial payments, notifications or KYC.
 - That viewers can hold their own key on DevNet.
 - That any Canton wallet can pay a DRAW request. The node's own Canton Coin wallet did, for a party on the fund's node.
-- "Independent" for the DevNet read-back. On DevNet it's a separate step run with the same shared login.
+- "Independent" or "read-only" for the DevNet read-back. On the live site it's a separate step run with the same backend login. In the scripted run it used a client of its own, which can still act for the team's personal party.
 - That only the LP and the fund can read a notice. The node operator can read every party it hosts.
 
 ## After the edit
 
 - Final cut under 5:00, aiming for 3:50.
 - Every DevNet frame carries the DevNet label, and every LocalNet frame carries the LocalNet label.
-- Publish on YouTube as public or unlisted, check it plays in a private window, and add the link to the README, `docs/pitch/materials/demo.md`, `docs/pitch/materials/pitch.md` and slide 10.
+- Publish on YouTube as public or unlisted, check it plays in a private window, and add the link to the README, `docs/pitch/materials/demo.md`, `docs/pitch/materials/pitch.md` and slide 11.

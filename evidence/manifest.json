@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-06T13:33:30.116Z",
-  "generatedAtCommit": "de2c4b25dc0dfc0f8fc2676b0826d10c67ec3480",
+  "generatedAt": "2026-10-06T14:11:02.652Z",
+  "generatedAtCommit": "8f83d326c3713369f21f61854da32dc44019ded2",
   "generator": "node scripts/evidence/manifest.mjs",
   "tokenStandardPackages": [
     {
@@ -1402,7 +1402,8 @@
         }
       ],
       "claims": [
-        "devnet"
+        "devnet",
+        "wallet-request"
       ]
     },
     {

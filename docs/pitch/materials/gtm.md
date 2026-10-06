@@ -79,7 +79,7 @@ The USDCx line, word for word: "Uses the Token Standard allocation interface, wh
 | Fund documents don't allow paying calls in a tokenized asset | Legal review is part of Stage 3, before money moves |
 | Nobody in the interviews has the problem badly enough | Then we change the ICP, or stop, and say so in the journal |
 | One node operator hosts every party in a pilot | Each LP on its own validator or a provider it trusts is a Stage 3 requirement |
-| The demo server holds every demo seat's credential | An LP that signs in with HackCanton keeps its token in its own browser, and the server never receives it. Sign-in for every seat, the fund manager included, isn't built yet ([`docs/SECURITY.md`](../../SECURITY.md)) |
+| The demo server holds the backend client that acts for every demo seat | The node reports that client's rights as the five demo parties and nothing else. An LP that signs in with HackCanton keeps its token in its own browser, the server never receives it, and nothing the server holds can act for that LP's party. Sign-in for every seat, the fund manager included, isn't built yet ([`docs/SECURITY.md`](../../SECURITY.md)) |
 
 ## Sources
 
