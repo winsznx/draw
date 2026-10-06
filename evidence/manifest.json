@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-06T10:35:25.391Z",
-  "generatedAtCommit": "32f49cf470b46d431d075f43c1b4bcac35929bef",
+  "generatedAt": "2026-10-06T11:18:48.211Z",
+  "generatedAtCommit": "a8b686afe1db3fd871f3261dae1c4d4e7852b0d7",
   "generator": "node scripts/evidence/manifest.mjs",
   "tokenStandardPackages": [
     {
@@ -204,6 +204,56 @@
     {
       "kind": "browser",
       "environment": "devnet",
+      "runId": "web-hackcanton-20261006111458",
+      "path": "evidence/devnet/browser/web-hackcanton-20261006111458",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "01-signed-in.png",
+          "sha256": "ba2478b4712d40126dc3cf16098de6e2cac40ef849d8d4c202d03b111c1dea9d"
+        },
+        {
+          "path": "02-lp-committed.png",
+          "sha256": "066a95f388c8e5e1a68ddabd6f6ecc24bd118338f54ba76c17c0cd5f45dfca86"
+        },
+        {
+          "path": "03-call-issued.png",
+          "sha256": "65894203c66173773ac617b12f45552800e1a628ffc012cce2f40c794f9a8e9a"
+        },
+        {
+          "path": "04-lp-paid.png",
+          "sha256": "bb788ba4148eede91846a2c3a3356a2451c7bd6521b620e8519e6af9c5595ef3"
+        },
+        {
+          "path": "05-settled.png",
+          "sha256": "7ecada862d3e7264115285be69b50aaf0e7eeccd985256e9e8820534b9896b3e"
+        },
+        {
+          "path": "06-lp-verified.png",
+          "sha256": "a9400133789aeb091b3bc16e640cde2b97ad64aece8920bdec3cd63df3890393"
+        },
+        {
+          "path": "result.json",
+          "sha256": "6b7b688f447e801888cf271394d9022a27f89bc1780b52446e2b6b1be5c2471e"
+        }
+      ],
+      "claims": [
+        "signed-in-lp"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "devnet",
       "runId": "web-hackcanton-wallet-20261006101052",
       "path": "evidence/devnet/browser/web-hackcanton-wallet-20261006101052",
       "commit": null,
@@ -253,6 +303,64 @@
         {
           "path": "result.json",
           "sha256": "31004c6386e397b291c71d62dfce0febe139dffb21afccad7b69ea44df9c1d71"
+        }
+      ],
+      "claims": [
+        "signed-in-lp"
+      ]
+    },
+    {
+      "kind": "browser",
+      "environment": "devnet",
+      "runId": "web-hackcanton-wallet-20261006111654",
+      "path": "evidence/devnet/browser/web-hackcanton-wallet-20261006111654",
+      "commit": null,
+      "verdict": "PASS",
+      "damlSdk": "3.5.12",
+      "canton": null,
+      "packageIds": [],
+      "instrument": null,
+      "partyAliases": null,
+      "seed": null,
+      "testCommand": "npm run e2e in web (app/web for runs before 2026-10-05)",
+      "verifierCommand": "Playwright against the running app and ledger",
+      "updateRefs": [],
+      "files": [
+        {
+          "path": "01-signed-in.png",
+          "sha256": "535debb449cccf7cda956cacb1f3528c46a64050e18949bcb062eda7a21310f3"
+        },
+        {
+          "path": "02-lp-committed.png",
+          "sha256": "9e77156a669a6902887531a00dda7c6f85120297fc2157673be8a7ae9ad6997c"
+        },
+        {
+          "path": "03-call-issued.png",
+          "sha256": "7fb12ccf4276e955df9e59a8076bde6422a41d791efc5d63f13ba22ebfb163bb"
+        },
+        {
+          "path": "04-wallet-request.png",
+          "sha256": "67be57f7b76e72549c6c97040893e7f923c553dfe185ad26ac34bcccd960badd"
+        },
+        {
+          "path": "05-wallet-accepted.png",
+          "sha256": "43f051a34b4e11104b0db77ac7e31ea99e77318ed363dd712fae6529c1ef166a"
+        },
+        {
+          "path": "06-lp-paid.png",
+          "sha256": "a2e2260cc65d9dc4b2215cbccde005fa5add4c630d7861e2fd64d939b61de90f"
+        },
+        {
+          "path": "07-settled.png",
+          "sha256": "77abba542e837654e686aa5e78ccb53802930a4156d1019cb244ded2bd82a0d6"
+        },
+        {
+          "path": "08-lp-verified.png",
+          "sha256": "36a461dae72afb6fd3dd8072dcc3d1c3323e2f88f5488b8ae7c0a28acd88391e"
+        },
+        {
+          "path": "result.json",
+          "sha256": "4c3e85c72fad9053fe89e5f852d8c626e8052113de599a84a807dba079e470cc"
         }
       ],
       "claims": [
