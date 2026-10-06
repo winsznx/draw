@@ -19,10 +19,23 @@ export function evidence(name: string) {
   const root = process.env.DRAW_EVIDENCE_OUT ?? path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'evidence', network === 'localnet' ? 'local' : network, 'browser');
   const out = path.join(root, `web-${name}-${run}`);
   const steps: { step: string; at: string }[] = [];
+  // How the site under test said it signs, read from its /api/config at the start.
+  let site: Record<string, unknown> | null = null;
   return {
     run,
     out,
     steps,
+    setup: async (page: Page) => {
+      const config = (await (await page.request.get('/api/config')).json()) as Record<string, unknown> & { signIn?: { clientId?: string } | null };
+      site = {
+        network: config.network,
+        seatCredential: config.seatCredential ?? null,
+        singleCredential: config.singleCredential,
+        separateVerifier: config.separateVerifier ?? null,
+        signInClientId: config.signIn?.clientId ?? null,
+        release: config.release ?? null,
+      };
+    },
     record: (step: string) => steps.push({ step, at: new Date().toISOString() }),
     shot: async (page: Page, label: string) => {
       mkdirSync(out, { recursive: true });
@@ -31,7 +44,7 @@ export function evidence(name: string) {
     write: (info: TestInfo, expected: number) => {
       mkdirSync(out, { recursive: true });
       const verdict = steps.length === expected && info.status !== 'failed' ? 'PASS' : 'FAIL';
-      writeFileSync(path.join(out, 'result.json'), `${JSON.stringify({ run, test: info.title, site: info.project.use.baseURL, steps, expectedSteps: expected, verdict, error: info.error?.message?.slice(0, 600) ?? null }, null, 2)}\n`);
+      writeFileSync(path.join(out, 'result.json'), `${JSON.stringify({ run, test: info.title, site: info.project.use.baseURL, siteSetup: site, steps, expectedSteps: expected, verdict, error: info.error?.message?.slice(0, 600) ?? null }, null, 2)}\n`);
     },
   };
 }

@@ -57,6 +57,7 @@ type Evidence = ReturnType<typeof evidence>;
 // as an LP and accepts its commitment with its own login. Then the fund
 // manager seat issues a call to it. Returns the LP's notice address.
 async function joinAndGetCalled(page: Page, ev: Evidence, call: string): Promise<string> {
+  await ev.setup(page);
   await openOnboarding(page);
   await startDemoIfNeeded(page);
   ev.record('demo fund started');

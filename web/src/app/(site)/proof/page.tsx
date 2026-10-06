@@ -269,6 +269,11 @@ export default async function ProofPage() {
                     ))}
                   </div>
                 )}
+                <p className="t-sm muted">
+                  {run.siteSetup?.network
+                    ? `When it ran: ${networkNote({ network: run.siteSetup.network, browserKeys: false, singleCredential: run.siteSetup.singleCredential ?? true, seatCredential: run.siteSetup.seatCredential, separateVerifier: run.siteSetup.separateVerifier })}`
+                    : 'This run did not record how the site signed.'}
+                </p>
                 <p className="t-sm"><a className="link" href={file(run.path, 'result.json')}>{run.runId}</a>{run.site ? <span className="muted"> against {run.site}</span> : null}</p>
               </div>
             ))}

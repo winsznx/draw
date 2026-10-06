@@ -41,6 +41,7 @@ async function acceptIfInvited(page: Page) {
 
 test('capital call journey', async ({ page, browser }, info) => {
   try {
+    await ev.setup(page);
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Capital calls');
     await ev.shot(page, 'landing');

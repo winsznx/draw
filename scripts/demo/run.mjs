@@ -136,7 +136,7 @@ for (const [role, committed] of Object.entries(commitments)) {
 }
 const adminCommitments = await eventually(() => draw.contracts('admin', TEMPLATES.InvestorCommitment, fundId), (l) => l.length === 3);
 const commitmentOf = (role) => adminCommitments.find((c) => c.payload.lp === party[role]).contractId;
-step('fund created, three commitments accepted by each LP with its own credential', { fundId, commitments });
+step(facts.seatsSeparate ? 'fund created, three commitments accepted by each LP with its own credential' : 'fund created, three commitments accepted, each as its own LP party', { fundId, commitments });
 
 const ref = Object.fromEntries(LPS.map((role) => [role, newRef()]));
 const runRefs = new Set(Object.values(ref));

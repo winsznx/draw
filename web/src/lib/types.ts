@@ -314,4 +314,5 @@ export interface BrowserRun {
   steps: string[];
   expectedSteps: number;
   shots: string[];
+  siteSetup: (Partial<SiteConfig> & { signInClientId?: string | null }) | null;
 }

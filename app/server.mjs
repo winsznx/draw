@@ -963,6 +963,8 @@ function browserRuns(base) {
       verdict: result.verdict,
       steps: result.steps.map((s) => s.step),
       expectedSteps: result.expectedSteps,
+      // How the site said it signs when the journey ran. Runs before 2026-10-06 didn't record it.
+      siteSetup: result.siteSetup ?? null,
       shots: readdirSync(join(dir, id)).filter((name) => name.endsWith('.png')).sort(),
     };
   });
