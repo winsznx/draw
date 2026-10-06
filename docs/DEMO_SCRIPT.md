@@ -1,6 +1,6 @@
 # Demo script
 
-About three and a half minutes on the live DevNet site, https://draw.timjosh507.workers.dev, then a short LocalNet segment. It opens on the fund's question and gets to Canton later. Click paths follow the web app at commit `688cdbc` (2026-10-06), which gives each browser its own demo fund. Check them against the site on the day you record, since the site is still changing.
+About three and a half minutes on the live DevNet site, https://draw.timjosh507.workers.dev, then a short LocalNet segment. It opens on the fund's question and gets to Canton later. Click paths follow the web app at commit `ae2508d` (2026-10-06), which gives each browser its own demo fund and has Sign in with HackCanton. Check them against the site on the day you record, since the site is still changing.
 
 Use these labels on screen and in the narration. The deck and the video use the same words, and `claims.yaml` is their ceiling.
 
@@ -8,6 +8,7 @@ Use these labels on screen and in the narration. The deck and the video use the 
 - LocalNet: "LocalNet. Each party signs with its own key."
 - Asset: "Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario."
 - Production asset: "Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx."
+- Sign-in segment, when you sign in with the team's own login: "Signed in with the team's own HackCanton login, which the demo seats also use."
 
 ## Before recording
 
@@ -70,6 +71,20 @@ Once the due time has passed, LP C shows under "Needs your attention" as Fund ma
 
 > Before the due time the ledger refuses this. After it, LP C is on the record as overdue.
 
+## Optional: an LP that signs in as itself (about 60 seconds)
+
+This needs a HackCanton login whose party is already onboarded in the node's Canton Coin wallet, with a few test CC in it. If you sign in with the team's own login, put the sign-in label on screen, since the demo seats use that login too. The evidence for this segment is `evidence/devnet/browser/web-hackcanton-20261006100912` (paid from DRAW) and `evidence/devnet/browser/web-hackcanton-wallet-20261006101052` (paid with Accept in the Canton Coin wallet).
+
+On the seat screen, under "Have a HackCanton login?", click "Sign in with HackCanton" and sign in on the node's login page. Back on the seat screen, click "Join as an LP", then "Accept commitment". The line at the top of the app reads "Read from the ledger as ... by this browser, with your own HackCanton login".
+
+> This LP signed in with its own HackCanton login. Its browser reads its notices from the ledger with its own token, and it accepts with that login. DRAW's server only learned its party id.
+
+Switch seat to Fund manager, click "Create capital call", fill in an amount for HackCanton LP and its Canton Coin, and issue it. Go back to the seat screen, click "Continue as HackCanton LP" and open the notice. Either click "Pay ... from your wallet", or click "Approve it in your Canton wallet", which opens the wallet's Allocations page, and press Accept on the capital call there.
+
+> The call reaches the LP's own Canton Coin wallet as an allocation request. Accept locks the coin for the fund, and nothing moves until the fund settles.
+
+Switch seat to Fund manager, open the call and click Settle. Back as the HackCanton LP, the notice shows "Verified funded".
+
 ## 3:15 LocalNet: each person holds a key
 
 Label on screen: "LocalNet. Each party signs with its own key." This part isn't on the live site. Record it against LocalNet with browser keys:
@@ -100,5 +115,5 @@ End on the proof page, https://draw.timjosh507.workers.dev/proof, as where to ch
 - "Switch seat" signs out. The next seat reads the ledger as a different party, so say which seat you're in each time.
 - Don't open the proof page in the first 30 seconds.
 - Dollar amounts are the scenario. Canton Coin is what moves, and the UI labels both.
-- Never say LPs have their own logins or keys on DevNet, never say USDCx settled, and never say MainNet.
+- Never say two different people's logins were used on DevNet, never say LPs hold their own keys on DevNet, never say USDCx settled, and never say MainNet. The sign-in segment shows an LP with its own login, and on our recordings that login is the team's own.
 - If an LP's balance is short, "Add test CC" on its seat card taps the faucet.

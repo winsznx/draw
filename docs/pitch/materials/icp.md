@@ -47,7 +47,7 @@ An outsourced administrator runs calls for several emerging managers at once, so
 
 ## On the other side: the LP
 
-Each LP gets a notice that no other LP can read, pays it with a Canton token, and gets a clear answer: funded and verified, or refused with a reason. To pay through DRAW an LP needs a Canton party and holdings in the settlement asset. In DRAW's model the LP's party can be hosted by the fund's node while the LP keeps its own signing key. That runs on LocalNet today.
+Each LP gets a notice that no other LP can read, pays it with a Canton token, and gets a clear answer: funded and verified, or refused with a reason. To pay through DRAW an LP needs a Canton party and holdings in the settlement asset. In DRAW's model the LP's party can be hosted by the fund's node while the LP keeps its own signing key. That runs on LocalNet today. On the HackCanton DevNet node an LP with its own login can also sign in, see only its own notices and pay from its own Canton wallet, which we ran with the team's own login.
 
 ## Who pays (hypothesis)
 

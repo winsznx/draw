@@ -67,7 +67,7 @@ DRAW runs on the HackCanton DevNet shared node and on LocalNet. Here's what the 
 Two things to plan around:
 
 - DevNet resets about every three months, and a reset deletes every party and contract on a node. Pilot data shouldn't live only on DevNet.
-- An LP whose party lives in a third-party wallet can't co-sign DRAW's settlement unless that wallet's validator vets DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. DRAW's answer is the fund's node hosting the LP's party while the LP keeps its own key. That runs on LocalNet today.
+- An LP whose party lives in a third-party wallet can't co-sign DRAW's settlement unless that wallet's validator vets DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. DRAW's answers are the fund's node hosting the LP's party while the LP keeps its own key, which runs on LocalNet today, and an LP whose wallet party is already on the fund's node signing in with its own login and paying from that wallet, which runs on the HackCanton DevNet node with the team's own login.
 
 The USDCx line, word for word: "Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx."
 
@@ -79,7 +79,7 @@ The USDCx line, word for word: "Uses the Token Standard allocation interface, wh
 | Fund documents don't allow paying calls in a tokenized asset | Legal review is part of Stage 3, before money moves |
 | Nobody in the interviews has the problem badly enough | Then we change the ICP, or stop, and say so in the journal |
 | One node operator hosts every party in a pilot | Each LP on its own validator or a provider it trusts is a Stage 3 requirement |
-| The demo server holds every role's credential | Production sign-in gives the server no LP credentials ([`docs/SECURITY.md`](../../SECURITY.md)). It isn't built yet |
+| The demo server holds every demo seat's credential | An LP that signs in with HackCanton keeps its token in its own browser, and the server never receives it. Sign-in for every seat, the fund manager included, isn't built yet ([`docs/SECURITY.md`](../../SECURITY.md)) |
 
 ## Sources
 

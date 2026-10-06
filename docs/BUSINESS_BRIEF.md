@@ -39,14 +39,15 @@ On a fully public ledger every LP would see every other LP's commitment share an
 
 ## Working today
 
-- On the HackCanton DevNet node, with Canton Coin from the DevNet faucet: the full call in a scripted run (79 of 79 checks on package 0.3.0), with per-party reads and transaction streams that hold only each party's own records, bad payments refused, the unpaid LP overdue, and totals that match the coin received. One hackathon login acts for every party there.
-- Each LP's call also reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation. On DevNet, LP A paid by creating the allocation from that request, the same factory call a wallet makes, with the shared login. No wallet app has been shown listing or approving one yet.
+- On the HackCanton DevNet node, with Canton Coin from the DevNet faucet: the full call in a scripted run (79 of 79 checks on package 0.3.0), with per-party reads and transaction streams that hold only each party's own records, bad payments refused, the unpaid LP overdue, and totals that match the coin received. One hackathon login acts for every demo party there.
+- Each LP's call also reaches it as a CIP-0056 AllocationRequest, the Token Standard interface an app uses to ask a user for an allocation. On DevNet, LP A paid by creating the allocation from that request, the same factory call a wallet makes, with the shared login.
 - A live web app on that node: take a seat, issue a call, pay, see that another LP gets nothing from your notice link, settle, and see it verified. Each browser gets its own demo fund.
+- An LP with its own HackCanton login can join as itself. It signs in on the node's Keycloak from the browser, reads its notices with its own token, accepts with that login, and pays from its own Canton wallet, either from DRAW or with Accept in the node's Canton Coin wallet. DRAW's server never receives its token. Both runs used the team's own login, which the server also uses for the demo seats.
 - On Splice LocalNet with Amulet: the same lifecycle with a separate login per party, a run where every party signs with its own key (76 of 76 checks), 100 generated calls with no false funding or leaks, and the ablation.
 
 ## Roadmap
 
-On DevNet, a read-only login for the read-back step and LPs holding their own keys, both of which need the node operator. Then TestNet with USDCx, which needs Tokenomics Committee approval. LP sign-in where the app server holds no LP credentials. Automatic settlement when a matching payment arrives. Export to the administrator's existing system.
+On DevNet, a read-only login for the read-back step and LPs holding their own keys, both of which need the node operator, and a sign-in run with a second person's login. Then TestNet with USDCx, which needs Tokenomics Committee approval. Sign-in for every seat, so the app server holds no seat's credentials. Automatic settlement when a matching payment arrives. Export to the administrator's existing system.
 
 ## Pricing hypothesis
 

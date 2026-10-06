@@ -5,7 +5,7 @@ DRAW has two deployable parts:
 - Web (`web/`): Next.js on Cloudflare Workers through OpenNext. It serves the landing page, onboarding, the app and the proof page. Every `/api/*` and `/evidence/*` request is proxied to the API with a service token.
 - API (`app/server.mjs`): Node, on a VPS next to the ledger credentials. It reads and acts on the ledger and answers only requests that carry the service token.
 
-The browser never talks to the VPS directly, so there is no CORS, and the ledger credentials never leave the VPS.
+The browser never talks to the VPS directly, so DRAW's API needs no CORS, and the ledger credentials never leave the VPS. An LP that signs in with HackCanton is the one exception to "the browser only talks to the site": its browser calls the node's Keycloak, JSON Ledger API and validator API directly with its own token (see "Sign in with HackCanton" below).
 
 ## Live deployment (since 2026-10-05)
 
@@ -14,9 +14,9 @@ The browser never talks to the VPS directly, so there is no CORS, and the ledger
 | Web | https://draw.timjosh507.workers.dev | Worker `draw`. `DRAW_API_URL` in `web/wrangler.jsonc`, `DRAW_SERVICE_TOKEN` as a worker secret |
 | API | Hostinger VPS, `https://187-77-178-30.sslip.io` behind Caddy | systemd `draw.service`, user `draw`, code in `/opt/draw/app`, session in `/opt/draw/state`. Answers 403 without the token |
 
-Mode: DevNet with the shared hackathon login. Each browser gets its own demo fund. Visitors can read every seat and the proof page. Actions need the access code (`DRAW_ACCESS_CODE` on the API), which the app asks for once. With `DRAW_ACCESS_CODE_PUBLIC=true` the API also hands the code to the site, which prints it on the landing page and fills it in. The API also rate limits actions and refuses an action that would push a ledger list past its ceiling. `.env.example` names every setting with its default, and `deploy/README.md` explains how the limits and the list ceiling work.
+Mode: DevNet with the shared hackathon login for the demo seats, and Sign in with HackCanton on (`DRAW_SIGN_IN=true`, with `DRAW_SIGN_IN_WALLET_URL` set). Each browser gets its own demo fund. Visitors can read every seat and the proof page. Actions need the access code (`DRAW_ACCESS_CODE` on the API), which the app asks for once. With `DRAW_ACCESS_CODE_PUBLIC=true` the API also hands the code to the site, which prints it on the landing page and fills it in. The API also rate limits actions and refuses an action that would push a ledger list past its ceiling. `.env.example` names every setting with its default, and `deploy/README.md` explains how the limits and the list ceiling work.
 
-The live journey (onboard, issue, LP pays, another LP is refused, settle, verified funded) passed against the deployed site: `evidence/devnet/browser/web-20261005003221/`, again on the redesigned web app: `evidence/devnet/browser/web-journey-20261005214111/`, and on 2026-10-06 with a demo fund per browser, where a second browser gets its own fund and starting over leaves the browser without one: `evidence/devnet/browser/web-journey-20261006091011/` (10 of 10 steps).
+The live journey (onboard, issue, LP pays, another LP is refused, settle, verified funded) passed against the deployed site: `evidence/devnet/browser/web-20261005003221/`, again on the redesigned web app: `evidence/devnet/browser/web-journey-20261005214111/`, and on 2026-10-06 with a demo fund per browser, where a second browser gets its own fund and starting over leaves the browser without one: `evidence/devnet/browser/web-journey-20261006091011/` and, on the release with sign-in, `evidence/devnet/browser/web-journey-20261006101224/` (10 of 10 steps each). The sign-in journeys passed there too: `evidence/devnet/browser/web-hackcanton-20261006100912/` (7 of 7) and `evidence/devnet/browser/web-hackcanton-wallet-20261006101052/` (9 of 9), both with the team's own HackCanton login.
 
 ## Checking the live site
 
@@ -28,6 +28,8 @@ DRAW_WEB_URL=https://draw.timjosh507.workers.dev npm run e2e
 This runs the browser journey against the live site and issues a real call on DevNet. On a build with per-browser demo funds each run starts its own fund. On an older build it uses the shared demo fund and spends its LPs' remaining commitment, so later visitors may have to start over. Set `DRAW_ACCESS_CODE` only when the site doesn't print the code.
 
 Each journey starts a new demo fund, and the API allows 3 new demo funds per address an hour by default (`DRAW_SETUP_LIMIT`). Raise it on the API while testing or recording, for example to `10/3600`, then set it back.
+
+The sign-in journeys in `web/e2e/hackcanton.spec.ts` run in the same command when a HackCanton login is in `HACKCANTON_USERNAME` and `HACKCANTON_PASSWORD`, or in the repository's `.env`, and the site has sign-in on. Otherwise they skip. They sign in on the node's Keycloak with that login, and the second one also logs in to the node's Canton Coin wallet and presses Accept there. Each starts its own demo fund too.
 
 ## Web on Cloudflare
 
@@ -41,6 +43,8 @@ npm run cf:deploy
 
 For local development, `web/.env.local` sets `DRAW_API_URL` (for example `http://localhost:4173`), then `npm run dev` serves on port 3100.
 
+The web app imports `scripts/demo/lib/reconcile.mjs` from outside `web/` (`experimental.externalDir` in `web/next.config.ts`), so the signed-in LP's browser classifies its payments with the server's own module. Build it from the whole repository.
+
 ## API on a VPS
 
 1. Copy the repository (or `rsync` the whole `app/` folder, `scripts/`, `contracts/dist/`, `contracts/daml/daml.yaml`, `evidence/`, `claims.yaml`, `docs/`, and `deploy/` for the health watchdog) to the server.
@@ -51,6 +55,24 @@ For local development, `web/.env.local` sets `DRAW_API_URL` (for example `http:/
 To update the VPS, copy the whole `app/` folder, never `server.mjs` alone, because `server.mjs` imports `capacity.mjs`, `limiter.mjs`, `relay.mjs` and `tours.mjs` from the same folder. Copy any changed files under `scripts/` too, then `systemctl restart draw`. Logs: `journalctl -u draw`. After a restart the log should show `DRAW on DevNet: ... a demo fund per browser`. If a module is missing, that line is missing and the log names the module.
 
 When the web app and the API both change, deploy the web app first. The API refuses actions that carry no tour id, which an older web app doesn't send.
+
+## Sign in with HackCanton
+
+With `DRAW_SIGN_IN=true`, an LP with its own HackCanton login can join a demo fund as itself. Its browser signs in on the node's Keycloak with the authorization code flow and PKCE, keeps the token in the tab, reads its notices from the node's JSON Ledger API, and pays from its own Canton wallet through the node's validator API. The API receives only the LP's party id, in the `join` action, and invites that party as the fund manager. It works only with a demo fund per browser, so not with `DRAW_PARTY_MODE=external`. The live API runs with it on and the wallet link set.
+
+| Variable | Default | What it is |
+|---|---|---|
+| `DRAW_SIGN_IN` | off | `true` turns sign-in on |
+| `DRAW_SIGN_IN_ISSUER` | `OAUTH_TOKEN_URL` without `/protocol/openid-connect/token` | The Keycloak realm URL |
+| `DRAW_SIGN_IN_CLIENT_ID` | `OAUTH_CLIENT_ID` | The public client the browser signs in with. On the HackCanton node that is NODERS' `web-app-ui-hackcanton-01-devnet` |
+| `DRAW_SIGN_IN_SCOPE` | `openid daml_ledger_api` | The scope the browser asks for |
+| `DRAW_SIGN_IN_LEDGER_API` | the admin party's JSON Ledger API | Where the browser reads and accepts |
+| `DRAW_SIGN_IN_VALIDATOR_API` | `SCAN_PROXY_URL`'s origin plus `/api/validator` | The LP's wallet API: allocate, withdraw, tap, balance |
+| `DRAW_SIGN_IN_WALLET_URL` | unset | Optional link to the node's Canton Coin wallet, shown to the signed-in LP. On the HackCanton node: `https://wallet.validator.hackcanton-01.devnet.naas.noders.services` |
+
+If a required value can't be worked out, sign-in stays off and the API logs which one. `GET /api/config` hands these values to the site, with the template and interface ids the browser queries.
+
+The browser comes back from Keycloak to the site's own `/auth/callback`, which is https://draw.timjosh507.workers.dev/auth/callback on the live site. It then calls the node from the site's origin, so the node has to allow that origin. On 2026-10-06 CORS preflights from https://draw.timjosh507.workers.dev and http://localhost:3100 to the JSON Ledger API, the validator API and the Keycloak token endpoint all returned 200 with that origin allowed. A signed-in LP's party has to be onboarded in the node's Canton Coin wallet first.
 
 ## Health watchdog
 
@@ -76,4 +98,5 @@ The same check is public through the site at `/api/health`, because the site's p
 | Mode | Ledger | Who signs |
 |---|---|---|
 | DevNet, shared login | HackCanton node | the API, with the team's hackathon login. External parties on that node need NODERS to allocate them |
+| DevNet, Sign in with HackCanton (`DRAW_SIGN_IN=true`) | HackCanton node | the signed-in LP's browser, with that LP's own HackCanton login, for its own party. The demo seats, the fund manager included, still sign through the API with the team's login |
 | LocalNet, browser keys (`DRAW_PARTY_MODE=external`) | LocalNet | each person's browser, with its own key. Needs about 10 GB RAM for LocalNet, so it is not on the 4 GB VPS |

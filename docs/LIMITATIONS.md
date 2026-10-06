@@ -7,6 +7,7 @@ Plainly, what DRAW doesn't do or hasn't shown yet. Updated 2026-10-06.
 - The canonical flow has passed on the HackCanton DevNet node (79 of 79 on package 0.3.0, after 72 of 72 on 0.2.0) and on LocalNet. The 100-case campaign, the ablation and the custody run have only run on LocalNet. The browser journey has passed on both: against the live DevNet site, and on LocalNet with a login per party and with browser keys.
 - Package 0.3.0 has run in Daml Script and on DevNet. Every LocalNet run, including the campaign, the ablation, the custody run and the clean room, used 0.2.0 or earlier.
 - On the DevNet node one hackathon login acts for all five demo parties and for the read-back step. Credential separation, a read-only verifier login that can't submit, and keys held by each party are proven on LocalNet only.
+- An LP can sign in with its own HackCanton login and join a demo fund as itself, but both runs of that used the team's own login, which is also the login the server uses for the demo seats. Separate credentials on DevNet need a second person's login. The fund manager seat still acts with the shared demo login.
 - DevNet LPs can't hold their own keys yet, because external parties on the shared node need NODERS to allocate them. The self-allocation quota defaults to 0 in Canton 3.5, and our own allocate call is refused with HTTP 403 (`evidence/devnet/probes/20261006T091205Z`).
 - Every party on the DevNet node sits on one participant, and so does every LP on LocalNet. That operator can read every party it hosts. Production needs each LP on its own validator or with a provider it trusts.
 - Settlement uses Canton Coin from the DevNet faucet on DevNet and Amulet from the tap on LocalNet. Neither has monetary value. No real money, no USDCx, no bank rail. The USDCx registry lists the same allocation API DRAW uses, but DRAW hasn't run with USDCx.
@@ -20,18 +21,20 @@ Plainly, what DRAW doesn't do or hasn't shown yet. Updated 2026-10-06.
 - One currency and instrument per fund. Scenario dollars and Canton Coin units are separate fields, and the UI labels both.
 - No partial payments. Anything other than the exact amount is refused.
 - No notifications. LPs see notices when they open the app.
-- The investor list is fixed at three demo LPs plus an unrelated party.
+- The investor list is three demo LPs plus an unrelated party, and at most one LP signed in with HackCanton per demo fund.
 - Actions on the live site need a demo access code. Each browser gets its own demo fund, and every demo fund uses the same five parties. The app keeps one browser out of another browser's fund. The ledger keeps each LP out of the other LPs' records.
-- No wallet app has been shown listing or approving a DRAW payment request. Each LP's call reaches it as a CIP-0056 AllocationRequest, and on DevNet the run script created LP A's allocation from that request with the shared hackathon login.
+- Sign in with HackCanton needs a login whose party is already onboarded in the node's Canton Coin wallet, and that party sits on the same NODERS participant as the fund. It uses NODERS' public web-app client, not a client of DRAW's own.
+- The node's Canton Coin wallet is the only wallet shown listing and approving a DRAW payment request, in one run with the team's own login. Reject and Withdraw in that wallet, a late payment through the wallet API, and the wallet's withdraw and tap calls haven't run.
 
 ## Security
 
-- The demo app server holds every role's credential, and on LocalNet could mint any token. `SECURITY.md` describes the production model, which isn't built.
+- The demo app server holds the credential of every demo seat, and on LocalNet could mint any token. It never receives the token of an LP that signs in with HackCanton. `SECURITY.md` describes the production model, which isn't built beyond that sign-in.
+- A signed-in LP's token sits in its browser tab's session storage. The site loads no third-party scripts, but anything that runs in that tab could use the token.
 - The token registry operator (the DSO) sees every allocation's settlement reference. References are random and name no one.
 - Per the Splice Scan API docs, the Canton Coin leg of each payment appears in Scan, the network's public explorer, with its random reference and the party ids, and the obligation contracts don't. Our DevNet party ids carry readable hints such as `draw-lpa`. We inferred this from the docs and haven't checked it against Scan.
 - The verifier runs in the same process as the submitter, in scripts and in the app.
 - The verifier party that a fund can name in package 0.3.0 has run in Daml Script only. On DevNet the read-back step reads as the fund's own party with the shared login.
-- An LP whose party lives in a third-party wallet can't co-sign DRAW obligations unless that wallet's validator vets DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. DRAW's own answer is a key in the LP's browser with the party hosted by the fund's node, which runs on LocalNet only.
+- An LP whose party lives in a third-party wallet can't co-sign DRAW obligations unless that wallet's validator vets DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. The signed-in LP works on DevNet because its wallet party is on the fund's own node, which has DRAW's package. DRAW's other answer, a key in the LP's browser with the party hosted by the fund's node, runs on LocalNet only.
 
 ## Evidence
 

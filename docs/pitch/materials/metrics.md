@@ -13,8 +13,10 @@ DevNet means "DevNet, HackCanton shared node. One hackathon login signs for ever
 | Checks per settlement receipt | 14 of 14 for LP A and for LP B | DevNet | `receipt-lpA.json`, `receipt-lpB.json` in the same run |
 | Settlement record time to the read-back receipt | 6.8 seconds for LP A, 4.5 seconds for LP B (the verifier's clock against the ledger's record time) | DevNet | `receipt-lpA.json`: `recordTime` 09:17:02.501Z, `verifiedAt` 09:17:09.338Z. `receipt-lpB.json`: 09:18:07.811Z, 09:18:12.302Z |
 | Transaction events about another party's records, in each party's own stream | 0 for all five parties | DevNet | `evidence/devnet/runs/20261006T091531Z/streams.json` |
-| Payment request checks: each LP sees exactly its own request, the outsider sees none, LP A reads its call as a CIP-0056 AllocationRequest with the exact settlement and leg, and LP A's and LP B's requests close when their calls settle | 7 of 7 `wallet` checks. LP A paid by creating its allocation from the request, through the run script with the shared login. No wallet app has been shown listing or approving a request | DevNet | same `result.json` |
-| Live-site browser journey | 10 of 10 steps passed, 2026-10-06, including a second browser that gets its own demo fund. Earlier: 8 of 8 on 2026-10-05 | DevNet | `evidence/devnet/browser/web-journey-20261006091011/result.json` |
+| Payment request checks: each LP sees exactly its own request, the outsider sees none, LP A reads its call as a CIP-0056 AllocationRequest with the exact settlement and leg, and LP A's and LP B's requests close when their calls settle | 7 of 7 `wallet` checks. LP A paid by creating its allocation from the request, through the run script with the shared login | DevNet | same `result.json` |
+| Live-site browser journey | 10 of 10 steps passed, 2026-10-06, including a second browser that gets its own demo fund, on the release with sign-in. Earlier: 10 of 10 that morning, and 8 of 8 on 2026-10-05 | DevNet | `evidence/devnet/browser/web-journey-20261006101224/result.json` |
+| An LP signed in with its own HackCanton login: signs in on the node's Keycloak, accepts with its own login, pays from its own Canton wallet through DRAW, the fund manager settles, the LP sees verified funded | 7 of 7 steps passed, 2026-10-06, with the team's own login | DevNet | `evidence/devnet/browser/web-hackcanton-20261006100912/result.json` |
+| The same, paid by pressing Accept on the request in the node's Canton Coin wallet, and DRAW reading the payment from the LP's own ledger | 9 of 9 steps passed, 2026-10-06, with the team's own login | DevNet | `evidence/devnet/browser/web-hackcanton-wallet-20261006101052/result.json` |
 | Checks with each party signing its own transactions | 76 of 76 | LocalNet | `evidence/local/runs/20261004T183146Z/result.json` |
 | Browser journey, every action signed with a key made in the browser | 10 of 10 steps passed, 2026-10-05 | LocalNet | `evidence/local/browser/web-browser-keys-20261005005304/result.json` |
 | Seeded capital calls | 100 of 100 passed, 191 notices | LocalNet | `evidence/local/campaign/20261002T193724Z/result.json` |
@@ -29,7 +31,8 @@ DevNet means "DevNet, HackCanton shared node. One hackathon login signs for ever
 
 Limits that come with these numbers:
 
-- On DevNet one hackathon login acts for every party and for the read-back step, so DevNet shows party-scoped reads and real settlement. Separate logins and keys held by each party are shown on LocalNet.
+- On DevNet one hackathon login acts for every demo party and for the read-back step, so DevNet shows party-scoped reads and real settlement. Separate logins and keys held by each party are shown on LocalNet.
+- The sign-in runs used the team's own HackCanton login, which the server also uses for the demo seats. They show the LP's reads, acceptance and payment coming from its browser with its own token, and two different people's logins still need a second person.
 - The timing figures are not production latency. They come from one run each.
 - Campaign cases call at most three LPs.
 - Traffic cost per transaction on DevNet or MainNet hasn't been measured.

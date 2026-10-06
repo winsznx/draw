@@ -9,7 +9,8 @@ The matrix below was designed before the templates were written (it is the Phase
 | Actor | Daml party | Notes |
 |---|---|---|
 | Admin | `admin` | fund administrator, executor and receiver of every settlement |
-| LP A, LP B, LP C | `lpA`, `lpB`, `lpC` | one party each, each with its own credential on LocalNet. On the DevNet node one hackathon login acts for all parties |
+| LP A, LP B, LP C | `lpA`, `lpB`, `lpC` | one party each, each with its own credential on LocalNet. On the DevNet node one hackathon login acts for all the demo seats |
+| Signed-in LP (DevNet) | the wallet party of a HackCanton login | joins a demo fund as itself and acts only with its own login, from its browser. See "Sign in with HackCanton" below |
 | Unrelated | `outsider` | allocated on the same network, no relationship |
 | Verifier (optional, 0.3.0) | `verifier` | named on a fund when it is created, and an observer of that fund, its calls and its obligations. Daml Script only so far |
 | Registry admin | DSO on LocalNet and DevNet, `registrar` in tests | token infrastructure, sees token contracts only |
@@ -75,13 +76,49 @@ Second reader, separate token: read update by id + admin holdings -> evidence VE
 
 On the DevNet node the second reader uses the same shared hackathon login as every other step, so there the read-back is a separate step with the same credential. When a fund names a verifier party, the second reader reads through that party instead of the admin. The verifier party's view is tested in Daml Script only, and no ledger run has read back through it yet.
 
-The payment request's settlement and leg are exactly what `Obligation_Settle` checks, so an allocation created from the request passes unchanged (`test_payment_request`). On DevNet, LP A paid that way in run `20261006T091531Z`, through the run script with the shared login, using the same factory call a wallet makes. No wallet app has been shown doing it.
+The payment request's settlement and leg are exactly what `Obligation_Settle` checks, so an allocation created from the request passes unchanged (`test_payment_request`). On DevNet, LP A paid that way in run `20261006T091531Z`, through the run script with the shared login, using the same factory call a wallet makes. A signed-in LP paid from its own Canton wallet in the sign-in runs, once from DRAW and once with Accept in the node's Canton Coin wallet (next section).
 
 The UI may show FUNDED only for obligations whose evidence is `VERIFIED_FUNDED`.
 
 Why the obligation is co-signed: `Allocation_ExecuteTransfer` needs the executor, the sender, and the receiver. The admin is executor and receiver. The LP's authority comes from its signature on the obligation, which it gave by accepting the commitment. Inside `Obligation_Settle` the admin can only use that authority on an allocation that passes every check. The mutation check shows that if the sender or executor check is removed, Daml authorization still blocks the transfer.
 
 Replay: `Allocation_ExecuteTransfer` is consuming, so the same allocation cannot settle twice. A funded obligation also refuses `Obligation_Settle`. Both are tested.
+
+## Sign in with HackCanton (DevNet)
+
+An LP with its own HackCanton login can join a demo fund as itself. The API turns this on with `DRAW_SIGN_IN=true`, and only when each browser has its own demo fund. Both runs of it, `evidence/devnet/browser/web-hackcanton-20261006100912` and `web-hackcanton-wallet-20261006101052`, signed in with the team's own login.
+
+```text
+LP's browser -> node's Keycloak (realm noders-appsfactory, public client web-app-ui-hackcanton-01-devnet)
+                authorization code with PKCE, back to https://draw.timjosh507.workers.dev/auth/callback
+                token kept in this tab's sessionStorage, renewed with the refresh token
+LP's browser -> JSON Ledger API GET /v2/authenticated-user     -> primaryParty, the login's wallet party
+LP's browser -> DRAW API action "join" { party }               (the party id is all DRAW receives)
+DRAW API     -> Fund_InviteInvestor as the fund manager        -> invitation to commit $200,000
+LP's browser -> JSON Ledger API, with its own token:
+                POST /v2/state/active-contracts-page           CommitmentInvitation, InvestorCommitment,
+                                                               CapitalCallObligation, Allocation and
+                                                               AllocationRequest interfaces
+                POST /v2/commands/submit-and-wait-for-transaction  Invitation_Accept
+Fund manager seat (demo login) issues the call               -> obligation + PaymentRequest for the LP
+LP pays from its own Canton wallet, with its own token:
+                DRAW's Pay button -> POST {validator}/api/validator/v0/allocations
+                or Accept on the request under Allocations in the node's Canton Coin wallet
+Fund manager seat settles -> read-back step -> receipt          (as for every LP)
+LP's browser -> DRAW API GET /api/record?ref=                  -> DRAW's own receipt and logged steps
+```
+
+Who reads what:
+
+| Reader | Credential | Reads |
+|---|---|---|
+| The signed-in LP's browser | its own HackCanton token | its invitation, commitment, notices, payment requests and allocations, from the JSON Ledger API. Its balance from `GET /api/validator/v0/wallet/balance`. It classifies its own payments with `scripts/demo/lib/reconcile.mjs`, the module the server uses |
+| DRAW's API | the shared demo login, as the fund manager party | the fund's own records, which include the LP's commitment, notices and the payments addressed to the fund, since the fund is a party to each. It keeps DRAW's own record per notice, the read-back receipt and logged steps, and serves only that to the LP at `GET /api/record?ref=` |
+| The node's Canton Coin wallet | the LP's own login | each DRAW notice as a V1 allocation request, with Accept, Reject and, after Accept, Withdraw |
+
+The LP pays, withdraws its own payment (`POST /api/validator/v0/allocations/{cid}/withdraw`) and taps test CC (`POST /api/validator/v0/wallet/tap`) through its wallet's API. A late LP can still pay from DRAW: the wallet call gets a fresh one-hour allocate window, which works because `Obligation_Settle` checks reference, leg id, executor, payer, receiver, instrument and amount, and no times. When a demo fund closes, on start over or when the API forgets the tour, the fund manager withdraws its open payment requests with `AllocationRequest_Withdraw` as the executor, so no LP's wallet keeps offering a closed fund's notice. An LP withdraws its own locked coin in its wallet.
+
+The LP's party is its login's wallet party on the same NODERS participant as the fund, which has DRAW's package vetted. A login with no wallet party yet has to onboard in the node's wallet first.
 
 ## States
 

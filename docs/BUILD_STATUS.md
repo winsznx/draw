@@ -9,7 +9,7 @@ Updated 2026-10-06. Every row points at evidence that exists in `evidence/`, or 
 | § | Requirement | Status | Where / what is left |
 |---|---|---|---|
 | 10 to 12 | Fund, InvestorCommitment, CapitalCall, CapitalCallObligation, six states, no BRIDGED | DONE | `contracts/daml/daml/Draw/CapitalCall.daml`, package 0.3.0, a Smart Contract Upgrade of 0.2.0 |
-| n/a | A payment request for each LP in the Token Standard's AllocationRequest form | DONE in Daml Script and on DevNet with the shared login | `PaymentRequest` implements CIP-0056 AllocationRequest V1 (`test_payment_request`, the DevNet run's `wallet` checks in `evidence/devnet/runs/20261006T091531Z`). No wallet app has been shown listing or approving one |
+| n/a | A payment request for each LP in the Token Standard's AllocationRequest form | DONE in Daml Script and on DevNet | `PaymentRequest` implements CIP-0056 AllocationRequest V1 (`test_payment_request`, the DevNet run's `wallet` checks in `evidence/devnet/runs/20261006T091531Z`). The node's Canton Coin wallet lists it, and its Accept paid one for a signed-in LP (`evidence/devnet/browser/web-hackcanton-wallet-20261006101052`) |
 | n/a | Optional verifier party named on a fund | DONE in Daml Script | `test_verifier`, `test_no_verifier`. Not run on a ledger |
 | 11 | Visibility and authority matrix | DONE | `docs/ARCHITECTURE.md` |
 | 12 | Resolution paths: overdue, waive, review, reopen, release | DONE | `Obligation_Reopen`, `Obligation_ReleasePending` added, tested in `test_review_paths` |
@@ -28,8 +28,8 @@ Updated 2026-10-06. Every row points at evidence that exists in `evidence/`, or 
 | 27 | Independent verification | DONE on LocalNet, PARTIAL on DevNet | LocalNet: a read-only verifier user, checked every run to be unable to submit. DevNet: the read-back step runs with the shared hackathon login, so that check is skipped with its reason recorded. Package 0.3.0 adds an optional verifier party that observes the fund, its calls and its obligations, tested in Daml Script only |
 | 27A | Baseline, reference, counterfactuals | DONE | `docs/BASELINE_AND_COUNTERFACTUAL.md` |
 | 28 to 29 | Canton and Token Standard ablation | DONE | `docs/CANTON_ABLATION.md`, `docs/SPONSOR_ABLATION.md`, `evidence/local/ablation/20261002T193830Z` |
-| 30 | claims.yaml | DONE | 15 entries: 14 verified, 1 blocked (Grofty) |
-| 30A | Frozen evidence manifest | PARTIAL | `evidence/manifest.json` was regenerated 2026-10-06 09:55 UTC at `688cdbc` and indexes 55 runs, up to the 0.3.0 DevNet run `20261006T091531Z`. Regenerate with `node scripts/evidence/manifest.mjs` at the freeze |
+| 30 | claims.yaml | DONE | 16 entries: 15 verified, 1 blocked (Grofty) |
+| 30A | Frozen evidence manifest | PARTIAL | `evidence/manifest.json` was regenerated 2026-10-06 10:35 UTC at `32f49cf` and indexes 58 runs, up to the sign-in journeys and `web-journey-20261006101224`. Regenerate with `node scripts/evidence/manifest.mjs` at the freeze |
 
 ## Product
 
@@ -43,6 +43,7 @@ Updated 2026-10-06. Every row points at evidence that exists in `evidence/`, or 
 | 20 | LP: notice, pay, progress steps, receipt, withdraw | DONE | |
 | v10 §3 | LP states in plain words: due, pending, funded, rejected, mismatched, overdue | DONE | |
 | 20 | Role switcher with genuine party context and demo label | DONE | Seat onboarding and "Switch seat". On DevNet the screens name the shared hackathon login |
+| n/a | An LP signs in with its own HackCanton login and pays from its own Canton wallet | DONE on DevNet, with the team's own login | "Sign in with HackCanton" on the seat screen, `DRAW_SIGN_IN=true` on the API. Live runs `evidence/devnet/browser/web-hackcanton-20261006100912` (7 of 7, paid from DRAW) and `web-hackcanton-wallet-20261006101052` (9 of 9, Accept in the node's Canton Coin wallet). A run with a second person's login is still to do |
 | 35 | Errors in plain language with technical detail, empty states, mobile | DONE | |
 | 40A | `/proof` judge surface | DONE | https://draw.timjosh507.workers.dev/proof |
 | n/a | Reconciliation inbox | DONE | Payments tab |
@@ -55,8 +56,8 @@ Updated 2026-10-06. Every row points at evidence that exists in `evidence/`, or 
 
 | § | Requirement | Status | Where / what is left |
 |---|---|---|---|
-| 32 | Test layers | DONE | Daml, mutation, unit, integration, role reads, Token Standard, campaign, browser |
-| 33 | Browser E2E | DONE | LocalNet: standard and browser-key journeys on the first Next.js web app, before the 2026-10-05 redesign (`web-journey-20261005003621`, `web-browser-keys-20261005005304`). The redesigned onboarding and browser-key flow haven't run on LocalNet. DevNet live site: `web-20261005003221`, `web-journey-20261005214111` and `web-journey-20261006091011` (a demo fund per browser, 10 of 10 steps) |
+| 32 | Test layers | DONE | Daml, mutation, unit, integration, role reads, Token Standard, campaign, browser. The 81 unit tests in `scripts/test/` at `32f49cf` include server tests for sign-in config, `join`, a call to the signed-in LP, `/api/record` and the payment-request cleanup, and tests that hold `claims.yaml` to its evidence. Unit test results aren't stored as evidence |
+| 33 | Browser E2E | DONE | LocalNet: standard and browser-key journeys on the first Next.js web app, before the 2026-10-05 redesign (`web-journey-20261005003621`, `web-browser-keys-20261005005304`). The redesigned onboarding and browser-key flow haven't run on LocalNet. DevNet live site: `web-20261005003221`, `web-journey-20261005214111`, `web-journey-20261006091011` (a demo fund per browser, 10 of 10 steps) and `web-journey-20261006101224` (10 of 10 on the release with sign-in), plus the sign-in journeys `web-hackcanton-20261006100912` and `web-hackcanton-wallet-20261006101052` |
 | 32A | SECURITY.md | DONE | |
 | 32B | Clean room | DONE for the 2026-10-04 tree | `evidence/local/clean_room/20261004T195643Z` PASS with the ledger steps. It built the earlier Vite web app, so the Next.js `web/` still needs a clean-room run (needs LocalNet) |
 | 32C | WORKLOAD_ECONOMICS.md | DONE | from `scripts/eval/workload.mjs` |
@@ -99,4 +100,5 @@ Updated 2026-10-06. Every row points at evidence that exists in `evidence/`, or 
 - A public repository and a license. The 2026-10-06 scan found no secrets in the 45 commits up to `94ffc14`. Re-run it on the release commit at the freeze.
 - The demo video and the voiceover.
 - Asks to NODERS: a read-only verifier login, and external parties allocated for keys we hold.
+- A sign-in run with a second person's HackCanton login, so the LP's credential is separate from the demo seats' login.
 - LocalNet is not running (the machine is low on disk). It is needed for a clean-room run of the current web app and for any new LocalNet evidence.

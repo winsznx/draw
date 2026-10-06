@@ -21,16 +21,27 @@ Waiving is a real admin power. A waived obligation leaves the unresolved total. 
 
 - LocalNet: the participant's `ledger-api-user` allocates parties and creates one ledger user per party with `actAs` and `readAs` on that party only. The verifier gets `readAs` on the admin only.
 - DevNet, on the HackCanton node: the team creates parties in the node's Console, and one hackathon login (Keycloak password grant) acts for all of them. A node that offers a participant-admin user or one OAuth client per role is also supported, through `scripts/demo/provision.mjs`.
+- DevNet, an LP that signs in with HackCanton: its party is its own login's wallet party, and its browser signs every one of its actions with its own token. The server invites that party and never acts for it. See "Sign in with HackCanton" below.
 - Non-custodial mode (`DRAW_PARTY_MODE=external`, LocalNet): each party is an external party with its own Ed25519 key. The participant prepares each transaction, the party's key signs it, and the participant executes it. The server's ledger user is refused when it tries to act for the party.
 - Token actions: the LP's ledger user submits `AllocationFactory_Allocate`, either from its payment request's settlement and leg, the way a Token Standard wallet would, or with the obligation reference set directly. The admin's ledger user submits `Obligation_Settle`, which exercises `Allocation_ExecuteTransfer` using the authority the LP gave when it co-signed the obligation. That authority is usable only inside `Obligation_Settle`, after every correlation check passes.
 
 ## What the application server can and cannot fake
 
-In the demo, the app server (`app/server.mjs`) holds a working credential for every role. On LocalNet the HS256 secret is `unsafe` and documented, so the server could mint a token for any user. On the DevNet node it holds the one hackathon login that acts for every party. The live API answers only the web app's proxy, which adds a service token, and refuses any action without the demo access code.
+In the demo, the app server (`app/server.mjs`) holds a working credential for every demo seat. On LocalNet the HS256 secret is `unsafe` and documented, so the server could mint a token for any user. On the DevNet node it holds the one hackathon login that acts for every demo party. It never receives the token of an LP that signs in with HackCanton. The live API answers only the web app's proxy, which adds a service token, and refuses any action without the demo access code.
 
-So the demo server could submit as an LP, which in production it must not be able to do. It cannot make an obligation funded without a real allocation from that LP executed on the ledger, cannot make the ledger show LP B's obligation to LP A, and cannot make a consumed allocation usable again. The UI shows FUNDED only when the ledger says `Funded` and a verifier receipt exists. A forged receipt file alone does nothing to ledger state, and the proof scripts re-read the ledger themselves.
+So the demo server could submit as a demo LP, which in production it must not be able to do. It cannot make an obligation funded without a real allocation from that LP executed on the ledger, cannot make the ledger show LP B's obligation to LP A, and cannot make a consumed allocation usable again. The UI shows FUNDED only when the ledger says `Funded` and a verifier receipt exists. A forged receipt file alone does nothing to ledger state, and the proof scripts re-read the ledger themselves.
 
-## Production authentication (not built)
+## Sign in with HackCanton (DevNet)
+
+An LP with its own HackCanton login can join a demo fund as itself, when the API runs with `DRAW_SIGN_IN=true`. Both runs of it signed in with the team's own login, which is also the login the server uses for the demo seats, so the server's credential could have acted for that party. The runs show that DRAW didn't need to: the LP's reads, its acceptance and its payment came from its browser with its own token. Separate credentials need a second person's login.
+
+- Token handling: the browser runs the OIDC authorization code flow with PKCE against the node's Keycloak, with NODERS' public web-app client `web-app-ui-hackcanton-01-devnet`, not a client of DRAW's own. The code verifier and `state` stay in the tab during the redirect, and the callback refuses a sign-in that didn't start in that tab. The token and refresh token sit in that tab's `sessionStorage`, so they end with the tab or with Sign out, and a refused refresh signs the LP out. The site loads no third-party scripts. The token goes only to the node: its Keycloak, its JSON Ledger API and its validator API.
+- What the server learns: the LP's party id, which the `join` action sends, and what the fund manager party already sees, which is the LP's commitment, its notices and the payments addressed to the fund. The server keeps DRAW's own record per notice, the read-back receipt and logged steps, and hands only that to the LP's browser at `GET /api/record?ref=`.
+- Why `join` with any party id is harmless: it only makes the fund manager invite that party. An invitation does nothing until that party accepts it with its own credential, and a payment request only exists for an obligation, which needs an accepted commitment. `join` refuses the demo seats' parties, takes one signed-in LP per demo fund, needs the demo access code, and counts toward the action rate limit. Closing the demo fund withdraws an invitation nobody accepted.
+- Closing a demo fund, on start over or when the API forgets the tour, also withdraws its open payment requests as their executor, so no LP's wallet keeps offering that fund's notices. The LP takes back its own locked coin in its wallet.
+- The fund manager seat still acts with the shared demo login.
+
+## Production authentication (not built, apart from LP sign-in on the HackCanton node)
 
 - Each person signs in through the fund's or the LP's identity provider and gets a token for their own ledger user only.
 - The app server holds no LP credentials. LP payments are signed by the LP's own wallet or participant, for example through a CIP-0103 wallet provider.
@@ -56,7 +67,7 @@ Every state change archives the obligation and creates a new contract id. An act
 
 ## Frontend compromise
 
-The browser only calls the web app on Cloudflare, which proxies `/api` and `/evidence` to the API with a service token. A compromised frontend can show wrong numbers on that screen. It cannot change ledger state beyond what the server's credentials allow, and the `/proof` page and evidence files are produced by scripts that read the ledger directly.
+The browser calls the web app on Cloudflare, which proxies `/api` and `/evidence` to the API with a service token. A signed-in LP's browser also calls the node directly with its own token. A compromised frontend can show wrong numbers on that screen. It cannot change ledger state beyond what the server's credentials allow, plus, in a tab where an LP signed in, what that LP's login allows. The `/proof` page and evidence files are produced by scripts that read the ledger directly.
 
 ## Secrets
 
@@ -69,4 +80,4 @@ The browser only calls the web app on Cloudflare, which proxies `/api` and `/evi
 
 ## Demo role switcher
 
-The seat chosen at onboarding, and "Switch seat", decide which party every query and action runs as. On LocalNet that means a different ledger user per party. On DevNet one shared login queries as the chosen party, and the screens say so. It is a demo convenience. A sign-in system is in the production model above.
+The seat chosen at onboarding, and "Switch seat", decide which party every query and action runs as. On LocalNet that means a different ledger user per party. On DevNet one shared login queries as the chosen demo party, and the screens say so. An LP that signs in with HackCanton queries with its own token instead. The demo seats are a demo convenience. A sign-in system for every seat is in the production model above.

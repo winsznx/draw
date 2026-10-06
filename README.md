@@ -57,7 +57,7 @@ Not claimed: MainNet, real money, or settlement in USDCx. Two different people's
 
 ## How to verify
 
-1. Open the [proof page](https://draw.timjosh507.workers.dev/proof). It renders the DevNet run and the LocalNet suites from the result files and links each one.
+1. Open the [proof page](https://draw.timjosh507.workers.dev/proof). It renders the DevNet run, the newest run of each browser journey on the live site with its screenshots, and the LocalNet suites, all from the result files, and links each one.
 2. Read the files. Every `result.json`, receipt and log under `evidence/` was written by a script. Failed runs are kept, and [`docs/GATES.md`](docs/GATES.md#failed-and-aborted-runs) names each one and its cause. [`docs/PROOF.md`](docs/PROOF.md) explains each check, GATES lists the gate verdicts, and [`evidence/manifest.json`](evidence/manifest.json) indexes the runs with file hashes. The history was rewritten once, on 2026-10-05, before publication, so 12 of the 17 commit ids recorded in evidence before 2026-10-06, including those of the first DevNet run and the custody, 0.2.0 Daml core and clean-room runs, point at the old history. [`docs/PROOF.md`](docs/PROOF.md#commit-ids-in-the-evidence) maps each one to its published commit. Runs from 2026-10-06 record commits made after the rewrite.
 3. Run them again:
 

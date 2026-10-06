@@ -1,6 +1,6 @@
 # DevNet deployment
 
-Status: DEVNET_E2E PASS on 2026-10-06 on package 0.3.0, `evidence/devnet/runs/20261006T091531Z/result.json`, 79 of 79 checks, single credential. The first DevNet PASS was on 2026-10-04 on package 0.2.0, `evidence/devnet/runs/20261004T120110Z` (72 of 72). Two runs before it aborted on run-script bugs, and a dirty-tree PASS earlier on 2026-10-06 was superseded. All are kept. The live web app runs on the same node with the same login (`docs/DEPLOY.md`), and its browser journey passed twice on 2026-10-05 and again on 2026-10-06 with a demo fund per browser.
+Status: DEVNET_E2E PASS on 2026-10-06 on package 0.3.0, `evidence/devnet/runs/20261006T091531Z/result.json`, 79 of 79 checks, single credential. The first DevNet PASS was on 2026-10-04 on package 0.2.0, `evidence/devnet/runs/20261004T120110Z` (72 of 72). Two runs before it aborted on run-script bugs, and a dirty-tree PASS earlier on 2026-10-06 was superseded. All are kept. The live web app runs on the same node with the same login for the demo seats (`docs/DEPLOY.md`), and its browser journey passed twice on 2026-10-05 and twice more on 2026-10-06 with a demo fund per browser. On 2026-10-06 an LP signed in with a HackCanton login also joined a demo fund as itself and paid from its own Canton wallet, in two runs that used the team's own login.
 
 ## What the organizers provided (2026-10-04)
 
@@ -64,12 +64,18 @@ Verified without an account (2026-10-04): the token endpoint and client id refus
 | Earlier runs | `20261004T120110Z`, the first PASS, 72 of 72 on 0.2.0 at commit `01c09ca` as recorded before the 2026-10-05 history rewrite, which is `578352e` in the published history (`PROOF.md` maps every evidence commit). `20261006T084934Z`, 79 of 79 on 0.3.0 at `6167ef1` with 77 uncommitted files, superseded by the clean-tree run |
 | Aborted runs | `20261004T115438Z` (the early-overdue check ran after the due time on slower DevNet) and `20261004T115809Z` (`/v2/updates` request bug). Both fixed in the run script, both kept with a `NOTE.md` |
 | Probes | `evidence/devnet/probes/20261006T091205Z`, `asExpected: true`, from `scripts/demo/probe.mjs`, read-only or prepare-only. Package registered (`PACKAGE_STATUS_REGISTERED`). Interactive prepare succeeds for the tenant and resolves the 0.3.0 `PaymentRequest` template, never executed. External-party `generate-topology` succeeds. External-party allocate refused with HTTP 403. Listing parties refused with HTTP 403 |
-| Web journeys | `evidence/devnet/browser/web-20261005003221`, `web-journey-20261005214111` (redesigned UI) and `web-journey-20261006091011` (10 of 10 steps, a demo fund per browser) against https://draw.timjosh507.workers.dev. Four failed runs kept with notes, all test bugs |
+| Web journeys | `evidence/devnet/browser/web-20261005003221`, `web-journey-20261005214111` (redesigned UI), `web-journey-20261006091011` (10 of 10 steps, a demo fund per browser) and `web-journey-20261006101224` (10 of 10, the release with sign-in) against https://draw.timjosh507.workers.dev. Four failed runs kept with notes, all test bugs |
+| Sign-in journeys | `evidence/devnet/browser/web-hackcanton-20261006100912` (7 of 7: signed in on the node's Keycloak, accepted with its own login, paid from its own Canton wallet through DRAW, settled, verified funded) and `web-hackcanton-wallet-20261006101052` (9 of 9: the same, paid by pressing Accept on the request in the node's Canton Coin wallet). Both with the team's own HackCanton login |
+
+## Sign in with HackCanton on this node
+
+The node's Keycloak public client `web-app-ui-hackcanton-01-devnet`, the same one the password grant above uses, also runs the authorization code flow with PKCE for the live site, back to https://draw.timjosh507.workers.dev/auth/callback. The browser then reads the login's wallet party from `GET /v2/authenticated-user` (`primaryParty`), reads and accepts on the JSON Ledger API, and pays through the validator's wallet API, all with the LP's own token. A login whose party isn't onboarded yet has to open the node's Canton Coin wallet once. Variables and CORS are in `docs/DEPLOY.md`, and the endpoints are in `SPONSOR_FINDINGS.md`.
 
 ## Limitations specific to DevNet
 
-- One hackathon login acts for every party and for the read-back step.
-- No wallet app has been shown listing or approving a DRAW payment request. The run script created LP A's allocation from its request with the shared login.
+- One hackathon login acts for every demo party and for the read-back step.
+- An LP can sign in with its own HackCanton login, but both runs of that used the team's own login, which the server also uses for the demo seats. Separate credentials need a second person's login.
+- The node's Canton Coin wallet listed a DRAW payment request and its Accept paid it, in one run with the team's own login.
 - All parties share the NODERS participant, so its operator can read them all.
 - Per the Splice Scan API docs, the Canton Coin leg of each payment appears in Scan with the party ids, whose hints (`draw-lpa` and so on) are readable, and the obligation contracts don't. That's inferred from the docs and hasn't been checked against Scan.
 - Canton Coin comes from the DevNet faucet and has no monetary value.

@@ -12,6 +12,7 @@ Use these exactly. They stay inside [`claims.yaml`](../../claims.yaml), and the 
 | Asset | Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario. | 0:00 to 0:20 and 0:42 to 1:52 |
 | LocalNet | LocalNet. Each party signs with its own key. | 2:40 to 3:10 |
 | Production asset | Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx. | 3:22 to 3:34 |
+| Sign-in | This LP signed in with the team's own HackCanton login, which the demo seats also use. | the optional sign-in scene, whenever you film it with the team's login |
 
 ## Before recording
 
@@ -132,6 +133,20 @@ Voiceover:
 
 Evidence: `evidence/local/runs/20261004T183146Z/result.json` (76 of 76 checks) and `evidence/local/browser/web-browser-keys-20261005005304/result.json`.
 
+### Optional, about 20 seconds: an LP signs in as itself
+
+Use this if there's room, or in place of part of the LocalNet scene. It adds about 20 seconds, so trim elsewhere to stay inside 4:00.
+
+On screen: the seat screen's "Have a HackCanton login?" card, "Sign in with HackCanton", the node's login page, then "Join as an LP". Then the node's Canton Coin wallet under Allocations, the capital call listed as an allocation request, and Accept. Back in DRAW, the notice shows the payment locked for the fund.
+
+Captions: the sign-in label, if you signed in with the team's own login. "The LP's browser reads with its own token. DRAW only learns its party id."
+
+Voiceover:
+
+> An LP with its own HackCanton login can join as itself. Its browser reads its notice from the ledger with its own login. The call also shows up in its Canton Coin wallet as an allocation request, and Accept there locks the coin for the fund. DRAW's server only learns its party id.
+
+Backup: the screenshots in `evidence/devnet/browser/web-hackcanton-wallet-20261006101052`, among them `04-wallet-request.png` and `05-wallet-accepted.png`. That run used the team's own login, so keep the sign-in label on.
+
 ### 3:10 to 3:34 Why Canton, and the honest line
 
 On screen: slide 6 of the deck, the five attacks with "4 of 5" and "0 of 5". Then the production asset label.
@@ -162,12 +177,13 @@ The second version adds about 8 seconds and ends near 3:58.
 
 - MainNet, real money, or settlement in USDCx.
 - Customers, pilots, partners or letters of intent.
-- Separate LP logins, or LP-held keys, on DevNet.
+- Two different people's logins on DevNet. The sign-in runs used the team's own login, which the server also uses for the demo seats.
+- LP-held keys on DevNet.
 - That payments are hidden from the network. Canton Coin transfers appear in Scan.
-- That the server holds no credentials. The demo server holds every role's.
+- That the server holds no credentials. The demo server holds every demo seat's.
 - A scheduler, partial payments, notifications or KYC.
 - That viewers can hold their own key on DevNet.
-- That a wallet app lists or approves a DRAW payment request.
+- That any Canton wallet can pay a DRAW request. The node's own Canton Coin wallet did, for a party on the fund's node.
 - "Independent" for the DevNet read-back. On DevNet it's a separate step run with the same shared login.
 - That only the LP and the fund can read a notice. The node operator can read every party it hosts.
 
