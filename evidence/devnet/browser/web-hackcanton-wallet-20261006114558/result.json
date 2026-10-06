@@ -1,0 +1,46 @@
+{
+  "run": "20261006114558",
+  "test": "an LP approves the capital call in the node's Canton Coin wallet",
+  "site": "https://draw.timjosh507.workers.dev",
+  "steps": [
+    {
+      "step": "demo fund started",
+      "at": "2026-10-06T11:46:19.448Z"
+    },
+    {
+      "step": "signed in on the node Keycloak",
+      "at": "2026-10-06T11:46:24.959Z"
+    },
+    {
+      "step": "LP accepted with its own login",
+      "at": "2026-10-06T11:46:35.833Z"
+    },
+    {
+      "step": "call issued to the signed-in LP",
+      "at": "2026-10-06T11:46:44.338Z"
+    },
+    {
+      "step": "the Canton wallet lists the capital call as an allocation request",
+      "at": "2026-10-06T11:47:02.452Z"
+    },
+    {
+      "step": "LP pressed Accept in its Canton wallet",
+      "at": "2026-10-06T11:47:07.946Z"
+    },
+    {
+      "step": "DRAW reads the payment from the LP ledger",
+      "at": "2026-10-06T11:47:10.612Z"
+    },
+    {
+      "step": "fund manager settled, verifier confirmed",
+      "at": "2026-10-06T11:47:25.242Z"
+    },
+    {
+      "step": "LP sees verified funded",
+      "at": "2026-10-06T11:47:31.311Z"
+    }
+  ],
+  "expectedSteps": 9,
+  "verdict": "PASS",
+  "error": null
+}
