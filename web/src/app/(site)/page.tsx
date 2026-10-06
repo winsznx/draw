@@ -44,9 +44,11 @@ export default async function Landing() {
   const receipt = run?.receipts[0] ?? null;
   const local = proof?.localnet ?? null;
   const clean = run?.leaks ? Object.values(run.leaks).every((l) => l.length === 0) : null;
+  // The network the API's canonical run is on, which is where these figures come from.
+  const runNetwork = proof?.network ?? 'DevNet';
 
   const record = [
-    { figure: run ? `${run.passed}/${run.passed + run.failed.length}` : 'Not loaded', label: 'checks on DevNet', text: 'Two LPs funded with real test Canton Coin, bad payments refused, the unpaid LP marked overdue.', env: 'DevNet' },
+    { figure: run ? `${run.passed}/${run.passed + run.failed.length}` : 'Not loaded', label: `checks on ${runNetwork}`, text: 'Two LPs funded with real test Canton Coin, bad payments refused, the unpaid LP marked overdue.', env: runNetwork },
     { figure: local?.campaign ? `${local.campaign.metrics.passed ?? 0}/${local.campaign.metrics.cases ?? 0}` : 'Not loaded', label: 'generated capital calls', text: `${local?.campaign?.metrics.obligations ?? 0} notices. Nothing falsely funded, no party saw another’s records.`, env: 'LocalNet' },
     { figure: local?.ablation ? `${local.ablation.comparison.filter((c) => c.treatment === 'stopped').length}/${local.ablation.comparison.length}` : 'Not loaded', label: 'attacks stopped', text: `The same flow on a database with a paid flag let ${local?.ablation?.comparison.filter((c) => c.counterfactualA === 'LANDED').length ?? 0} through.`, env: 'LocalNet' },
     { figure: local?.custody ? `${local.custody.passed}/${local.custody.passed + local.custody.failed.length}` : 'Not loaded', label: 'checks, each party holding its key', text: 'The participant cannot act for a party without that party’s signature.', env: 'LocalNet' },
@@ -167,10 +169,10 @@ export default async function Landing() {
             <span className="eyebrow"><IconShield size={15} />Who sees what</span>
             <h2 className="t-h2">Each party reads its own ledger.</h2>
             <p className="t-lead">
-              These are the records each party&rsquo;s own query returned at the end of the DevNet run. DRAW doesn&rsquo;t hide rows. The
+              These are the records each party&rsquo;s own query returned at the end of the {runNetwork} run. DRAW doesn&rsquo;t hide rows. The
               ledger never sends them.
             </p>
-            {run && <p className="t-sm faint">DevNet run {run.runId}.{clean ? ' No party saw a record it should not.' : ''}</p>}
+            {run && <p className="t-sm faint">{runNetwork} run {run.runId}.{clean ? ' No party saw a record it should not.' : ''}</p>}
           </div>
           <div className={`module module-pad ${styles.matrixWrap}`}>
             <table className={`table ${styles.matrix}`}>

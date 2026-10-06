@@ -16,11 +16,13 @@ const resolvedUsers = new Map();
 // The shared login's real ledger user id, once a token has shown it.
 let sharedSubject = null;
 let shared = null;
-let settings = { mode: 'hs256', secret: 'unsafe', audience: 'https://canton.network.global' };
+const DEFAULT_SETTINGS = { mode: 'hs256', secret: 'unsafe', audience: 'https://canton.network.global' };
+let settings = DEFAULT_SETTINGS;
 
-// A new configuration starts with no clients: network.mjs registers them after.
+// A new configuration starts from the defaults and with no clients: nothing
+// from an earlier one carries over, and network.mjs registers clients after.
 export function configureAuth(next) {
-  settings = { ...settings, ...next };
+  settings = { ...DEFAULT_SETTINGS, ...next };
   oauthClients.clear();
   tokenCache.clear();
   resolvedUsers.clear();
@@ -123,7 +125,7 @@ export async function tokenSubject(userId) {
   return subjectOf(await tokenFor(userId));
 }
 
-// A user with its own registered client (for example a read-only verifier)
+// A user with its own registered client (for example the verifier's own client)
 // gets its own token even when one shared login acts for the parties. The
 // shared login answers only for itself: an id it does not know is refused,
 // never quietly served with the shared login.

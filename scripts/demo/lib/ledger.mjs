@@ -24,6 +24,15 @@ export const INTERFACES = {
 
 const ACS_PAGE_SIZE = 500;
 
+const subjectOf = (token) => {
+  try {
+    return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()).sub ?? null;
+  } catch {
+    // Not a JWT. The request still goes out, just without a recorded subject.
+    return null;
+  }
+};
+
 export class LedgerError extends Error {
   constructor(status, path, body) {
     super(`${path} -> HTTP ${status}: ${typeof body === 'string' ? body : JSON.stringify(body)}`);
@@ -45,7 +54,10 @@ export class LedgerClient {
   }
 
   async request(method, path, { json, body, contentType } = {}) {
-    const headers = { Authorization: `Bearer ${await tokenFor(this.userId)}` };
+    const token = await tokenFor(this.userId);
+    // Who the ledger sees make this request: the token's subject.
+    this.lastSubject = subjectOf(token);
+    const headers = { Authorization: `Bearer ${token}` };
     let payload = body;
     if (json !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -102,6 +114,12 @@ export class LedgerClient {
   // The ledger user this client's requests act as: its token's subject.
   async tokenSubject() {
     return tokenSubject(this.userId);
+  }
+
+  // The subject of the token the last request carried, without a new token
+  // request, or null before the first request.
+  get requestSubject() {
+    return this.lastSubject ?? null;
   }
 
   async userRights(userId) {

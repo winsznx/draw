@@ -142,7 +142,10 @@ function loadNetwork() {
     apiFor,
     participantLabel: (role) => (apiFor(role) === providerApi ? (name === 'localnet' ? 'app-provider' : 'admin participant') : (name === 'localnet' ? 'app-user' : 'lp participant')),
     operators: {
-      provider: env('DRAW_OPERATOR_USER', name === 'localnet' ? 'ledger-api-user' : undefined),
+      // On a shared login an operator without a client of its own can only be that login.
+      provider: authMode === 'password' && env('DRAW_OPERATOR_USER') && !env('DRAW_OPERATOR_CLIENT_ID')
+        ? SHARED_USER
+        : env('DRAW_OPERATOR_USER', name === 'localnet' ? 'ledger-api-user' : undefined),
       providerApi,
       userApi,
     },
@@ -151,8 +154,11 @@ function loadNetwork() {
     registryUrl: env('REGISTRY_URL', 'http://scan.localhost:4000/registry'),
     scanUrl: env('SCAN_URL', 'http://scan.localhost:4000/api/scan'),
     // Scan behind a validator's proxy wants a token. `shared` means the user the
-    // demo seats act as: the shared login, or the backend client.
-    scanAuthUser: env('SCAN_AUTH_USER') === 'shared' && providedParties ? seatUser('admin') : env('SCAN_AUTH_USER'),
+    // demo seats act as: the shared login, or the backend client. On a shared
+    // login that is the only credential there is, whatever the name.
+    scanAuthUser: !env('SCAN_AUTH_USER') ? undefined
+      : authMode === 'password' ? SHARED_USER
+        : env('SCAN_AUTH_USER') === 'shared' && providedParties ? seatUser('admin') : env('SCAN_AUTH_USER'),
     tapAmount: env('DRAW_TAP_AMOUNT', '100.0'),
     evidenceDir: join(ROOT, 'evidence', name === 'localnet' ? 'local' : name, 'runs'),
   };

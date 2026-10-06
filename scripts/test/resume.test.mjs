@@ -71,7 +71,7 @@ test('after a restart, a verifier client still reads as itself on a shared login
 
 test('a fund saved before the verifier client existed reads back with the client configured now', async () => {
   const resumed = await resumeIn({ ...base(), ...PASSWORD, ...VERIFIER }, stored('user-123'));
-  assert.equal(resumed.users.verifier, 'svc-verifier');
+  assert.equal(resumed.users.verifier, '__verifier__', 'the configured user, resolved only when used');
   assert.equal(resumed.verifier, 'svc-verifier');
 });
 
@@ -85,4 +85,49 @@ test('a fund saved on the shared login moves to the backend client once that is 
   const resumed = await resumeIn({ ...base(), ...BACKEND, ...VERIFIER }, stored('user-123'));
   assert.ok(Object.values(resumed.seats).every((sub) => sub === 'svc-backend'));
   assert.equal(resumed.verifier, 'svc-verifier');
+});
+
+// Runs a snippet in a fresh process with the given configuration.
+async function inFreshProcess(env, code) {
+  try {
+    const { stdout } = await promisify(execFile)(process.execPath, ['--input-type=module', '-e', code], {
+      cwd: new URL('../..', import.meta.url).pathname, env: { PATH: process.env.PATH, HOME: process.env.HOME, DRAW_ENV_FILE: 'none', ...env }, timeout: 60_000,
+    });
+    return { ok: true, out: JSON.parse(stdout) };
+  } catch (error) {
+    return { ok: false, error: String(error.stderr ?? error.message) };
+  }
+}
+
+const PROVIDED = `
+  const { credentialFacts, providedUsers } = await import('./scripts/demo/lib/draw.mjs');
+  const users = await providedUsers();
+  console.log(JSON.stringify({ users, facts: credentialFacts(users) }));
+`;
+
+test('a configured verifier id that is not who its token belongs to stops before anything is labelled', async () => {
+  const typed = await inFreshProcess({ ...base(), ...BACKEND, ...VERIFIER, DRAW_VERIFIER_USER: 'xidoncapitals-verifier' }, PROVIDED);
+  assert.equal(typed.ok, false);
+  assert.match(typed.error, /configured as ledger user xidoncapitals-verifier, but its token belongs to svc-verifier/);
+});
+
+test('a verifier pointed at the backend client resolves to the backend user, so it counts as one of the seats', async () => {
+  const slip = await inFreshProcess({ ...base(), ...BACKEND, DRAW_VERIFIER_CLIENT_ID: 'backend-client', DRAW_VERIFIER_CLIENT_SECRET: 'backend-secret' }, PROVIDED);
+  assert.ok(slip.ok, slip.error);
+  assert.equal(slip.out.users.verifier, 'svc-backend');
+  assert.deepEqual(slip.out.facts, { seatsSeparate: false, verifierSeparate: false });
+});
+
+test('a broken verifier client fails the read-back, not the resumed fund', async () => {
+  const broken = await inFreshProcess({ ...base(), ...BACKEND, DRAW_VERIFIER_CLIENT_ID: 'verifier-client', DRAW_VERIFIER_CLIENT_SECRET: 'wrong' }, `
+    const { DrawSession } = await import('./scripts/demo/lib/draw.mjs');
+    const roles = ['admin', 'lpA', 'lpB', 'lpC', 'outsider'];
+    const session = await DrawSession.resume({ party: Object.fromEntries(roles.map((r) => [r, r])), users: {}, external: {} });
+    const seat = await session.client.admin.tokenSubject();
+    const verifier = await session.verifier.client.tokenSubject().then(() => 'worked', (error) => error.message);
+    console.log(JSON.stringify({ seat, verifier }));
+  `);
+  assert.ok(broken.ok, broken.error);
+  assert.equal(broken.out.seat, 'svc-backend');
+  assert.match(broken.out.verifier, /token request for __verifier__ failed: HTTP 401/);
 });

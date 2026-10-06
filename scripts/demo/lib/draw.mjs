@@ -9,7 +9,7 @@ import { LedgerClient, TEMPLATES, INTERFACES, transactionEvents } from './ledger
 import { allocationFactory, amuletInstrument, executeTransferContext, tapContext, withdrawContext } from './registry.mjs';
 import { SettlementVerifier } from './verifier.mjs';
 import { ROLES, ROOT, network } from './network.mjs';
-import { ledgerUserOf } from './auth.mjs';
+import { ledgerUserOf, tokenSubject } from './auth.mjs';
 import { PartyKey } from './keys.mjs';
 
 const darVersion = readFileSync(join(ROOT, 'contracts/daml/daml.yaml'), 'utf8').match(/^version:\s*(\S+)/m)[1];
@@ -53,16 +53,32 @@ export function packageInfo() {
 
 const firstCreated = (transaction) => transactionEvents(transaction).find((e) => e.kind === 'created');
 
-const providedParties = () => network.partyMode === 'provisioned' || network.partyMode === 'external-provisioned';
+export const providedParties = () => network.partyMode === 'provisioned' || network.partyMode === 'external-provisioned';
 
-// The ledger users the provided parties act through, from the configuration
-// as it is now. A stored session's ids are never reused for these: a stored id
-// may name a client this process has not resolved, or a setup that has since
-// changed, and either would put a different credential behind a seat.
-export async function providedUsers() {
+// The users the provided parties act through, as the configuration names them
+// now: placeholders such as __backend__, or explicit ids. A stored session's
+// ids are never reused for these: a stored id may name a client this process
+// has not resolved, or a setup that has since changed, and either would put a
+// different credential behind a seat. Nothing here touches the network, so a
+// broken client fails only the requests that use it.
+export function configuredUsers() {
   const provided = network.partyMode === 'external-provisioned' ? network.provisionedExternal : network.provisioned;
+  return Object.fromEntries([...ROLES, 'verifier'].map((role) => [role, provided[role].userId]));
+}
+
+// The same users as the ledger user ids their tokens belong to. A configured
+// id that is not who its token belongs to stops here, before any evidence or
+// label is built from it.
+export async function providedUsers() {
   const users = {};
-  for (const role of [...ROLES, 'verifier']) users[role] = await ledgerUserOf(provided[role].userId);
+  for (const [role, configured] of Object.entries(configuredUsers())) {
+    const id = await ledgerUserOf(configured);
+    const subject = await tokenSubject(id);
+    if (subject !== id) {
+      throw new Error(`the ${role} is configured as ledger user ${configured}, but its token belongs to ${subject}. Fix its DRAW_*_USER or leave it unset.`);
+    }
+    users[role] = id;
+  }
   return users;
 }
 
@@ -154,7 +170,7 @@ export class DrawSession {
         party[role] = provided[role].party;
         if (provided[role].keyName) external[role] = { keyName: provided[role].keyName, fingerprint: provided[role].fingerprint };
       }
-      Object.assign(users, await providedUsers());
+      Object.assign(users, configuredUsers());
       if (network.operators.provider) {
         await new LedgerClient({ baseUrl: network.apiFor('admin'), userId: network.operators.provider }).uploadDar(DAR);
         onStep('dar uploaded', { participant: network.apiFor('admin'), packageId });
@@ -169,9 +185,9 @@ export class DrawSession {
   }
 
   // Provided parties act through the users the configuration names now, not
-  // the ones stored with the session (see providedUsers).
+  // the ones stored with the session (see configuredUsers).
   static async resume({ party, users, external, signers, verifierParty }) {
-    const current = providedParties() ? await providedUsers() : users;
+    const current = providedParties() ? configuredUsers() : users;
     return new DrawSession({ party, users: current, external, signers, verifierParty: verifierParty ?? network.verifierParty, instrument: await amuletInstrument() });
   }
 

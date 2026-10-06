@@ -127,12 +127,16 @@ if (credentialFacts(users).verifierSeparate) {
   });
 }
 
+const facts = credentialFacts(users);
 const result = {
   runId,
   network: network.name,
   authMode: network.authMode,
   seatCredential: network.seatCredential,
-  separateVerifier: network.separateVerifier,
+  // From the ledger users the tokens belong to, as checked above.
+  users,
+  seatsSeparate: facts.seatsSeparate,
+  verifierSeparate: facts.verifierSeparate,
   ledgerApi: network.apiFor('admin'),
   commit: execFileSync('git', ['-C', ROOT, 'rev-parse', 'HEAD']).toString().trim(),
   packageId,

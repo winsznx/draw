@@ -141,7 +141,7 @@ export default async function ProofPage() {
           What the scripted runs produced. A script wrote every number on this page into a result file, and every file is linked. LocalNet and
           DevNet results are kept apart.
         </p>
-        {config && <p className="t-sm muted">The live site right now: {networkNote(config)} Each run below records its own setup.</p>}
+        {config && <p className="t-sm muted">The live site right now: {networkNote(config)}</p>}
       </header>
 
       {!c ? <p className="panel">No canonical run on {proof.network} yet.</p> : (

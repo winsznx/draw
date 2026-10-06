@@ -49,6 +49,7 @@ test('a client configured by placeholder submits and prepares as the user its to
   await client.prepare({ actAs: ['admin::1220aa'], commands: [] });
   assert.deepEqual(seen.map((s) => [s.userId, s.subject]), [['svc-backend', 'svc-backend'], ['svc-backend', 'svc-backend']]);
   assert.equal(await client.tokenSubject(), 'svc-backend');
+  assert.equal(client.requestSubject, 'svc-backend', 'the subject the last request really carried');
 });
 
 // GET /v2/users/{user}/rights answers in this shape.

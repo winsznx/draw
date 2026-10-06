@@ -14,7 +14,7 @@ const EVIDENCE = join(ROOT, 'evidence');
 const COMMANDS = {
   daml_core: { test: 'scripts/gates/daml_core.sh', verifier: 'dpm test (Daml Script) in contracts/tests' },
   mutation: { test: 'scripts/gates/mutation_check.sh', verifier: 'dpm test against each mutated copy' },
-  runs: { test: 'node scripts/demo/run.mjs', verifier: 'scripts/demo/lib/verifier.mjs with a readAs-admin-only ledger user' },
+  runs: { test: 'node scripts/demo/run.mjs', verifier: 'scripts/demo/lib/verifier.mjs, reading as the ledger user each run records in verifierUser' },
   campaign: { test: 'node scripts/eval/campaign.mjs', verifier: 'reference model in scripts/eval/campaign.mjs plus the read-only verifier' },
   ablation: { test: 'node scripts/eval/ablation.mjs', verifier: 'same attacks against node:sqlite and against the ledger' },
   browser: { test: 'npm run e2e in web (app/web for runs before 2026-10-05)', verifier: 'Playwright against the running app and ledger' },

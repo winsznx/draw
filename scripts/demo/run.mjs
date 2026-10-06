@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 import { LedgerClient, TEMPLATES, transactionEvents } from './lib/ledger.mjs';
 import { PartyKey } from './lib/keys.mjs';
-import { DrawSession, LPS, credentialFacts, eventually, newRef, packageInfo, sleep, sum } from './lib/draw.mjs';
+import { DrawSession, LPS, credentialFacts, eventually, newRef, packageInfo, providedParties, providedUsers, sleep, sum } from './lib/draw.mjs';
 import { ROLES, ROOT, network } from './lib/network.mjs';
 
 const DUE_SECONDS = Number(process.env.DRAW_DUE_SECONDS ?? 90);
@@ -59,14 +59,17 @@ const draw = await DrawSession.open({ tag: runTag, packageId, onStep: step });
 const { party, client, users, instrument, verifier } = draw;
 // Each participant numbers its own offsets, so each reader remembers where it started.
 const streamStart = Object.fromEntries(await Promise.all(ROLES.map(async (role) => [role, await client[role].ledgerEnd()])));
-// Decided from the ledger users the seats really act as, not from configured names.
-const facts = credentialFacts(users);
+// Decided from the ledger users the tokens really belong to, never from
+// configured names. Provided parties' users are checked against their tokens
+// here, and a mismatch stops the run before anything is labelled.
+const ledgerUsers = providedParties() ? await providedUsers() : users;
+const facts = credentialFacts(ledgerUsers);
 const sharedBy = {
   'backend-client': 'one backend client acts for every demo seat on this node',
   'shared-login': 'one shared login acts for every party on this node',
 }[network.seatCredential] ?? 'several seats act through the same ledger user';
 step('party-scoped users ready', {
-  network: network.name, partyMode: network.partyMode, party, users, seatCredential: network.seatCredential,
+  network: network.name, partyMode: network.partyMode, party, users: ledgerUsers, seatCredential: network.seatCredential,
   verifierCredential: facts.verifierSeparate ? 'a ledger user of its own' : 'one of the seats\' ledger users',
 });
 
@@ -79,9 +82,16 @@ if (!facts.seatsSeparate) {
 if (!facts.verifierSeparate) {
   skip('credential: verifier token cannot submit as admin', 'the verifier reads as one of the seats\' ledger users');
 } else {
-  await expectRejection('credential: verifier token cannot submit as admin',
-    () => verifier.client.create({ actAs: [party.admin], templateId: TEMPLATES.Fund, argument: { admin: party.admin, fundId: 'X', fundName: 'X' } }),
-    'HTTP 403');
+  // A 403 counts only when the command carried the verifier's own user id with
+  // the verifier's own token, so the refusal is about its rights and nothing else.
+  const subject = await verifier.client.tokenSubject();
+  if (subject !== ledgerUsers.verifier) {
+    check('credential: verifier token cannot submit as admin', false, { reason: 'the verifier token belongs to someone else', subject, configured: ledgerUsers.verifier });
+  } else {
+    await expectRejection('credential: verifier token cannot submit as admin',
+      () => verifier.client.create({ actAs: [party.admin], templateId: TEMPLATES.Fund, argument: { admin: party.admin, fundId: 'X', fundName: 'X' } }),
+      'HTTP 403');
+  }
 }
 
 // ---------------------------------------------------------------- custody
@@ -299,6 +309,8 @@ async function settleAndVerify(role, { viaWallet = false } = {}) {
   writeJson(`receipt-${role}.json`, receipts[role]);
   check(`settlement[${role}]: read-back verifier returns VERIFIED_FUNDED`, receipt.verdict === 'VERIFIED_FUNDED',
     receipt.checks.filter((c) => !c.ok));
+  check(`settlement[${role}]: the read-back ran as the verifier's own ledger user`, receipt.verifierUser === ledgerUsers.verifier,
+    { recorded: receipt.verifierUser, expected: ledgerUsers.verifier });
   if (draw.verifierParty) check(`settlement[${role}]: verifier read the settlement through its own party`, receipt.readAs === draw.verifierParty, receipt.readAs);
   check(`wallet: ${role}'s payment request closes when the call is settled`, (await requestsOf(role)).length === 0);
   check(`settlement[${role}]: LP sees its own obligation as Funded`, receipts[role].stateAfter === 'Funded', receipts[role].stateAfter);
@@ -452,9 +464,10 @@ const result = {
   instrument,
   parties: party,
   fundId,
-  users,
+  // The ledger users the tokens belong to, as checked at the start of the run.
+  users: ledgerUsers,
   participants: Object.fromEntries(ROLES.map((role) => [role, network.participantLabel(role)])),
-  verifierUser: users.verifier,
+  verifierUser: ledgerUsers.verifier,
   gates: {
     [network.name === 'localnet' ? 'LOCAL_SETTLEMENT' : 'DEVNET_E2E']: verdict(group(['settlement', 'negative', 'unpaid', 'deadline', 'totals'])),
     PRIVACY_CAMPAIGN: verdict(group(['privacy', 'authority', 'credential'])),

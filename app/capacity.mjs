@@ -111,13 +111,15 @@ export function createCapacity({ ceiling, now = () => Date.now() }) {
 }
 
 // Ledger clients for the parties in `.env`, without opening a DrawSession.
-// Only provisioned parties are shared by every tour, so other modes have none.
+// Only provided parties are shared by every tour, so other modes have none.
+// Reading needs no party key, so external parties are counted the same way.
 export function provisionedReader() {
-  if (network.partyMode !== 'provisioned') return null;
+  const provided = network.provisioned ?? network.provisionedExternal;
+  if (!provided) return null;
   const roles = [...new Set(WATCHED.map(([role]) => role))];
   return {
-    party: Object.fromEntries(roles.map((role) => [role, network.provisioned[role].party])),
-    client: Object.fromEntries(roles.map((role) => [role, new LedgerClient({ baseUrl: network.apiFor(role), userId: network.provisioned[role].userId, label: `count-${role}` })])),
+    party: Object.fromEntries(roles.map((role) => [role, provided[role].party])),
+    client: Object.fromEntries(roles.map((role) => [role, new LedgerClient({ baseUrl: network.apiFor(role), userId: provided[role].userId, label: `count-${role}` })])),
   };
 }
 

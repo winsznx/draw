@@ -10,7 +10,7 @@ import { dirname, extname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { INTERFACES, TEMPLATES } from '../scripts/demo/lib/ledger.mjs';
-import { DAR, DrawSession, LPS, credentialFacts, eventually, newRef, packageInfo, providedUsers, sum } from '../scripts/demo/lib/draw.mjs';
+import { DAR, DrawSession, LPS, credentialFacts, eventually, newRef, packageInfo, providedParties, providedUsers, sum } from '../scripts/demo/lib/draw.mjs';
 import { ROLES, ROOT, network } from '../scripts/demo/lib/network.mjs';
 import { businessStatus, classifyPayments, obligationOutcome } from '../scripts/demo/lib/reconcile.mjs';
 import { LedgerClient } from '../scripts/demo/lib/ledger.mjs';
@@ -106,17 +106,17 @@ const signIn = (() => {
 // The DRAW package this server submits with.
 const RELEASE = (({ version, packageId }) => ({ version, packageId }))(packageInfo());
 
-// Whether the read-back step acts as a ledger user none of the seats act as,
-// decided from the resolved users once the login service answers. Until then
-// the config says no, never more than is known.
-let verifierSeparate = false;
+// Whether the seats and the read-back step act as ledger users of their own,
+// decided from the users their tokens belong to once the login service
+// answers. Until then the config claims neither, never more than is known.
+const credentials = { resolved: !providedParties(), seatsSeparate: !providedParties(), verifierSeparate: false };
 async function resolveCredentials(attempt = 1) {
-  if (network.partyMode !== 'provisioned' && network.partyMode !== 'external-provisioned') return;
+  if (credentials.resolved) return;
   try {
-    verifierSeparate = credentialFacts(await providedUsers()).verifierSeparate;
+    Object.assign(credentials, credentialFacts(await providedUsers()), { resolved: true });
   } catch (error) {
     console.error(`resolving the configured ledger users failed (attempt ${attempt}): ${error.message}`);
-    if (attempt < 5) setTimeout(() => void resolveCredentials(attempt + 1), 30_000 * attempt);
+    setTimeout(() => void resolveCredentials(attempt + 1), Math.min(30_000 * attempt, 300_000));
   }
 }
 void resolveCredentials();
@@ -260,9 +260,9 @@ function explain(error) {
 // whether actions need the access code.
 const config = () => ({
   network: NETWORK_LABEL,
-  singleCredential: network.singleCredential,
-  seatCredential: network.seatCredential,
-  separateVerifier: verifierSeparate,
+  singleCredential: network.singleCredential || !credentials.seatsSeparate,
+  seatCredential: network.seatCredential === 'per-seat' && !credentials.seatsSeparate ? 'shared-user' : network.seatCredential,
+  separateVerifier: credentials.verifierSeparate,
   browserKeys: BROWSER_KEYS,
   tours: TOURS,
   accessCodeRequired: Boolean(ACCESS_CODE),
@@ -843,7 +843,7 @@ const BUSY = { error: 'The demo is busy with other visitors right now. Wait abou
 // For the watchdog in deploy/: the process answers, the ledger answers this
 // server's own credential within a few seconds, and the demo state still
 // reads. One check serves every caller for a few seconds.
-const healthClient = new LedgerClient({ baseUrl: network.apiFor('admin'), userId: network.provisioned?.admin.userId ?? network.operators.provider, label: 'health' });
+const healthClient = new LedgerClient({ baseUrl: network.apiFor('admin'), userId: (network.provisioned ?? network.provisionedExternal)?.admin.userId ?? network.operators.provider, label: 'health' });
 const HEALTH_TIMEOUT_MS = 4000;
 const HEALTH_REUSE_MS = 5000;
 let lastHealth = null;

@@ -112,8 +112,9 @@ export class SettlementVerifier {
 
     return {
       verdict,
-      // Who the ledger saw read: the subject of the token the reads carried.
-      verifierUser: await this.client.tokenSubject(),
+      // Who the ledger saw read: the subject of the token the reads above carried.
+      // Read from the requests already made, so nothing here can fail after a settlement.
+      verifierUser: this.client.requestSubject,
       readAs: reader.party,
       obligationRef,
       claimedUpdateId,

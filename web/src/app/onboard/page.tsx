@@ -145,7 +145,7 @@ export default function Onboard() {
           )}
 
           {step === 'party' && role && !browserKeys && (
-            <SharedPartyStep role={role} view={chosen.data} onBack={() => setStep('seat')} onNext={() => setStep(accessCode() || !view?.accessCodeRequired ? 'done' : 'access')} />
+            <SharedPartyStep role={role} view={chosen.data} site={view} onBack={() => setStep('seat')} onNext={() => setStep(accessCode() || !view?.accessCodeRequired ? 'done' : 'access')} />
           )}
 
           {step === 'party' && role && browserKeys && view?.session && (
@@ -319,7 +319,9 @@ function SeatStep({ view, held, loading, failed, onPick }: { view: View | undefi
   );
 }
 
-function SharedPartyStep({ role, view, onBack, onNext }: { role: Role; view: View | undefined; onBack: () => void; onNext: () => void }) {
+// `view` is the chosen seat's own read, for its party. `site` is the view the
+// seat list already loaded, which says how this site signs.
+function SharedPartyStep({ role, view, site, onBack, onNext }: { role: Role; view: View | undefined; site: View | undefined; onBack: () => void; onNext: () => void }) {
   const party = view?.session && 'queriedAs' in view ? view.queriedAs.party : null;
   return (
     <div className="stack-6">
@@ -336,18 +338,20 @@ function SharedPartyStep({ role, view, onBack, onNext }: { role: Role; view: Vie
       </div>
       <div className={styles.callout}>
         <p className="t-h3">How signing works here</p>
-        {view?.singleCredential ? (
+        {!site ? (
+          <span className="sk" style={{ width: '100%', height: 42 }} />
+        ) : site.seatCredential === 'per-seat' && !site.singleCredential ? (
           <p className="t-sm muted">
-            The shared HackCanton node does not let teams create parties that hold their own keys yet, so{' '}
-            {view.seatCredential === 'backend-client' ? 'DRAW’s backend login' : 'one hackathon login'} submits for every demo party on this
-            network.{view.separateVerifier ? ' A different login reads each settlement back.' : ''} Privacy still comes from the ledger:
-            each party&rsquo;s reads return only its own records.{view.signIn ? ' To act as yourself, sign in with your own HackCanton login as an LP.' : ''}{' '}
-            On LocalNet, DRAW creates a key in your browser and you sign every action yourself.
+            This party has its own ledger login on {site.network}, and every read and action uses it. With browser keys turned on, DRAW
+            instead creates a key in your browser and you sign every action yourself.
           </p>
         ) : (
           <p className="t-sm muted">
-            This party has its own ledger login on {view?.network ?? 'this network'}, and every read and action uses it. With browser keys
-            turned on, DRAW instead creates a key in your browser and you sign every action yourself.
+            {site.network === 'DevNet' ? 'The shared HackCanton node does not let teams create parties that hold their own keys yet, so ' : 'On this network '}
+            {site.seatCredential === 'backend-client' ? 'DRAW’s backend login' : site.network === 'DevNet' ? 'one hackathon login' : 'one login'} submits
+            for every demo party.{site.separateVerifier ? ' A different login reads each settlement back.' : ''} Privacy still comes from the
+            ledger: each party&rsquo;s reads return only its own records.{site.signIn ? ' To act as yourself, sign in with your own HackCanton login as an LP.' : ''}{' '}
+            On LocalNet with browser keys, DRAW creates a key in your browser and you sign every action yourself.
           </p>
         )}
       </div>
