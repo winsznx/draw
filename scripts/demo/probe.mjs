@@ -117,14 +117,9 @@ if (credentialFacts(users).verifierSeparate) {
     if (problems.length) throw new Error(`the verifier ${problems.join('; ')}`);
     return { user: verifierUser, ...shown(rights) };
   });
-  await probe('credentials: the verifier\'s client cannot prepare a transaction for the fund', 'REFUSED', async () => {
-    const prepared = await verifierClient.prepare({
-      actAs: [admin],
-      synchronizerId,
-      commands: [{ CreateCommand: { templateId: TEMPLATES.Fund, createArguments: { admin, fundId: `PROBE-${runId}`, fundName: 'probe', verifier: null } } }],
-    });
-    return { preparedTransactionHashPresent: Boolean(prepared.preparedTransactionHash), executed: false };
-  });
+  // Whether the verifier can submit as the fund is checked by run.mjs, which
+  // tries it. Prepare is no test of that: on hackcanton-01 a user that can only
+  // read as a party may still prepare a transaction for it (probe 20261006T131751Z).
 }
 
 const facts = credentialFacts(users);

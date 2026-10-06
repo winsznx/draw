@@ -1,0 +1,101 @@
+{
+  "runId": "20261006T131751Z",
+  "network": "devnet",
+  "authMode": "oauth",
+  "seatCredential": "backend-client",
+  "users": {
+    "admin": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "lpA": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "lpB": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "lpC": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "outsider": "4d4358a3-c890-4e12-b292-53f668230b34",
+    "verifier": "b20615ba-00dc-4336-bbea-391e48070776"
+  },
+  "seatsSeparate": false,
+  "verifierSeparate": true,
+  "ledgerApi": "https://ledger-api-json.participant.hackcanton-01.devnet.naas.noders.services",
+  "commit": "97d15d60de66308a610b14235483ba469b1e106a",
+  "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534",
+  "probes": [
+    {
+      "id": "package: this release is registered on the node",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534",
+        "version": "0.3.0",
+        "status": "PACKAGE_STATUS_REGISTERED"
+      }
+    },
+    {
+      "id": "interactive submission: prepare succeeds for this tenant and resolves the release template",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "preparedTransactionHashPresent": true,
+        "hashingSchemeVersion": "HASHING_SCHEME_VERSION_V2",
+        "executed": false
+      }
+    },
+    {
+      "id": "external parties: generate-topology succeeds for this tenant",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "partyId": "b94ab230-probe-20261006t131751z::12207b7798fabd3712bd668645bd32767271341e0c50ad40e3904090543a39e41527",
+        "topologyTransactions": 1
+      }
+    },
+    {
+      "id": "external parties: tenant allocate is refused on the shared node",
+      "expectation": "REFUSED",
+      "outcome": "REFUSED",
+      "status": 403,
+      "detail": "/v2/parties/external/allocate -> HTTP 403: {\"code\":\"NA\",\"cause\":\"A security-sensitive error has been received\",\"correlationId\":\"f130270a2f669affde252c6d5006f6fa\",\"traceId\":\"f130270a2f669affde252c6d5006f6fa\",\"context\":{},\"resources\":[],\"errorCategory\":-1,\"grpcCodeValue\":7,\"retryInfo\":null,\"definiteAnswer\":null}"
+    },
+    {
+      "id": "user management: listing parties is refused for a tenant",
+      "expectation": "REFUSED",
+      "outcome": "REFUSED",
+      "status": 403,
+      "detail": "/v2/parties?pageSize=1 -> HTTP 403: {\"code\":\"NA\",\"cause\":\"A security-sensitive error has been received\",\"correlationId\":\"cd52783768d29d18639415a7415a4a99\",\"traceId\":\"cd52783768d29d18639415a7415a4a99\",\"context\":{},\"resources\":[],\"errorCategory\":-1,\"grpcCodeValue\":7,\"retryInfo\":null,\"definiteAnswer\":null}"
+    },
+    {
+      "id": "credentials: the demo seats' backend client acts for the five demo parties and nothing else",
+      "expectation": "SUCCEEDED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "user": "4d4358a3-c890-4e12-b292-53f668230b34",
+        "actAs": [
+          "b94ab230-draw-lpa",
+          "b94ab230-draw-admin",
+          "b94ab230-draw-outsider",
+          "b94ab230-draw-lpc",
+          "b94ab230-draw-lpb"
+        ],
+        "readAs": [
+          "b94ab230-draw-admin"
+        ],
+        "executeAs": [],
+        "other": []
+      }
+    },
+    {
+      "id": "credentials: the verifier's client only reads, as the fund's party",
+      "expectation": "SUCCEEDED",
+      "outcome": "FAILED",
+      "status": null,
+      "detail": "the verifier can act for b94ab230-e690-46b2-9288-133b30609cb9; also reads as b94ab230-e690-46b2-9288-133b30609cb9"
+    },
+    {
+      "id": "credentials: the verifier's client cannot prepare a transaction for the fund",
+      "expectation": "REFUSED",
+      "outcome": "SUCCEEDED",
+      "detail": {
+        "preparedTransactionHashPresent": true,
+        "executed": false
+      }
+    }
+  ],
+  "asExpected": false
+}
