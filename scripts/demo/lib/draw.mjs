@@ -191,9 +191,15 @@ export class DrawSession {
   }
 
   async invite(fundCid, role, committedScenarioAmount) {
+    return this.inviteParty(fundCid, this.party[role], committedScenarioAmount);
+  }
+
+  // An investor that is none of this session's roles, such as an LP that
+  // signed in with its own login. Only the LP's own credential can accept.
+  async inviteParty(fundCid, lp, committedScenarioAmount) {
     return this.client.admin.exercise({
       actAs: [this.party.admin], templateId: TEMPLATES.Fund, contractId: fundCid, choice: 'Fund_InviteInvestor',
-      argument: { lp: this.party[role], committedScenarioAmount, instrumentId: this.instrument },
+      argument: { lp, committedScenarioAmount, instrumentId: this.instrument },
     });
   }
 
@@ -272,6 +278,16 @@ export class DrawSession {
     if (!obligation) return null;
     const request = (await this.paymentRequests('admin')).find((r) => r.payload.obligationRef === obligation.payload.obligationRef);
     return request?.contractId ?? null;
+  }
+
+  // Withdraws a payment request as the fund, the request's executor, so the
+  // LP's wallet stops offering it. Used when a demo fund closes with notices
+  // still open.
+  async withdrawPaymentRequest(requestCid) {
+    return this.client.admin.exercise({
+      actAs: [this.party.admin], templateId: INTERFACES.AllocationRequest, contractId: requestCid, choice: 'AllocationRequest_Withdraw',
+      argument: { extraArgs: { context: { values: {} }, meta: { values: {} } } },
+    });
   }
 
   // What the LP's wallet shows for a payment request: the CIP-0056

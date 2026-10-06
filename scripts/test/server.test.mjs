@@ -304,7 +304,7 @@ test('starting over withdraws the fund\'s open invitations and unsettled payment
   assert.equal((await call('/api/view?role=admin', { headers: tour() })).body.session, false);
 
   const log = readFileSync(join(call.evidence, 'local', 'app', fundId, 'actions.jsonl'), 'utf8');
-  assert.match(log, /"action":"close","invitations":3,"payments":1,"failures":\[\]/);
+  assert.match(log, /"action":"close","invitations":3,"payments":1,"requests":0,"failures":\[\]/);
   assert.equal(log.includes(TOUR), false);
 });
 
@@ -372,4 +372,127 @@ test('on shared parties health reports how full each list is', async (t) => {
   assert.equal(capacity.lists.length, 11);
   assert.equal(capacity.warning, false);
   assert.equal(capacity.full, false);
+});
+
+// ---------------------------------------------------------------- sign in with HackCanton
+const SIGN_IN = {
+  DRAW_SIGN_IN: 'true',
+  OAUTH_TOKEN_URL: 'https://login.example/realms/hack/protocol/openid-connect/token',
+  OAUTH_CLIENT_ID: 'web-app',
+  SCAN_PROXY_URL: 'https://validator.example/api/validator/v0/scan-proxy',
+};
+const GUEST = `hackcanton-user::1220${'cd'.repeat(32)}`;
+
+// What the LP's own browser does with its own token, straight against the ledger.
+async function acceptAsGuest(fake, party = GUEST) {
+  const invitation = fake.acs.find((c) => c.templateId?.endsWith(':CommitmentInvitation') && c.payload.lp === party);
+  const response = await fetch(`${fake.url}/v2/commands/submit-and-wait-for-transaction`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ commands: { commands: [{ ExerciseCommand: { templateId: invitation.templateId, contractId: invitation.contractId, choice: 'Invitation_Accept', choiceArgument: {} } }], actAs: [party] } }),
+  });
+  assert.equal(response.status, 200);
+}
+
+test('sign-in is off unless the operator turns it on, and then names the node login and APIs', async (t) => {
+  const off = await startApp(t);
+  assert.equal((await off('/api/config')).body.signIn, null);
+  assert.equal((await off('/api/view?role=guest', { headers: tour() })).status, 400);
+
+  const on = await startApp(t, SIGN_IN);
+  const { signIn } = (await on('/api/config')).body;
+  assert.equal(signIn.issuer, 'https://login.example/realms/hack');
+  assert.equal(signIn.clientId, 'web-app');
+  assert.equal(signIn.scope, 'openid daml_ledger_api');
+  assert.equal(signIn.validatorApi, 'https://validator.example/api/validator');
+  assert.ok(signIn.ledgerApi.startsWith('http://127.0.0.1:'));
+  assert.equal(signIn.templates.CapitalCallObligation, '#draw:Draw.CapitalCall:CapitalCallObligation');
+  assert.equal(signIn.interfaces.AllocationRequest, '#splice-api-token-allocation-request-v1:Splice.Api.Token.AllocationRequestV1:AllocationRequest');
+});
+
+test('a signed-in LP joins this browser\'s fund by its party id, and only its own browser acts for it', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake, SIGN_IN));
+  assert.equal((await act(call, 'join', { body: { party: GUEST } })).status, 409);
+  await setup(call);
+
+  assert.match((await act(call, 'join', { body: { party: 'not-a-party' } })).body.error, /not a Canton party id/);
+  assert.match((await act(call, 'join', { body: { party: party('LPA') } })).body.error, /one of the demo seats/);
+  const joined = await act(call, 'join', { body: { party: GUEST } });
+  assert.equal(joined.status, 200);
+  assert.match(joined.body.message, /Accept the commitment with your HackCanton login/);
+  assert.equal(fake.acs.filter((c) => c.templateId?.endsWith(':CommitmentInvitation') && c.payload.lp === GUEST).length, 1);
+  assert.match((await act(call, 'join', { body: { party: GUEST } })).body.message, /already has its invitation/);
+  assert.equal(fake.acs.filter((c) => c.payload?.lp === GUEST).length, 1, 'joining twice sends one invitation');
+  assert.match((await act(call, 'join', { body: { party: `someone-else::1220${'ef'.repeat(32)}` } })).body.error, /Another HackCanton login already joined/);
+
+  const guest = (await call('/api/view?role=guest', { headers: tour() })).body;
+  assert.equal(guest.session, true);
+  assert.equal(guest.guest.party, GUEST);
+  assert.equal(guest.fund.fundId, fundOf(fake));
+  assert.equal(guest.calls, undefined, 'the server reads nothing as the signed-in LP');
+  assert.equal((await call('/api/view?role=guest', { headers: tour(OTHER_TOUR) })).body.session, false);
+
+  const admin = (await call('/api/view?role=admin', { headers: tour() })).body;
+  assert.deepEqual(admin.invitations.filter((i) => i.investor === 'guest').map((i) => i.committedUsd), [200000]);
+
+  const refused = await act(call, 'accept', { body: { role: 'guest' } });
+  assert.equal(refused.status, 422);
+  assert.match(refused.body.error, /acts from its own browser/);
+  assert.equal(fake.exercised.filter((e) => e.choice === 'Invitation_Accept').length, 0);
+});
+
+test('once the signed-in LP accepts, the fund manager can call it, and its notice is its own', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake, SIGN_IN));
+  await setup(call);
+  await act(call, 'join', { body: { party: GUEST } });
+  const early = await act(call, 'issue', { body: { callId: 'Call 1', dueAt: new Date(Date.now() + 3_600_000).toISOString(), rows: [{ role: 'guest', scenarioUsd: 40000, units: 4 }] } });
+  assert.match(early.body.error, /HackCanton LP has not accepted its commitment yet/);
+
+  await acceptAsGuest(fake);
+  const issued = await act(call, 'issue', { body: { callId: 'Call 1', dueAt: new Date(Date.now() + 3_600_000).toISOString(), rows: [{ role: 'guest', scenarioUsd: 40000, units: 4 }, { role: 'outsider', scenarioUsd: 10000, units: 1 }] } });
+  assert.match(issued.body.error, /Call only the investors of this fund/);
+  assert.equal(count(fake, 'CapitalCallObligation'), 0);
+
+  assert.equal((await act(call, 'issue', { body: { callId: 'Call 1', dueAt: new Date(Date.now() + 3_600_000).toISOString(), rows: [{ role: 'guest', scenarioUsd: 40000, units: 4 }] } })).status, 200);
+  const [obligation] = fake.acs.filter((c) => c.templateId?.endsWith(':CapitalCallObligation'));
+  assert.equal(obligation.payload.lp, GUEST);
+  assert.equal(obligation.payload.amountDue, '4');
+
+  const admin = (await call('/api/view?role=admin', { headers: tour() })).body;
+  const row = admin.calls[0].obligations[0];
+  assert.equal(row.investor, 'guest');
+  assert.equal(row.status, 'due');
+  assert.deepEqual(admin.commitments.find((c) => c.investor === 'guest'), { investor: 'guest', committedUsd: 200000, calledUsd: 40000 });
+  for (const lp of ['lpA', 'lpB', 'lpC']) {
+    assert.equal((await call(`/api/view?role=${lp}`, { headers: tour() })).body.calls.length, 0, `${lp} sees no notice of the signed-in LP`);
+  }
+
+  const record = await call(`/api/record?ref=${obligation.payload.obligationRef}`, { headers: tour() });
+  assert.equal(record.status, 200);
+  assert.equal(record.body.receipt, null);
+  assert.deepEqual(record.body.timeline, []);
+  assert.equal((await call('/api/record?ref=../../etc', { headers: tour() })).status, 400);
+  assert.equal((await call(`/api/record?ref=${obligation.payload.obligationRef}`, { headers: tour(OTHER_TOUR) })).status, 409);
+});
+
+test('starting over withdraws the fund\'s open payment requests, so no LP\'s wallet keeps offering them', async (t) => {
+  const fake = await startFakeLedger();
+  t.after(fake.close);
+  const call = await startApp(t, provisioned(fake, SIGN_IN));
+  await setup(call);
+  await act(call, 'join', { body: { party: GUEST } });
+  await acceptAsGuest(fake);
+  await act(call, 'issue', { body: { callId: 'Call 1', dueAt: new Date(Date.now() + 3_600_000).toISOString(), rows: [{ role: 'guest', scenarioUsd: 40000, units: 4 }] } });
+  const elsewhere = fake.add({ templateId: '#draw:Draw.CapitalCall:PaymentRequest', payload: { admin: party('ADMIN'), lp: GUEST, fundName: 'Earlier fund', callId: 'Call 9', obligationRef: 'DRAW-00000000000000f3', amountDue: '1.0' } });
+  assert.equal(count(fake, 'PaymentRequest'), 2);
+
+  const before = fake.exercised.length;
+  await reset(call);
+  assert.deepEqual(fake.exercised.slice(before).map((e) => e.choice).filter((c) => c === 'AllocationRequest_Withdraw'), ['AllocationRequest_Withdraw']);
+  assert.deepEqual(fake.acs.filter((c) => c.templateId?.endsWith(':PaymentRequest')), [elsewhere], 'only the request of another fund stays');
+  assert.equal(count(fake, 'CapitalCallObligation'), 1, 'the notice itself stays, signed by both');
 });

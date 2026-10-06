@@ -9,10 +9,10 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSyn
 import { dirname, extname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { TEMPLATES } from '../scripts/demo/lib/ledger.mjs';
+import { INTERFACES, TEMPLATES } from '../scripts/demo/lib/ledger.mjs';
 import { DAR, DrawSession, LPS, eventually, newRef, packageInfo, sum } from '../scripts/demo/lib/draw.mjs';
 import { ROLES, ROOT, network } from '../scripts/demo/lib/network.mjs';
-import { OUTCOME, classifyPayments, obligationOutcome } from '../scripts/demo/lib/reconcile.mjs';
+import { businessStatus, classifyPayments, obligationOutcome } from '../scripts/demo/lib/reconcile.mjs';
 import { LedgerClient } from '../scripts/demo/lib/ledger.mjs';
 import { NoRoom, createCapacity, parseCeiling, provisionedReader } from './capacity.mjs';
 import { createLimiter, parseLimit } from './limiter.mjs';
@@ -34,7 +34,9 @@ const COMMITMENTS = { lpA: '1000000.0', lpB: '700000.0', lpC: '500000.0' };
 // The web app's default first call, in CC. Starting a tour tops an LP up from
 // the faucet only when its balance is below this.
 const FIRST_CALL_UNITS = { lpA: 40, lpB: 35, lpC: 25 };
-const ROLE_LABEL = { admin: 'the fund manager', lpA: 'LP A', lpB: 'LP B', lpC: 'LP C', outsider: 'the unrelated party' };
+const ROLE_LABEL = { admin: 'the fund manager', lpA: 'LP A', lpB: 'LP B', lpC: 'LP C', outsider: 'the unrelated party', guest: 'the HackCanton LP' };
+// What an LP that signs in with its own HackCanton login commits to the demo fund.
+const GUEST_COMMITMENT = '200000.0';
 // Off by default. When on, the server settles matching payments as the fund
 // admin through the same path as the Settle button.
 // With DRAW_PARTY_MODE=external each party's key lives in the user's browser,
@@ -77,6 +79,33 @@ const limiter = createLimiter({
     faucet: bucket('FAUCET', '5/3600', '30/3600'),
   },
 });
+// Sign in with HackCanton (DRAW_SIGN_IN=true, DevNet). An LP signs in with
+// its own login on the node's Keycloak, from the browser, with an
+// authorization code and PKCE. Its browser then reads its own ledger and pays
+// from its own Canton wallet with that token. This server learns only the
+// LP's party id: it invites that party as the fund manager and settles what
+// the LP pays. It never receives the LP's token.
+const signIn = (() => {
+  if (process.env.DRAW_SIGN_IN !== 'true' || !TOURS) return null;
+  const scanProxy = process.env.SCAN_PROXY_URL;
+  const settings = {
+    issuer: process.env.DRAW_SIGN_IN_ISSUER || process.env.OAUTH_TOKEN_URL?.replace(/\/protocol\/openid-connect\/token$/, ''),
+    clientId: process.env.DRAW_SIGN_IN_CLIENT_ID || process.env.OAUTH_CLIENT_ID,
+    scope: process.env.DRAW_SIGN_IN_SCOPE || 'openid daml_ledger_api',
+    ledgerApi: process.env.DRAW_SIGN_IN_LEDGER_API || network.apiFor('admin'),
+    validatorApi: process.env.DRAW_SIGN_IN_VALIDATOR_API || (scanProxy ? `${new URL(scanProxy).origin}/api/validator` : null),
+    walletUrl: process.env.DRAW_SIGN_IN_WALLET_URL || null,
+  };
+  const missing = Object.entries(settings).filter(([key, value]) => !value && key !== 'walletUrl').map(([key]) => key);
+  if (missing.length) {
+    console.error(`DRAW_SIGN_IN is on but ${missing.join(', ')} could not be worked out, so sign-in stays off.`);
+    return null;
+  }
+  return { ...settings, templates: TEMPLATES, interfaces: INTERFACES };
+})();
+// A Canton party id: a hint, "::", and the namespace's SHA-256 fingerprint.
+const isPartyId = (value) => typeof value === 'string' && /^[\w:.-]{1,185}::1220[0-9a-f]{64}$/.test(value);
+
 const bucketsFor = (action) => (['setup', 'issue', 'faucet'].includes(action) ? ['action', action] : ['action']);
 
 // Every list DRAW reads stays within this many records, below the ledger's
@@ -210,19 +239,6 @@ function explain(error) {
 }
 
 // ---------------------------------------------------------------- views
-function businessStatus(state, outcome, payments) {
-  if (state === 'Funded') return outcome === OUTCOME.VERIFIED_FUNDED ? 'funded' : outcome === OUTCOME.CONTRADICTED ? 'contradicted' : 'verifying';
-  if (state === 'Waived') return 'waived';
-  if (state === 'ManualReview') return 'review';
-  if (state === 'PaymentPending') return payments.some((p) => p.kind === 'match') ? 'pending' : 'pending-stale';
-  const matched = payments.some((p) => p.kind === 'match');
-  const mismatched = payments.some((p) => p.kind !== 'match');
-  if (state === 'Overdue') return matched ? 'overdue-paid' : 'overdue';
-  if (matched) return 'submitted';
-  if (mismatched) return 'mismatched';
-  return 'due';
-}
-
 // What the site needs before any ledger read: the network, how it signs, and
 // whether actions need the access code.
 const config = () => ({
@@ -232,7 +248,38 @@ const config = () => ({
   tours: TOURS,
   accessCodeRequired: Boolean(ACCESS_CODE),
   accessCode: PUBLIC_ACCESS_CODE,
+  signIn,
 });
+
+// Which seat a party is in this tour: a provisioned role, or the LP that
+// signed in with its own login.
+const investorOf = (session, draw, party) => draw.roleOf(party) ?? (session.guest?.party === party ? 'guest' : undefined);
+
+const receiptView = (receipt) => receipt && {
+  verdict: receipt.verdict,
+  updateId: receipt.claimedUpdateId,
+  allocationCid: receipt.allocationCid,
+  receivedAmount: receipt.receivedAmount,
+  verifiedAt: receipt.verifiedAt,
+  verifierUser: receipt.verifierUser,
+  recordTime: receipt.recordTime,
+  checks: receipt.checks,
+};
+
+// The signed-in LP's seat. Its ledger reads happen in its own browser with its
+// own token, so this server says only which fund the browser is in and which
+// party joined it.
+function guestView({ session }) {
+  const base = { ...config(), role: 'guest', autoSettle: AUTO_SETTLE };
+  if (!session) return { ...base, session: false };
+  return {
+    ...base,
+    session: true,
+    fund: session.fundId ? { fundId: session.fundId, name: session.fundName } : null,
+    fundName: session.fundName,
+    guest: session.guest ?? null,
+  };
+}
 
 // Only an LP's balance is on screen. The fund manager's holdings grow with
 // every settlement, so its list is not read on every refresh.
@@ -276,7 +323,7 @@ async function viewFor({ session, draw }, role) {
       ref: p.obligationRef,
       obligationCid: o.contractId,
       callId: p.callId,
-      investor: draw.roleOf(p.lp),
+      investor: investorOf(session, draw, p.lp),
       fundName: p.fundName,
       scenarioUsd: Number(p.scenarioAmount),
       units: Number(p.amountDue),
@@ -287,20 +334,11 @@ async function viewFor({ session, draw }, role) {
       status: businessStatus(p.state, outcome, own),
       note: p.reviewNote,
       settledAfterDue: p.settlement?.settledAfterDue ?? null,
-      payments: own.map((x) => ({ allocationCid: x.allocationCid, amount: x.amount, from: draw.roleOf(x.sender) ?? 'unknown', kind: x.kind, recommendation: x.recommendation })),
-      receipt: receipt && {
-        verdict: receipt.verdict,
-        updateId: receipt.claimedUpdateId,
-        allocationCid: receipt.allocationCid,
-        receivedAmount: receipt.receivedAmount,
-        verifiedAt: receipt.verifiedAt,
-        verifierUser: receipt.verifierUser,
-        recordTime: receipt.recordTime,
-        checks: receipt.checks,
-      },
+      payments: own.map((x) => ({ allocationCid: x.allocationCid, amount: x.amount, from: investorOf(session, draw, x.sender) ?? 'unknown', kind: x.kind, recommendation: x.recommendation })),
+      receipt: receiptView(receipt),
       timeline: timelineFor(p.obligationRef, log),
     };
-  }).sort((a, b) => a.investor.localeCompare(b.investor));
+  }).sort((a, b) => (a.investor ?? '').localeCompare(b.investor ?? ''));
 
   const totalsOf = (list) => ({
     calledUsd: sum(list.map((r) => r.scenarioUsd)),
@@ -336,9 +374,9 @@ async function viewFor({ session, draw }, role) {
     fundName: session.fundName,
     calls: callViews,
     totals: totalsOf(rows),
-    invitations: invitations.map(({ contractId, payload }) => ({ invitationCid: contractId, investor: draw.roleOf(payload.lp), fundName: payload.fundName, committedUsd: Number(payload.committedScenarioAmount) })),
-    commitments: commitments.map(({ payload }) => ({ investor: draw.roleOf(payload.lp), committedUsd: Number(payload.committedScenarioAmount), calledUsd: Number(payload.calledScenarioAmount) })),
-    payments: payments.map((x) => ({ ...x, from: draw.roleOf(x.sender) ?? 'unknown', investor: draw.roleOf(obligations.find((o) => o.payload.obligationRef === x.obligationRef)?.payload.lp) ?? null })),
+    invitations: invitations.map(({ contractId, payload }) => ({ invitationCid: contractId, investor: investorOf(session, draw, payload.lp), fundName: payload.fundName, committedUsd: Number(payload.committedScenarioAmount) })),
+    commitments: commitments.map(({ payload }) => ({ investor: investorOf(session, draw, payload.lp), committedUsd: Number(payload.committedScenarioAmount), calledUsd: Number(payload.calledScenarioAmount) })),
+    payments: payments.map((x) => ({ ...x, from: investorOf(session, draw, x.sender) ?? 'unknown', investor: investorOf(session, draw, obligations.find((o) => o.payload.obligationRef === x.obligationRef)?.payload.lp) ?? null })),
     balance,
   };
 }
@@ -363,12 +401,13 @@ const tourLabel = (id) => createHash('sha256').update(String(id)).digest('hex').
 
 // Withdraws what a discarded demo fund still has open: invitations nobody
 // accepted, which the fund manager withdraws, and payments nobody settled,
-// which each LP takes back into its balance. That keeps the shared parties'
+// which each LP takes back into its balance, and its open payment requests,
+// so no LP's wallet keeps offering a notice of a closed demo fund. That keeps the shared parties'
 // lists from growing with funds nobody uses. Commitments and notices stay,
 // since the fund and the LP both signed them. Best effort: a step that fails
 // is recorded and the rest go ahead.
 async function closeFund(session, draw) {
-  const closed = { invitations: 0, payments: 0, failures: [] };
+  const closed = { invitations: 0, payments: 0, requests: 0, failures: [] };
   const attempt = async (what, step) => {
     try {
       await step();
@@ -378,10 +417,11 @@ async function closeFund(session, draw) {
     }
   };
   try {
-    const [invitations, obligations, allocations] = await Promise.all([
+    const [invitations, obligations, allocations, requests] = await Promise.all([
       draw.contracts('admin', TEMPLATES.CommitmentInvitation, session.fundId),
       draw.contracts('admin', TEMPLATES.CapitalCallObligation, session.fundId),
       draw.allocations('admin'),
+      draw.paymentRequests('admin'),
     ]);
     const refs = new Set(obligations.map((o) => o.payload.obligationRef));
     for (const { contractId } of invitations) {
@@ -393,6 +433,9 @@ async function closeFund(session, draw) {
       const { settlement, transferLeg } = interfaceView?.allocation ?? {};
       const payer = draw.roleOf(transferLeg?.sender);
       if (payer && refs.has(settlement?.settlementRef?.id)) await attempt('payments', () => draw.withdraw(payer, contractId));
+    }
+    for (const { contractId, payload } of requests) {
+      if (refs.has(payload.obligationRef)) await attempt('requests', () => draw.withdrawPaymentRequest(contractId));
     }
   } catch (error) {
     closed.failures.push({ what: 'read', error: error.message.slice(0, 300) });
@@ -571,6 +614,25 @@ const actions = {
     return { message: 'Commitment accepted.' };
   },
 
+  // An LP signed in with its own HackCanton login and sent its party id. The
+  // fund manager invites that party. Accepting, paying and withdrawing happen
+  // in the LP's browser with its own token, so the server never acts for it.
+  async join(tour, { party }) {
+    const { session, draw } = tour;
+    if (!signIn) throw new Error('Signing in with HackCanton is not turned on for this demo.');
+    if (!isPartyId(party)) throw new Error('That is not a Canton party id.');
+    if (draw.roleOf(party)) throw new Error('That party is one of the demo seats. Sign in with your own HackCanton login.');
+    if (session.guest?.party === party) return { message: 'Your party already has its invitation to this fund.' };
+    if (session.guest) throw new Error('Another HackCanton login already joined this demo fund. Start a new demo fund to join with yours.');
+    await capacity.ensure(draw, [{ role: 'admin', lists: ['CommitmentInvitation', 'InvestorCommitment'], add: 1 }], FULL.invite);
+    relay.describe(`Invite your HackCanton party to commit $${Number(GUEST_COMMITMENT).toLocaleString('en-US')} to ${session.fundName}, as the fund manager`);
+    const result = await draw.inviteParty(session.fundCid, party, GUEST_COMMITMENT);
+    session.guest = { party, joinedAt: new Date().toISOString() };
+    store(tour.id, session);
+    record(session, 'invite', { role: 'guest', party, committedUsd: Number(GUEST_COMMITMENT), updateId: result.transaction.updateId });
+    return { message: 'The fund invited your party. Accept the commitment with your HackCanton login.' };
+  },
+
   async issue({ session, draw }, { callId, description, dueAt, rows }) {
     if (!callId?.trim()) throw new Error('Give the call a name or reference.');
     if (!Date.parse(dueAt)) throw new Error('Pick a due date and time.');
@@ -579,9 +641,12 @@ const actions = {
     const included = rows.filter((r) => Number(r.scenarioUsd) > 0);
     if (!included.length) throw new Error('Call at least one investor.');
     const commitments = await draw.contracts('admin', TEMPLATES.InvestorCommitment, session.fundId);
+    const partyOf = (role) => (role === 'guest' ? session.guest?.party : LPS.includes(role) ? draw.party[role] : undefined);
     const requests = included.map(({ role, scenarioUsd, units }) => {
-      const commitment = commitments.find((c) => c.payload.lp === draw.party[role]);
-      if (!commitment) throw new Error(`${role} has not accepted its commitment yet.`);
+      const lp = partyOf(role);
+      if (!lp) throw new Error('Call only the investors of this fund.');
+      const commitment = commitments.find((c) => c.payload.lp === lp);
+      if (!commitment) throw new Error(`${ROLE_LABEL[role]} has not accepted its commitment yet.`);
       if (!(Number(units) > 0)) throw new Error('Every called investor needs a settlement amount above zero.');
       return { commitmentCid: commitment.contractId, obligationRef: newRef(), amountDue: String(units), scenarioAmount: String(scenarioUsd) };
     });
@@ -687,6 +752,7 @@ const actions = {
 // Runs one action once its turn in the queue comes, against the tour's state
 // at that moment rather than when the request arrived.
 async function perform(name, tourId, body) {
+  if (body.role !== undefined && !ROLES.includes(body.role)) throw new Error('This seat acts from its own browser, not through DRAW.');
   const tour = await tourFor(tourId);
   if (!tour.session && name !== 'setup' && name !== 'reset') throw new Error('Start a demo fund first.');
   if (TOURS && tour.session) tours.touch(tourId);
@@ -974,8 +1040,19 @@ createServer(async (req, res) => {
     const tourId = TOURS ? req.headers[TOUR_HEADER] : null;
     if (req.method === 'GET' && url.pathname === '/api/view') {
       const role = url.searchParams.get('role');
+      if (role === 'guest' && signIn) return send(res, 200, guestView(await tourFor(tourId)));
       if (!ROLES.includes(role)) return send(res, 400, { error: 'Unknown role.' });
       return send(res, 200, await viewFor(await tourFor(tourId), role));
+    }
+    // DRAW's own record for one notice of this browser's fund: the read-back
+    // receipt and the steps the app logged. The signed-in LP's browser reads
+    // the notice itself from the ledger and asks here only for these.
+    if (req.method === 'GET' && url.pathname === '/api/record') {
+      const ref = url.searchParams.get('ref') ?? '';
+      if (!/^[A-Za-z0-9-]{1,80}$/.test(ref)) return send(res, 400, { error: 'That is not a notice reference.' });
+      const tour = await tourFor(tourId);
+      if (!tour.session) return send(res, 409, { error: 'Start a demo fund first.' });
+      return send(res, 200, { ref, receipt: receiptView(receiptFor(tour.session, ref)), timeline: timelineFor(ref, actionLog(tour.session)) });
     }
     if (req.method === 'GET' && url.pathname === '/api/notice') {
       const role = url.searchParams.get('role');

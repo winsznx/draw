@@ -28,6 +28,13 @@ export function Screen({ adminOnly = false, children }: { adminOnly?: boolean; c
     );
   }
   if (!view.onboarded) {
+    if (role === 'guest') {
+      return (
+        <ZeroState title="Sign in with HackCanton" action={<Link href="/onboard" className="btn btn-primary">Sign in</Link>}>
+          <p>This seat reads and acts with your own HackCanton login, and your sign-in has ended or never started in this tab.</p>
+        </ZeroState>
+      );
+    }
     return <ZeroState title="This seat has no party yet" action={<Link href="/onboard" className="btn btn-primary">Create your party</Link>}><p>Create your party and key first.</p></ZeroState>;
   }
   if (view.needsFund) {

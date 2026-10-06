@@ -9,10 +9,12 @@ import { IconCall, IconDownload, IconEye, IconLayers, IconNotice, IconOverview, 
 import { leaveSeat, useSeat, useView } from '@/components/session';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { ROLE_NAME, networkNote, shortParty, units } from '@/lib/format';
+import { tapWallet } from '@/lib/guest';
+import { signOut } from '@/lib/hackcanton';
 import { backupPem } from '@/lib/keys';
 import type { Role, View } from '@/lib/types';
 
-import { AccessDialog, ActionButton, CopyId, SignDialog, Toasts } from './ui';
+import { AccessDialog, ActionButton, CopyId, RunButton, SignDialog, Toasts } from './ui';
 import styles from './shell.module.css';
 
 interface SeatView {
@@ -69,6 +71,52 @@ export function Identicon({ seed, size = 36 }: { seed: string; size?: number }) 
         ];
       })}
     </svg>
+  );
+}
+
+// The seat of an LP signed in with its own HackCanton login. Its balance and
+// faucet are its own Canton wallet's, reached with its own token.
+function GuestSeatCard({ view }: { view: View }) {
+  const router = useRouter();
+  const party = view.session && 'queriedAs' in view ? view.queriedAs.party : null;
+  const balance = view.session && 'balance' in view ? view.balance : null;
+  const signIn = view.signIn;
+  return (
+    <div className={styles.seatCard}>
+      <div className={styles.seatTop}>
+        <Identicon seed={party ?? 'guest'} />
+        <div className={styles.seatWho}>
+          <p className={styles.seatName}>{ROLE_NAME.guest}</p>
+          {party ? <CopyId value={party} length={13} /> : <span className={styles.seatMuted}>Not signed in</span>}
+        </div>
+      </div>
+      {balance !== null && (
+        <div className={styles.balance}>
+          <span className={styles.seatMuted}>Your wallet</span>
+          <span className={styles.balanceFig}>{units(balance)} <small>CC</small></span>
+        </div>
+      )}
+      <p className={styles.signing}>Your own HackCanton login signs for this party, from this browser. DRAW never sees it.</p>
+      <div className={styles.seatActions}>
+        {signIn && party && (
+          <RunButton busyKey="tap" task={() => tapWallet(signIn)} className={`btn btn-sm ${styles.seatBtnLight}`} busyLabel="Adding…">Add test CC</RunButton>
+        )}
+        {signIn?.walletUrl && (
+          <a className={`btn btn-sm ${styles.seatBtnGhost}`} href={signIn.walletUrl} target="_blank" rel="noreferrer">Open your wallet</a>
+        )}
+        <button
+          type="button"
+          className={`btn btn-sm ${styles.seatBtnGhost}`}
+          onClick={() => {
+            signOut();
+            leaveSeat();
+            router.push('/onboard');
+          }}
+        >
+          <IconSwitch size={15} />Sign out
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -135,12 +183,19 @@ function SeatCard({ role, view }: { role: Role; view: View }) {
 // has to guess whose ledger they are looking at.
 function LedgerContext({ role, view }: { role: Role; view: View }) {
   const party = view.session && 'queriedAs' in view ? view.queriedAs.party : null;
+  const guest = role === 'guest';
   return (
     <div className={styles.context}>
       {party && (
-        <p><IconEye size={15} /><span>Read from the ledger as <span className="mono" title={party}>{shortParty(party)}</span> ({ROLE_NAME[role]})</span></p>
+        <p>
+          <IconEye size={15} />
+          <span>
+            Read from the ledger as <span className="mono" title={party}>{shortParty(party)}</span>
+            {guest ? ' by this browser, with your own HackCanton login' : ` (${ROLE_NAME[role]})`}
+          </span>
+        </p>
       )}
-      <p><IconLayers size={15} /><span>{networkNote(view)}</span></p>
+      <p><IconLayers size={15} /><span>{guest ? `${view.network}, HackCanton shared node. Your login signs for your party, and the demo login signs for the fund manager.` : networkNote(view)}</span></p>
     </div>
   );
 }
@@ -220,7 +275,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <NavLinks items={nav.main} pathname={pathname} className={styles.nav} itemClass={styles.navItem} />
           <p className={styles.group}>Evidence</p>
           <NavLinks items={nav.evidence} pathname={pathname} className={styles.nav} itemClass={styles.navItem} />
-          <SeatCard role={seat} view={view} />
+          {seat === 'guest' ? <GuestSeatCard view={view} /> : <SeatCard role={seat} view={view} />}
         </aside>
 
         <div className={styles.panel}>
@@ -238,7 +293,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <LedgerContext role={seat} view={view} />
             {children}
           </main>
-          <div className={styles.mobileSeat}><SeatCard role={seat} view={view} /></div>
+          <div className={styles.mobileSeat}>{seat === 'guest' ? <GuestSeatCard view={view} /> : <SeatCard role={seat} view={view} />}</div>
         </div>
 
         <nav className={styles.tabbar} aria-label="App">

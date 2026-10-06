@@ -4,11 +4,13 @@ import { QueryClient, QueryClientProvider, keepPreviousData, useQuery, useQueryC
 import { createContext, useCallback, useContext, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { AccessCodeNeeded, ActionError, SlowDown, fetchView, postAction, postSignature, rememberAccessCode, type SignatureRequest } from '@/lib/api';
+import { fetchGuestView } from '@/lib/guest';
+import { NodeRefused, SignedOut } from '@/lib/hackcanton';
 import { signHash } from '@/lib/keys';
 import { startNewTour } from '@/lib/tour';
 import type { Role, View } from '@/lib/types';
 
-const ROLES: readonly Role[] = ['admin', 'lpA', 'lpB', 'lpC', 'outsider'];
+const ROLES: readonly Role[] = ['admin', 'lpA', 'lpB', 'lpC', 'outsider', 'guest'];
 const POLL_MS = 5000;
 
 // ---------------------------------------------------------------- seat
@@ -57,10 +59,12 @@ export const takeSeat = (role: Role): void => writeSeat(role);
 export const leaveSeat = (): void => writeSeat(null);
 
 // ---------------------------------------------------------------- ledger view
+// A signed-in LP's view is read in its own browser with its own token. Every
+// other seat's view is read by the server as that seat's party.
 export function useView(role: Role | null | undefined) {
   return useQuery({
     queryKey: ['view', role],
-    queryFn: ({ signal }) => fetchView(role as Role, signal),
+    queryFn: ({ signal }) => (role === 'guest' ? fetchGuestView(signal) : fetchView(role as Role, signal)),
     enabled: Boolean(role),
     refetchInterval: POLL_MS,
     refetchIntervalInBackground: false,
@@ -82,6 +86,10 @@ export interface Toast {
 interface Actions {
   busy: string | null;
   act: (name: string, body: Record<string, unknown>, key?: string) => Promise<boolean>;
+  // Runs something this browser does itself, such as a signed-in LP acting
+  // with its own token, with the same busy state and messages as `act`.
+  // `task` resolves to the message to show.
+  run: (key: string, task: () => Promise<string>) => Promise<boolean>;
   startOver: () => Promise<boolean>;
   toasts: Toast[];
   dismiss: (id: number) => void;
@@ -171,6 +179,22 @@ function ActionsProvider({ children }: { children: ReactNode }) {
     }
   }, [askForAccess, askToSign, notify, queryClient]);
 
+  const run = useCallback(async (key: string, task: () => Promise<string>): Promise<boolean> => {
+    setBusy(key);
+    try {
+      notify(await task());
+      return true;
+    } catch (error) {
+      if (error instanceof SignedOut) notify(error.message, 'bad');
+      else if (error instanceof NodeRefused) notify(error.message, 'bad', error.detail.slice(0, 600));
+      else notify(error instanceof Error ? error.message : 'That did not work.', 'bad');
+      return false;
+    } finally {
+      setBusy(null);
+      await queryClient.invalidateQueries({ queryKey: ['view'] });
+    }
+  }, [notify, queryClient]);
+
   // The server forgets this browser's fund, which stays on the ledger, and the
   // browser moves to a new tour that has no fund yet.
   const startOver = useCallback(async (): Promise<boolean> => {
@@ -181,8 +205,8 @@ function ActionsProvider({ children }: { children: ReactNode }) {
   }, [act, queryClient]);
 
   const value = useMemo(
-    () => ({ busy, act, startOver, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess }),
-    [busy, act, startOver, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess],
+    () => ({ busy, act, run, startOver, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess }),
+    [busy, act, run, startOver, toasts, dismiss, notify, signRequest, answerSign, accessPrompt, answerAccess],
   );
   return <ActionsContext.Provider value={value}>{children}</ActionsContext.Provider>;
 }

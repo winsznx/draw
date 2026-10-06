@@ -1,0 +1,38 @@
+{
+  "run": "20261006100912",
+  "test": "an LP signs in with its own HackCanton login and pays from its own Canton wallet",
+  "site": "https://draw.timjosh507.workers.dev",
+  "steps": [
+    {
+      "step": "demo fund started",
+      "at": "2026-10-06T10:09:33.713Z"
+    },
+    {
+      "step": "signed in on the node Keycloak",
+      "at": "2026-10-06T10:09:57.290Z"
+    },
+    {
+      "step": "LP accepted with its own login",
+      "at": "2026-10-06T10:10:11.740Z"
+    },
+    {
+      "step": "call issued to the signed-in LP",
+      "at": "2026-10-06T10:10:20.594Z"
+    },
+    {
+      "step": "LP paid from its own Canton wallet",
+      "at": "2026-10-06T10:10:32.645Z"
+    },
+    {
+      "step": "fund manager settled, verifier confirmed",
+      "at": "2026-10-06T10:10:45.689Z"
+    },
+    {
+      "step": "LP sees verified funded",
+      "at": "2026-10-06T10:10:50.539Z"
+    }
+  ],
+  "expectedSteps": 7,
+  "verdict": "PASS",
+  "error": null
+}

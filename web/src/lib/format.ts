@@ -6,6 +6,7 @@ export const ROLE_NAME: Record<Role, string> = {
   lpB: 'LP B',
   lpC: 'LP C',
   outsider: 'Unrelated party',
+  guest: 'HackCanton LP',
 };
 
 export const roleName = (role: string | null | undefined): string =>
@@ -30,6 +31,10 @@ export function networkNote({ network, singleCredential, browserKeys }: Pick<Sit
   if (singleCredential) return network === 'DevNet' ? 'DevNet, HackCanton shared node. One hackathon login signs for every seat.' : `${network}. One login signs for every seat.`;
   return `${network}. Each party reads and acts with its own ledger login.`;
 }
+
+// The same, for a site where an LP can also sign in with its own HackCanton login.
+export const signInNote = (network: string): string =>
+  `${network}, HackCanton shared node. One demo login signs for the demo seats. An LP that signs in with its own HackCanton login signs only for its own party.`;
 
 export const assetNote = (network: string): string => `Settles in Canton Coin from the ${network} faucet. Dollar figures are the scenario.`;
 

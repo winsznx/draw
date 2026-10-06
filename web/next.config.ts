@@ -4,6 +4,9 @@ const config: NextConfig = {
   poweredByHeader: false,
   // Workers has no Next image optimizer without Cloudflare Images.
   images: { unoptimized: true },
+  // The browser of an LP that signs in with its own login classifies its own
+  // payments with the server's reconcile module, from scripts/demo/lib.
+  experimental: { externalDir: true },
 };
 
 export default config;

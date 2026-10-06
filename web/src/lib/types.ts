@@ -1,4 +1,6 @@
-export type Role = 'admin' | 'lpA' | 'lpB' | 'lpC' | 'outsider';
+// `guest` is an LP that signed in with its own HackCanton login. Its browser
+// reads and acts with its own token, never through DRAW's server.
+export type Role = 'admin' | 'lpA' | 'lpB' | 'lpC' | 'outsider' | 'guest';
 export type Investor = Exclude<Role, 'admin' | 'outsider'>;
 
 export type Status =
@@ -82,6 +84,27 @@ export interface Obligation {
   payments: Payment[];
   receipt: Receipt | null;
   timeline: TimelineEntry[];
+  // The CIP-0056 payment request a wallet funds, as the signed-in LP's own ledger read returns it.
+  paymentRequest?: { contractId: string; view: AllocationRequestView } | null;
+}
+
+export interface AllocationRequestView {
+  settlement: {
+    executor: string;
+    settlementRef: { id: string; cid: string | null };
+    requestedAt: string;
+    allocateBefore: string;
+    settleBefore: string;
+    meta: { values: Record<string, string> };
+  };
+  transferLegs: Record<string, {
+    sender: string;
+    receiver: string;
+    amount: string;
+    instrumentId: { admin: string; id: string };
+    meta: { values: Record<string, string> };
+  }>;
+  meta: { values: Record<string, string> };
 }
 
 export interface Totals {
@@ -141,6 +164,19 @@ export interface SiteConfig {
   accessCodeRequired: boolean;
   // Set only when the operator chose to print the code for every visitor.
   accessCode: string | null;
+  // Set when an LP can sign in with its own HackCanton login.
+  signIn: SignInConfig | null;
+}
+
+export interface SignInConfig {
+  issuer: string;
+  clientId: string;
+  scope: string;
+  ledgerApi: string;
+  validatorApi: string;
+  walletUrl: string | null;
+  templates: Record<'Fund' | 'CommitmentInvitation' | 'InvestorCommitment' | 'CapitalCall' | 'CapitalCallObligation' | 'PaymentRequest', string>;
+  interfaces: Record<'Holding' | 'Allocation' | 'AllocationFactory' | 'AllocationRequest', string>;
 }
 
 interface ViewBase extends SiteConfig {
@@ -170,6 +206,15 @@ export interface ViewNeedsFund extends ViewBase {
   balance: number | null;
 }
 
+// What the server says to the signed-in LP's browser: which demo fund this
+// browser is in, and which party joined it. The browser reads the rest itself.
+export interface GuestTour extends ViewBase {
+  session: true;
+  fund: { fundId: string; name: string } | null;
+  fundName: string;
+  guest: { party: string; joinedAt: string } | null;
+}
+
 export interface ViewWithSession extends ViewBase {
   session: true;
   onboarded: true;
@@ -185,6 +230,8 @@ export interface ViewWithSession extends ViewBase {
   commitments: Commitment[];
   payments: InboxPayment[];
   balance: number | null;
+  // For a signed-in LP: whether its party is the one that joined this browser's fund.
+  joined?: boolean;
 }
 
 export type View = ViewNoSession | ViewNotOnboarded | ViewNeedsFund | ViewWithSession;

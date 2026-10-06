@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { fetchNoticePlace } from '@/lib/api';
+import { acceptInvitation, payFromWallet, withdrawToWallet } from '@/lib/guest';
 import { LP_STATUS, PAYMENT_KIND, assetNote, coin, dateTime, relative, roleName, units, usd } from '@/lib/format';
 import type { Obligation, Role, Status, ViewWithSession } from '@/lib/types';
 
 import { IconCoin, IconNotice, IconShield } from '@/components/icons';
 
-import { ActionButton, LedgerDetails, PageHead, ReceiptCard, StatusMark, Timeline, ZeroState } from './ui';
+import { ActionButton, LedgerDetails, PageHead, ReceiptCard, RunButton, StatusMark, Timeline, ZeroState } from './ui';
 import styles from './screens.module.css';
 
 const PAYABLE: Status[] = ['due', 'mismatched', 'pending-stale', 'overdue'];
@@ -20,6 +21,22 @@ export function InvestorHome({ view }: { view: ViewWithSession }) {
   const invitation = view.invitations[0];
   const commitment = view.commitments[0];
   const notices = view.calls.flatMap((c) => c.obligations).sort((a, b) => Date.parse(b.dueAt) - Date.parse(a.dueAt));
+  // Set for an LP that signed in with its own login: it acts from this browser with its own token.
+  const signIn = view.role === 'guest' ? view.signIn : null;
+
+  if (signIn && !view.joined) {
+    return (
+      <>
+        <PageHead title="Join this demo fund" lead="You are signed in with your own HackCanton login. This browser's demo fund has not invited your party yet." />
+        <ZeroState
+          title="Ask the fund for an invitation"
+          action={<ActionButton name="join" body={{ party: view.queriedAs.party }} busyLabel="Inviting your party…">Join as an LP</ActionButton>}
+        >
+          <p>The fund manager invites your party to commit {usd(200000)}. You accept with your own login, and you pay each notice from your own Canton wallet.</p>
+        </ZeroState>
+      </>
+    );
+  }
 
   if (invitation) {
     return (
@@ -33,7 +50,14 @@ export function InvestorHome({ view }: { view: ViewWithSession }) {
               <p className={styles.big}>{usd(invitation.committedUsd)}</p>
               <p className="t-sm muted">Commitment. The fund calls it over time, in notices addressed only to you.</p>
             </div>
-            <div><ActionButton name="accept" body={{ role: view.role }} className="btn btn-primary btn-lg" busyLabel="Accepting on the ledger…">Accept commitment</ActionButton></div>
+            <div>
+              {signIn ? (
+                <RunButton busyKey="accept" task={() => acceptInvitation(signIn, invitation.invitationCid)} className="btn btn-primary btn-lg" busyLabel="Accepting with your login…">Accept commitment</RunButton>
+              ) : (
+                <ActionButton name="accept" body={{ role: view.role }} className="btn btn-primary btn-lg" busyLabel="Accepting on the ledger…">Accept commitment</ActionButton>
+              )}
+            </div>
+            {signIn && <p className="t-sm muted">Your own HackCanton login signs this, from this browser. DRAW never sees it.</p>}
           </div>
         </article>
       </>
@@ -134,11 +158,22 @@ function MissingNotice({ role, obligationRef }: { role: Role; obligationRef: str
   return <ZeroState title="Looking for this notice"><p>Reading {roleName(role)}&rsquo;s ledger.</p></ZeroState>;
 }
 
+// A signed-in LP reads its own ledger in this browser, and its view holds only
+// this browser's demo fund.
+function GuestMissingNotice() {
+  return (
+    <ZeroState title="Not on your ledger" action={<Link href="/app" className="btn">Your notices</Link>}>
+      <p>Your party&rsquo;s ledger has no notice with this reference in this browser&rsquo;s demo fund. A notice belongs only to the investor who owes it, so another LP&rsquo;s link opens nothing.</p>
+    </ZeroState>
+  );
+}
+
 export function NoticePage({ view, obligationRef }: { view: ViewWithSession; obligationRef: string }) {
   const o = view.calls.flatMap((c) => c.obligations).find((x) => x.ref === obligationRef);
   const [otherOpen, setOtherOpen] = useState(false);
   const [other, setOther] = useState(() => (o ? String(Math.max(o.units - 5, 1)) : ''));
-  if (!o) return <MissingNotice role={view.role} obligationRef={obligationRef} />;
+  const signIn = view.role === 'guest' ? view.signIn : null;
+  if (!o) return signIn ? <GuestMissingNotice /> : <MissingNotice role={view.role} obligationRef={obligationRef} />;
   const canPay = PAYABLE.includes(o.status) && !o.payments.some((p) => p.kind === 'match');
   const callout = CALLOUT[o.status];
   const short = view.balance !== null && view.balance < o.units;
@@ -168,7 +203,23 @@ export function NoticePage({ view, obligationRef }: { view: ViewWithSession; obl
           {callout && <p className={`${styles.callout} ${callout.tone === 'wait' ? styles.calloutWait : callout.tone === 'bad' ? styles.calloutBad : ''}`}>{callout.text}</p>}
           {o.status === 'funded' && o.receipt && <ReceiptCard receipt={o.receipt} />}
 
-          {canPay && (
+          {canPay && signIn && (
+            <div className="stack-3">
+              <div className="row">
+                <RunButton busyKey={`pay:${o.ref}`} task={() => payFromWallet(signIn, o)} className="btn btn-primary btn-lg" busyLabel="Locking coin in your wallet…">
+                  Pay {units(o.units)} {coin(o.instrument)} from your wallet
+                </RunButton>
+                {signIn.walletUrl && <a className="btn btn-quiet" href={`${signIn.walletUrl}/allocations`} target="_blank" rel="noreferrer">Approve it in your Canton wallet</a>}
+              </div>
+              <p className="t-xs faint">
+                Your Canton wallet lists this notice as an allocation request. Paying here asks your wallet to fund it, the same way its
+                Accept button does: it locks {units(o.units)} CC for the fund, and nothing moves until the fund settles.
+              </p>
+              {short && <p className="t-sm" style={{ color: 'var(--waiting)' }}>Your wallet holds {units(view.balance ?? 0)} CC. Add test CC from your seat card first.</p>}
+            </div>
+          )}
+
+          {canPay && !signIn && (
             <div className="stack-3">
               <div className="row">
                 <ActionButton name="pay" body={{ role: view.role, ref: o.ref }} busyKey={`pay:${o.ref}`} className="btn btn-primary btn-lg" busyLabel="Locking coin for the fund…">
@@ -195,7 +246,11 @@ export function NoticePage({ view, obligationRef }: { view: ViewWithSession; obl
               {o.payments.map((p) => (
                 <div key={p.allocationCid} className={styles.payRow}>
                   <span className="t-sm">{units(p.amount)} {coin(o.instrument)}: {p.kind === 'match' ? 'locked, waiting for the fund' : PAYMENT_KIND[p.kind].toLowerCase()}</span>
-                  <ActionButton className="btn btn-sm" name="withdraw" body={{ role: view.role, allocationCid: p.allocationCid }} busyLabel="Withdrawing…">Withdraw</ActionButton>
+                  {signIn ? (
+                    <RunButton className="btn btn-sm" busyKey={`withdraw:${p.allocationCid}`} task={() => withdrawToWallet(signIn, p.allocationCid)} busyLabel="Withdrawing…">Withdraw</RunButton>
+                  ) : (
+                    <ActionButton className="btn btn-sm" name="withdraw" body={{ role: view.role, allocationCid: p.allocationCid }} busyLabel="Withdrawing…">Withdraw</ActionButton>
+                  )}
                 </div>
               ))}
             </div>

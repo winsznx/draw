@@ -96,6 +96,10 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
         return [
           created(add({ templateId: TEMPLATE('InvestorCommitment'), payload: { ...commitment.payload, calledScenarioAmount: called } })),
           created(add({
+            templateId: TEMPLATE('PaymentRequest'),
+            payload: { admin: fund.payload.admin, lp: commitment.payload.lp, fundName: fund.payload.fundName, callId, obligationRef: r.obligationRef, amountDue: r.amountDue, instrumentId: commitment.payload.instrumentId },
+          })),
+          created(add({
             templateId: TEMPLATE('CapitalCallObligation'),
             payload: {
               admin: fund.payload.admin, lp: commitment.payload.lp, fundId: fund.payload.fundId, fundName: fund.payload.fundName, callId, obligationRef: r.obligationRef,
@@ -142,6 +146,11 @@ export async function startFakeLedger({ listLimit = 200, port = 0 } = {}) {
         { ExercisedEvent: { contractId: allocation.contractId, templateId: ALLOCATION, choice: 'Allocation_ExecuteTransfer', consuming: true, choiceArgument: {} } },
         created(funded),
       ];
+    },
+
+    AllocationRequest_Withdraw: (request) => {
+      archive(request.contractId);
+      return [];
     },
 
     Allocation_Withdraw: (allocation) => {

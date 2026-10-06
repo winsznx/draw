@@ -83,7 +83,7 @@ claims:
     evidence:
       - evidence/devnet/runs/20261006T091531Z/result.json
       - evidence/local/daml_core/20261006T081605Z/result.json
-    limits: "The run script created LP A's allocation with the shared hackathon login. No wallet app has been shown listing or approving a DRAW request yet. LP B paid with a plain allocation carrying the reference, which settles the same way."
+    limits: "The run script created LP A's allocation with the shared hackathon login. LP B paid with a plain allocation carrying the reference, which settles the same way. A wallet listing and approving a DRAW request is the signed-in-lp claim."
 
   - id: verifier-party
     text: "A fund can name a verifier party. It can read the fund, every call and every obligation, including the settled amount, and LP privacy is unchanged. When it tries to act on an obligation or the fund, the ledger refuses."
@@ -91,6 +91,15 @@ claims:
     environments: [daml-script]
     evidence: [evidence/local/daml_core/20261006T081605Z/result.json]
     limits: "Daml Script only. On DevNet the read-back step reads as the fund's own party with the shared login, until a separate verifier login exists."
+
+  - id: signed-in-lp
+    text: "On the deployed site, an LP with its own HackCanton login joins a demo fund as itself. It signs in on the node's Keycloak from the browser, its browser reads its notices from the ledger with its own token, and it accepts its commitment with that login. It pays from its own Canton wallet, either from DRAW, which calls the wallet's allocate API, or by pressing Accept on the request in the node's Canton Coin wallet. The fund manager settles, and the LP's notice shows verified funded once the read-back step confirms it. DRAW's server learns only the LP's party id and never receives its token."
+    status: devnet_verified
+    environments: [devnet]
+    evidence:
+      - evidence/devnet/browser/web-hackcanton-20261006100912/result.json
+      - evidence/devnet/browser/web-hackcanton-wallet-20261006101052/result.json
+    limits: "Both runs signed in with the team's own HackCanton login, which is also the login the server uses for the demo seats, so the server's credential could have acted for that party. The runs show that DRAW did not need to: the LP's reads, its acceptance and its payment came from its browser with its own token. Separate credentials need a second person's login. The LP's party is that login's wallet party on the same NODERS participant as the fund, which has DRAW's package vetted. The fund manager seat still acts with the shared demo login. The token stays in the browser tab's session storage. Sign-in uses NODERS' public web-app client, not a client of DRAW's own."
 
   - id: grofty
     text: "An LP funds an obligation through Grofty on MainNet."
@@ -124,8 +133,8 @@ claims:
     text: "The deployed web app runs a capital call end to end on DevNet: each person takes a seat at onboarding, the fund manager issues a call, LP A pays its notice, LP B opening LP A's notice link gets nothing, the fund manager settles, and LP A sees it verified funded. Each browser gets its own demo fund, so a second browser starts without one."
     status: devnet_verified
     environments: [devnet]
-    evidence: [evidence/devnet/browser/web-20261005003221/result.json, evidence/devnet/browser/web-journey-20261005214111/result.json, evidence/devnet/browser/web-journey-20261006091011/result.json]
-    limits: "Shared hackathon login on the NODERS node, so one credential acts for every demo party, and the read-back step uses that same login. Actions on the public site need an access code. The second run is on the redesigned web app, and the third adds a demo fund per browser. The demo funds share the same five parties, so keeping one browser out of another's fund is the app's doing, while keeping each LP out of the others' records is the ledger's."
+    evidence: [evidence/devnet/browser/web-20261005003221/result.json, evidence/devnet/browser/web-journey-20261005214111/result.json, evidence/devnet/browser/web-journey-20261006091011/result.json, evidence/devnet/browser/web-journey-20261006101224/result.json]
+    limits: "Shared hackathon login on the NODERS node, so one credential acts for every demo party, and the read-back step uses that same login. Actions on the public site need an access code. The second run is on the redesigned web app, the third adds a demo fund per browser, and the fourth ran on the release with sign-in. The demo funds share the same five parties, so keeping one browser out of another's fund is the app's doing, while keeping each LP out of the others' records is the ledger's."
 
   - id: non-custodial
     text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused. The scripted run passed 76 of 76 checks."

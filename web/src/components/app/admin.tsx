@@ -14,10 +14,14 @@ import { Identicon } from './shell';
 import { ActionButton, LedgerDetails, NoteAction, PageHead, ReceiptCard, Spinner, StartOverButton, StatusMark, Timeline, ZeroState } from './ui';
 import styles from './screens.module.css';
 
-const INVESTORS: Investor[] = ['lpA', 'lpB', 'lpC'];
-const DEFAULT_COMMITMENT: Record<Investor, number> = { lpA: 1000000, lpB: 700000, lpC: 500000 };
+const SEATED: Investor[] = ['lpA', 'lpB', 'lpC'];
+const DEFAULT_COMMITMENT: Record<Investor, number> = { lpA: 1000000, lpB: 700000, lpC: 500000, guest: 200000 };
 // The demo's standard call for each investor, and the scenario dollars per CC it settles at.
-const CALL_USD: Record<Investor, number> = { lpA: 400000, lpB: 350000, lpC: 250000 };
+const CALL_USD: Record<Investor, number> = { lpA: 400000, lpB: 350000, lpC: 250000, guest: 40000 };
+
+// The three demo LPs, plus the LP that signed in with its own login once the fund invited it.
+const investorsOf = (view: ViewWithSession): Investor[] =>
+  view.invitations.some((i) => i.investor === 'guest') || view.commitments.some((c) => c.investor === 'guest') ? [...SEATED, 'guest'] : SEATED;
 const USD_PER_CC = 10000;
 
 // The first "Call N" name this fund has not used.
@@ -108,7 +112,7 @@ export function Overview({ view }: { view: ViewWithSession }) {
             <div className="stack-3">
               <p className="muted">
                 {view.commitments.length
-                  ? `${view.commitments.length} of 3 investors have committed. Call capital from them when you are ready.`
+                  ? `${view.commitments.length} of ${investorsOf(view).length} investors have committed. Call capital from them when you are ready.`
                   : 'No investor has accepted a commitment yet. Calls can go out once they do.'}
               </p>
               {view.commitments.length > 0 && <Link href="/app/calls/new" className="btn">Create the first call</Link>}
@@ -216,7 +220,8 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
   const router = useRouter();
   const { act, busy } = useActions();
   const first = view.calls.length === 0;
-  const accepted = INVESTORS.filter((r) => view.commitments.some((c) => c.investor === r));
+  const investors = investorsOf(view);
+  const accepted = investors.filter((r) => view.commitments.some((c) => c.investor === r));
   const remaining = (r: Investor) => {
     const c = view.commitments.find((x) => x.investor === r);
     return c ? c.committedUsd - c.calledUsd : 0;
@@ -224,7 +229,7 @@ export function CreateCall({ view }: { view: ViewWithSession }) {
   const [name, setName] = useState(() => nextCallName(view.calls));
   const [description, setDescription] = useState(first ? 'Initial close drawdown' : '');
   const [dueAt, setDueAt] = useState(defaultDue);
-  const [rows, setRows] = useState(() => Object.fromEntries(INVESTORS.map((r) => [r, defaultRow(r, remaining(r))])));
+  const [rows, setRows] = useState(() => Object.fromEntries(investors.map((r) => [r, defaultRow(r, remaining(r))])));
   const [problem, setProblem] = useState<string | null>(null);
   const updateRow = (role: Investor, field: 'usd' | 'units', value: string) =>
     setRows((prev) => ({ ...prev, [role]: { usd: prev[role]?.usd ?? '', units: prev[role]?.units ?? '', [field]: value } }));
@@ -472,7 +477,7 @@ export function InvestorsPage({ view }: { view: ViewWithSession }) {
         <table className="table table-stack">
           <thead><tr><th>Investor</th><th className="num">Committed</th><th className="num">Called</th><th className="num">Left to call</th></tr></thead>
           <tbody>
-            {INVESTORS.map((r) => {
+            {investorsOf(view).map((r) => {
               const c = view.commitments.find((x) => x.investor === r);
               const invited = view.invitations.find((x) => x.investor === r);
               const canInvite = view.browserKeys && !c && !invited && view.accounts?.includes(r);
@@ -480,6 +485,7 @@ export function InvestorsPage({ view }: { view: ViewWithSession }) {
                 <tr key={r}>
                   <td className="wide">
                     <span className="row" style={{ gap: 12, flexWrap: 'nowrap' }}><Identicon seed={r} size={32} /><strong>{roleName(r)}</strong></span>
+                    {r === 'guest' && <span className="sub">Signed in with its own HackCanton login</span>}
                     {!c && <span className="sub">{invited ? 'Invitation not accepted yet' : view.browserKeys && !view.accounts?.includes(r) ? 'Has not joined yet' : 'Not invited'}</span>}
                     {canInvite && (
                       <div style={{ marginTop: 8 }}>

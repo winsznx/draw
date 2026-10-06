@@ -76,7 +76,8 @@ test('capital call journey', async ({ page, browser }, info) => {
     await expect(page).toHaveURL(/\/app\/notices\//);
     const noticeUrl = page.url();
     await page.getByRole('button', { name: /^Pay 10 / }).click();
-    await expect(page.getByText(/locked for the fund/i).first()).toBeVisible();
+    // The notice's own status, read back from the ledger, not the toast.
+    await expect(page.getByText('Payment locked, waiting for the fund', { exact: true }).first()).toBeVisible();
     await ev.shot(page, 'lp-paid');
     ev.record('LP A locked its payment');
 

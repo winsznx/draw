@@ -1,6 +1,7 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseEnv } from 'node:util';
 
 import { expect, type Page, type TestInfo } from '@playwright/test';
 
@@ -10,10 +11,13 @@ export type Seat = 'Fund manager' | 'LP A' | 'LP B' | 'LP C';
 export const ACCESS_CODE = process.env.DRAW_ACCESS_CODE ?? '';
 
 // Evidence for one test run, written by the test itself, pass or fail.
+// DRAW_EVIDENCE_OUT sends a run's evidence to another folder, for trying a test
+// out while it is being written.
 export function evidence(name: string) {
   const run = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
   const network = (process.env.DRAW_EVIDENCE_NETWORK ?? 'devnet').toLowerCase();
-  const out = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'evidence', network === 'localnet' ? 'local' : network, 'browser', `web-${name}-${run}`);
+  const root = process.env.DRAW_EVIDENCE_OUT ?? path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'evidence', network === 'localnet' ? 'local' : network, 'browser');
+  const out = path.join(root, `web-${name}-${run}`);
   const steps: { step: string; at: string }[] = [];
   return {
     run,
@@ -80,4 +84,13 @@ export async function startDemoIfNeeded(page: Page) {
     await dismissToast(page, /set up|Ready/);
   }
   await expect(seat).toBeEnabled();
+}
+
+// A HackCanton login for the sign-in journey, from the environment or the
+// repository's .env. Never written to evidence or logs.
+export function hackcantonLogin(): { username: string; password: string } | null {
+  const file = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '.env');
+  const env = { ...(existsSync(file) ? parseEnv(readFileSync(file, 'utf8')) : {}), ...process.env };
+  const { HACKCANTON_USERNAME: username, HACKCANTON_PASSWORD: password } = env;
+  return username && password ? { username, password } : null;
 }

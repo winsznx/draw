@@ -46,6 +46,26 @@ export function ActionButton({
   );
 }
 
+// A button for something this browser does itself, such as a signed-in LP
+// acting with its own token. `task` resolves to the message to show.
+export function RunButton({
+  busyKey, task, children, className = 'btn btn-primary', busyLabel = 'Submitting…',
+}: {
+  busyKey: string;
+  task: () => Promise<string>;
+  children: ReactNode;
+  className?: string;
+  busyLabel?: string;
+}) {
+  const { run, busy } = useActions();
+  const working = busy === busyKey;
+  return (
+    <button type="button" className={className} disabled={busy !== null} aria-busy={working} onClick={() => void run(busyKey, task)}>
+      {working ? <><Spinner />{busyLabel}</> : children}
+    </button>
+  );
+}
+
 export function Spinner() {
   return <span className={styles.spinner} aria-hidden="true" />;
 }

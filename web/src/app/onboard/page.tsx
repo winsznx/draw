@@ -7,13 +7,16 @@ import { useState } from 'react';
 
 import { Seal, Wordmark } from '@/components/brand';
 import { leaveSeat, takeSeat, useActions, useSeat, useView } from '@/components/session';
+import { useSignedIn } from '@/components/signin';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { IconArrowRight, IconBuilding, IconEyeOff, IconUser } from '@/components/icons';
-import { ActionButton, AccessDialog, SignDialog, Toasts } from '@/components/app/ui';
+import { ActionButton, AccessDialog, SignDialog, Spinner, Toasts } from '@/components/app/ui';
 import { AccessCodeNeeded, accessCode, rememberAccessCode, startOnboarding } from '@/lib/api';
-import { networkNote, usd } from '@/lib/format';
+import { networkNote, shortParty, signInNote, usd } from '@/lib/format';
+import { fetchGuestTour } from '@/lib/guest';
+import { signOut, startSignIn } from '@/lib/hackcanton';
 import { backupPem, createKey, hasKey, signHash } from '@/lib/keys';
-import type { Role, View } from '@/lib/types';
+import type { Role, SignInConfig, View } from '@/lib/types';
 
 import styles from './onboard.module.css';
 
@@ -26,7 +29,7 @@ const SEATS: { role: Role; name: string; what: string }[] = [
   { role: 'lpC', name: 'LP C', what: 'An investor with a $500,000 commitment.' },
 ];
 
-const seatName = (role: Role | null) => (role === 'outsider' ? 'Unrelated party' : SEATS.find((s) => s.role === role)?.name ?? '');
+const seatName = (role: Role | null) => (role === 'outsider' ? 'Unrelated party' : role === 'guest' ? 'HackCanton LP' : SEATS.find((s) => s.role === role)?.name ?? '');
 
 function stepsFor(browserKeys: boolean): { id: Step; label: string }[] {
   return browserKeys
@@ -86,7 +89,7 @@ export default function Onboard() {
           </ol>
         </div>
         <SeatPreview role={role ?? 'admin'} />
-        {view && <p className={styles.network}><span className="live-dot" /><span>{networkNote(view)}</span></p>}
+        {view && <p className={styles.network}><span className="live-dot" /><span>{view.signIn ? signInNote(view.network) : networkNote(view)}</span></p>}
       </aside>
 
       <main id="main" className={styles.main}>
@@ -131,6 +134,16 @@ export default function Onboard() {
             />
           )}
 
+          {step === 'seat' && view?.signIn && view.session && (
+            <SignInCard
+              config={view.signIn}
+              onJoined={() => {
+                takeSeat('guest');
+                router.push('/app');
+              }}
+            />
+          )}
+
           {step === 'party' && role && !browserKeys && (
             <SharedPartyStep role={role} view={chosen.data} onBack={() => setStep('seat')} onNext={() => setStep(accessCode() || !view?.accessCodeRequired ? 'done' : 'access')} />
           )}
@@ -165,6 +178,68 @@ export default function Onboard() {
       <Toasts />
       <SignDialog />
       <AccessDialog publicCode={view?.accessCode} />
+    </div>
+  );
+}
+
+// An LP with its own HackCanton login joins this browser's demo fund as an
+// extra investor. Its browser signs in with Keycloak, then reads and acts with
+// that login. The server only learns the party id and invites it.
+function SignInCard({ config, onJoined }: { config: SignInConfig; onJoined: () => void }) {
+  const me = useSignedIn();
+  const { act, busy } = useActions();
+  const [opening, setOpening] = useState(false);
+  const tour = useQuery({ queryKey: ['guest-tour'], queryFn: ({ signal }) => fetchGuestTour(signal), enabled: Boolean(me) });
+  const joined = Boolean(me && tour.data?.session && tour.data.guest?.party === me.party);
+  if (me === undefined) return null;
+  return (
+    <div className={styles.callout}>
+      <p className="t-h3">Have a HackCanton login?</p>
+      {me ? (
+        <>
+          <p className="t-sm muted">
+            Signed in as <span className="mono" title={me.party}>{shortParty(me.party)}</span>. Join this demo fund as an LP: you accept
+            with your own login and pay each notice from your own Canton wallet.
+          </p>
+          <div className="row">
+            {joined ? (
+              <button type="button" className="btn btn-primary" onClick={onJoined}>Continue as HackCanton LP</button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={busy !== null || tour.isPending}
+                onClick={async () => {
+                  if (await act('join', { party: me.party }, 'join')) onJoined();
+                }}
+              >
+                {busy === 'join' ? <><Spinner />Inviting your party…</> : 'Join as an LP'}
+              </button>
+            )}
+            <button type="button" className="btn btn-quiet" disabled={busy !== null} onClick={signOut}>Sign out</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="t-sm muted">
+            Take a seat as yourself instead of a demo LP. Your browser reads your notices with your own login, and you pay from your
+            own Canton wallet. DRAW&rsquo;s server never sees your login.
+          </p>
+          <div>
+            <button
+              type="button"
+              className="btn"
+              disabled={opening}
+              onClick={() => {
+                setOpening(true);
+                startSignIn(config, '/onboard').catch(() => setOpening(false));
+              }}
+            >
+              {opening ? <><Spinner />Opening HackCanton sign-in…</> : 'Sign in with HackCanton'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

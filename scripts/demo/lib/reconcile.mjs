@@ -103,3 +103,18 @@ export function obligationOutcome(obligation, payments, receipt) {
   if (own.length) return OUTCOME.PARTIAL;
   return OUTCOME.NONE;
 }
+
+// What the app shows for an obligation, from its ledger state, its outcome and
+// the payments classified against it. Only a verified outcome reads as funded.
+export function businessStatus(state, outcome, payments) {
+  if (state === 'Funded') return outcome === OUTCOME.VERIFIED_FUNDED ? 'funded' : outcome === OUTCOME.CONTRADICTED ? 'contradicted' : 'verifying';
+  if (state === 'Waived') return 'waived';
+  if (state === 'ManualReview') return 'review';
+  if (state === 'PaymentPending') return payments.some((p) => p.kind === PAYMENT.MATCH) ? 'pending' : 'pending-stale';
+  const matched = payments.some((p) => p.kind === PAYMENT.MATCH);
+  const mismatched = payments.some((p) => p.kind !== PAYMENT.MATCH);
+  if (state === 'Overdue') return matched ? 'overdue-paid' : 'overdue';
+  if (matched) return 'submitted';
+  if (mismatched) return 'mismatched';
+  return 'due';
+}
