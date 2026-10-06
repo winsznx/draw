@@ -57,21 +57,24 @@ export class DrawSession {
   // `external` maps a role to { keyName, fingerprint } when that party holds
   // its own key. Its client then signs every submission with that key.
   // `signers` overrides that per role, for keys held somewhere else (a browser).
-  constructor({ party, users, instrument, external = {}, signers = {} }) {
+  // `verifierParty` (draw 0.3.0) is named on new funds as an observer, so the
+  // verifier reads settlements through its own party.
+  constructor({ party, users, instrument, external = {}, signers = {}, verifierParty = network.verifierParty }) {
     this.party = party;
     this.users = users;
     this.instrument = instrument;
     this.external = external;
+    this.verifierParty = verifierParty;
     this.client = Object.fromEntries(ROLES.map((role) => {
       const ext = external[role];
       const signer = signers[role] ?? (ext?.keyName ? PartyKey.named(ext.keyName).signerFor(party[role], ext.fingerprint) : undefined);
       return [role, new LedgerClient({ baseUrl: network.apiFor(role), userId: users[role], label: role, signer })];
     }));
-    this.verifier = new SettlementVerifier({ baseUrl: network.apiFor('admin'), userId: users.verifier, adminParty: party.admin, instrument });
+    this.verifier = new SettlementVerifier({ baseUrl: network.apiFor('admin'), userId: users.verifier, adminParty: party.admin, instrument, verifierParty });
   }
 
   get state() {
-    return { network: network.name, party: this.party, users: this.users, external: this.external };
+    return { network: network.name, party: this.party, users: this.users, external: this.external, verifierParty: this.verifierParty };
   }
 
   roleOf(partyId) {
@@ -147,8 +150,8 @@ export class DrawSession {
     return new DrawSession({ party, users, external, instrument: await amuletInstrument() });
   }
 
-  static async resume({ party, users, external, signers }) {
-    return new DrawSession({ party, users, external, signers, instrument: await amuletInstrument() });
+  static async resume({ party, users, external, signers, verifierParty }) {
+    return new DrawSession({ party, users, external, signers, verifierParty: verifierParty ?? network.verifierParty, instrument: await amuletInstrument() });
   }
 
   async tap(role, amount) {
@@ -181,7 +184,8 @@ export class DrawSession {
 
   async createFund({ fundId, fundName }) {
     const result = await this.client.admin.create({
-      actAs: [this.party.admin], templateId: TEMPLATES.Fund, argument: { admin: this.party.admin, fundId, fundName },
+      actAs: [this.party.admin], templateId: TEMPLATES.Fund,
+      argument: { admin: this.party.admin, fundId, fundName, verifier: this.verifierParty ?? null },
     });
     return firstCreated(result.transaction).contractId;
   }
@@ -256,14 +260,67 @@ export class DrawSession {
     });
   }
 
-  async settle(obligationCid, allocationCid) {
+  // Payment requests (draw 0.3.0) visible to `reader`.
+  async paymentRequests(reader) {
+    return this.client[reader].activeContracts(this.party[reader], { templateId: TEMPLATES.PaymentRequest });
+  }
+
+  // The open payment request for the obligation with this contract id, if any.
+  async paymentRequestFor(obligationCid) {
+    const obligation = (await this.client.admin.activeContracts(this.party.admin, { templateId: TEMPLATES.CapitalCallObligation }))
+      .find((o) => o.contractId === obligationCid);
+    if (!obligation) return null;
+    const request = (await this.paymentRequests('admin')).find((r) => r.payload.obligationRef === obligation.payload.obligationRef);
+    return request?.contractId ?? null;
+  }
+
+  // What the LP's wallet shows for a payment request: the CIP-0056
+  // AllocationRequest view, read through the LP's own party.
+  async allocationRequests(role) {
+    return this.client[role].activeContracts(this.party[role], { interfaceId: INTERFACES.AllocationRequest });
+  }
+
+  // Creates the allocation exactly as a Canton wallet's Accept does: the
+  // request's settlement info and its transfer leg, unchanged.
+  async allocateFromRequest(role, requestCid) {
+    const request = (await this.allocationRequests(role)).find((r) => r.contractId === requestCid);
+    if (!request?.interfaceView) throw new Error('That payment request is not visible to this LP.');
+    const [[transferLegId, transferLeg]] = Object.entries(request.interfaceView.transferLegs);
+    const inputHoldingCids = (await this.holdings(role)).filter((h) => !h.interfaceView.lock).map((h) => h.contractId);
+    const choiceArguments = {
+      expectedAdmin: this.instrument.admin,
+      allocation: { settlement: request.interfaceView.settlement, transferLegId, transferLeg },
+      requestedAt: new Date().toISOString(),
+      inputHoldingCids,
+      extraArgs: { context: { values: {} }, meta: { values: {} } },
+    };
+    const factory = await allocationFactory(choiceArguments);
+    const result = await this.client[role].exercise({
+      actAs: [this.party[role]],
+      templateId: INTERFACES.AllocationFactory,
+      contractId: factory.factoryId,
+      choice: 'AllocationFactory_Allocate',
+      argument: { ...choiceArguments, extraArgs: { context: factory.choiceContext.choiceContextData, meta: { values: {} } } },
+      disclosedContracts: factory.choiceContext.disclosedContracts,
+      synchronizerId: factory.choiceContext.disclosedContracts[0].synchronizerId,
+    });
+    const root = transactionEvents(result.transaction).find((e) => e.kind === 'exercised' && e.choice === 'AllocationFactory_Allocate');
+    const { output } = root.exerciseResult;
+    if (output.tag !== 'AllocationInstructionResult_Completed') throw new Error(`allocation not completed: ${JSON.stringify(output)}`);
+    return { allocationCid: output.value.allocationCid, updateId: result.transaction.updateId, transferLegId };
+  }
+
+  // Settling also closes the obligation's payment request, so the LP's wallet
+  // stops offering it.
+  async settle(obligationCid, allocationCid, { paymentRequestCid } = {}) {
+    const requestCid = paymentRequestCid === undefined ? await this.paymentRequestFor(obligationCid) : paymentRequestCid;
     const context = await executeTransferContext(allocationCid);
     return this.client.admin.exercise({
       actAs: [this.party.admin],
       templateId: TEMPLATES.CapitalCallObligation,
       contractId: obligationCid,
       choice: 'Obligation_Settle',
-      argument: { allocationCid, extraArgs: { context: context.choiceContextData, meta: { values: {} } } },
+      argument: { allocationCid, extraArgs: { context: context.choiceContextData, meta: { values: {} } }, paymentRequestCid: requestCid },
       disclosedContracts: context.disclosedContracts,
       synchronizerId: context.disclosedContracts[0]?.synchronizerId,
     });
@@ -291,9 +348,10 @@ export class DrawSession {
   }
 
   async resolve(obligationCid, choice, note) {
+    const argument = choice === 'Obligation_Waive' ? { note, paymentRequestCid: await this.paymentRequestFor(obligationCid) } : { note };
     return this.client.admin.exercise({
       actAs: [this.party.admin], templateId: TEMPLATES.CapitalCallObligation, contractId: obligationCid,
-      choice, argument: { note },
+      choice, argument,
     });
   }
 

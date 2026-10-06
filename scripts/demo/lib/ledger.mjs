@@ -12,12 +12,14 @@ export const TEMPLATES = {
   InvestorCommitment: '#draw:Draw.CapitalCall:InvestorCommitment',
   CapitalCall: '#draw:Draw.CapitalCall:CapitalCall',
   CapitalCallObligation: '#draw:Draw.CapitalCall:CapitalCallObligation',
+  PaymentRequest: '#draw:Draw.CapitalCall:PaymentRequest',
 };
 
 export const INTERFACES = {
   Holding: '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
   Allocation: '#splice-api-token-allocation-v1:Splice.Api.Token.AllocationV1:Allocation',
   AllocationFactory: '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationFactory',
+  AllocationRequest: '#splice-api-token-allocation-request-v1:Splice.Api.Token.AllocationRequestV1:AllocationRequest',
 };
 
 export class LedgerError extends Error {
@@ -252,7 +254,11 @@ export class LedgerClient {
     return this.submit({ actAs, commands: [{ CreateCommand: { templateId, createArguments: argument } }] });
   }
 
-  async updateById(party, updateId) {
+  // With `holdingViews`, created holdings in the update carry their CIP-0056
+  // Holding view, including holdings this party only witnessed.
+  async updateById(party, updateId, { holdingViews = false } = {}) {
+    const cumulative = [{ identifierFilter: { WildcardFilter: { value: { includeCreatedEventBlob: false } } } }];
+    if (holdingViews) cumulative.push(LedgerClient.identifierFilter({ interfaceId: INTERFACES.Holding }));
     return this.request('POST', '/v2/updates/update-by-id', {
       json: {
         updateId,
@@ -260,7 +266,7 @@ export class LedgerClient {
           includeTransactions: {
             eventFormat: {
               verbose: true,
-              filtersByParty: { [party]: { cumulative: [{ identifierFilter: { WildcardFilter: { value: { includeCreatedEventBlob: false } } } }] } },
+              filtersByParty: { [party]: { cumulative } },
             },
             transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
           },

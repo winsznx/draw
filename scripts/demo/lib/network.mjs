@@ -107,6 +107,8 @@ function loadNetwork() {
     // Every party signs its own transactions with its own key.
     externalKeys: partyMode === 'external' || partyMode === 'external-provisioned',
     separateVerifier,
+    // Named on new funds as an independent observer (draw 0.3.0).
+    verifierParty: env('DRAW_VERIFIER_PARTY'),
     apiFor,
     participantLabel: (role) => (apiFor(role) === providerApi ? (name === 'localnet' ? 'app-provider' : 'admin participant') : (name === 'localnet' ? 'app-user' : 'lp participant')),
     operators: {

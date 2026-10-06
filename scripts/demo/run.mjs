@@ -192,6 +192,34 @@ await expectRejection('deadline: overdue refused before due time',
 for (const role of LPS) await obligationFor(role, role);
 assertMatrix('after-issue', await visibilityMatrix('after-issue'));
 
+// ---------------------------------------------------------------- payment requests (draw 0.3.0)
+// Each obligation comes with a CIP-0056 AllocationRequest, which is what an
+// LP's Canton wallet lists and funds. Read through each party's own login.
+const requestsOf = async (role) => (await draw.paymentRequests(role)).filter((r) => runRefs.has(r.payload.obligationRef));
+for (const role of LPS) {
+  const own = await eventually(() => requestsOf(role), (l) => l.length >= 1);
+  check(`wallet: ${role} sees exactly its own payment request`, own.length === 1 && own[0].payload.obligationRef === ref[role],
+    own.map((r) => r.payload.obligationRef));
+}
+check('wallet: outsider sees no payment request', (await requestsOf('outsider')).length === 0);
+const requestViewA = (await draw.allocationRequests('lpA')).find((r) => r.interfaceView?.settlement?.settlementRef?.id === ref.lpA);
+const legA = requestViewA?.interfaceView?.transferLegs?.[ref.lpA];
+check('wallet: lpA reads its call as a CIP-0056 AllocationRequest with the exact settlement and leg', Boolean(requestViewA
+  && requestViewA.interfaceView.settlement.executor === party.admin
+  && legA?.sender === party.lpA && legA?.receiver === party.admin
+  && Number(legA?.amount) === Number(plan.lpA.amountDue)
+  && legA?.instrumentId?.admin === instrument.admin && legA?.instrumentId?.id === instrument.id
+  && Date.parse(requestViewA.interfaceView.settlement.allocateBefore) === Date.parse(dueAt)),
+  requestViewA?.interfaceView);
+
+if (draw.verifierParty) {
+  const asVerifier = (templateId) => verifier.client.activeContracts(draw.verifierParty, { templateId });
+  const seen = (await asVerifier(TEMPLATES.CapitalCallObligation)).filter((o) => o.payload.fundId === fundId);
+  check('verifier: the verifier party observes all three obligations', seen.length === 3, seen.map((o) => o.payload.obligationRef));
+  check('verifier: the verifier party sees no commitment', (await asVerifier(TEMPLATES.InvestorCommitment)).filter((c) => c.payload.fundId === fundId).length === 0);
+  check('verifier: the verifier party sees no payment request', (await asVerifier(TEMPLATES.PaymentRequest)).filter((r) => runRefs.has(r.payload.obligationRef)).length === 0);
+}
+
 const obligationB0 = await obligationFor('lpB');
 await expectRejection('privacy: lpA cannot fetch lpB obligation by contract id',
   () => client.lpA.eventsByContractId(party.lpA, obligationB0.contractId), 'CONTRACT_EVENTS_NOT_FOUND');
@@ -219,8 +247,17 @@ async function adminObservedAllocation(allocationCid) {
 const settle = async (role, allocationCid) => draw.settle((await obligationFor(role)).contractId, allocationCid);
 
 const receipts = {};
-async function settleAndVerify(role) {
-  const allocation = await allocate(role, { obligationRef: ref[role], amount: plan[role].amountDue });
+// `viaWallet` pays the way a Canton wallet's Accept does: from the payment
+// request's own settlement info and transfer leg.
+async function settleAndVerify(role, { viaWallet = false } = {}) {
+  let allocation;
+  if (viaWallet) {
+    const [request] = await requestsOf(role);
+    allocation = await draw.allocateFromRequest(role, request.contractId);
+    step(`${role} allocated ${plan[role].amountDue} Amulet from its payment request, as its wallet would`, allocation);
+  } else {
+    allocation = await allocate(role, { obligationRef: ref[role], amount: plan[role].amountDue });
+  }
   const observed = await adminObservedAllocation(allocation.allocationCid);
   check(`settlement[${role}]: admin observes allocation in its own ACS`, observed, observed?.interfaceView?.allocation?.settlement?.settlementRef);
 
@@ -248,12 +285,14 @@ async function settleAndVerify(role) {
   writeJson(`receipt-${role}.json`, receipts[role]);
   check(`settlement[${role}]: independent verifier returns VERIFIED_FUNDED`, receipt.verdict === 'VERIFIED_FUNDED',
     receipt.checks.filter((c) => !c.ok));
+  if (draw.verifierParty) check(`settlement[${role}]: verifier read the settlement through its own party`, receipt.readAs === draw.verifierParty, receipt.readAs);
+  check(`wallet: ${role}'s payment request closes when the call is settled`, (await requestsOf(role)).length === 0);
   check(`settlement[${role}]: LP sees its own obligation as Funded`, receipts[role].stateAfter === 'Funded', receipts[role].stateAfter);
   return { allocation, settled };
 }
 
 // ---------------------------------------------------------------- LP A pays
-const { allocation: allocationA, settled: settledA } = await settleAndVerify('lpA');
+const { allocation: allocationA, settled: settledA } = await settleAndVerify('lpA', { viaWallet: true });
 
 // ---------------------------------------------------------------- negative cases on LP B
 const wrongAmount = await allocate('lpB', { obligationRef: ref.lpB, amount: '30.0' });
