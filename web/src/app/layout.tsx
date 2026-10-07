@@ -11,9 +11,11 @@ const sans = Schibsted_Grotesk({ subsets: ['latin'], variable: '--font-schibsted
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jetbrains', display: 'swap' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://drawcalls.xyz'),
   title: { default: 'DRAW: private capital calls on Canton', template: '%s | DRAW' },
   description: 'Each LP sees and pays only its own capital call, and the fund counts only what a read-back confirms on the ledger. Live on Canton DevNet with test Canton Coin.',
-  openGraph: { title: 'DRAW', description: 'Private capital calls, settled and verified on Canton.' },
+  openGraph: { title: 'DRAW', description: 'Private capital calls, settled and verified on Canton.', url: '/', siteName: 'DRAW', type: 'website' },
+  twitter: { card: 'summary_large_image', title: 'DRAW', description: 'Private capital calls, settled and verified on Canton.' },
 };
 
 export const viewport: Viewport = {

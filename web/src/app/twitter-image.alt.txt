@@ -1,0 +1,1 @@
+DRAW: capital calls where each LP sees only its own notice. A live DevNet call with $750,000 deployable and $250,000 unresolved.
