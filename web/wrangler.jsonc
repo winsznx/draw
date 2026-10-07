@@ -8,6 +8,9 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
   "workers_dev": true,
+  // drawcalls.xyz serves the same worker. The workers.dev address stays up,
+  // because the evidence and the docs written before the domain point at it.
+  "routes": [{ "pattern": "drawcalls.xyz", "custom_domain": true }],
   // The DRAW API on the VPS. Every /api and /evidence request is proxied there
   // with the service token, so the API refuses anyone who is not this worker.
   "vars": { "DRAW_API_URL": "https://187-77-178-30.sslip.io" },
