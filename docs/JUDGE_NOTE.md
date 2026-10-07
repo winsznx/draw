@@ -4,7 +4,7 @@ This hackathon process record is the team's check on the story: what a judge sho
 
 ## After 10 seconds
 
-Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger.
+Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a read-back step confirms the settlement on the ledger.
 
 ## After 30 seconds
 
@@ -15,7 +15,7 @@ That run is on the HackCanton shared DevNet node, where DRAW's backend login sig
 ## After 2 minutes
 
 - Each LP's notice is a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. Another LP's ledger query returns nothing, even with the link.
-- LPs pay in a Canton token. The payment carries the notice's reference, and the notice turns funded in the same transaction that moves the money. A separate read-back step confirms it before the dashboard counts it.
+- LPs pay in a Canton token. The payment carries the notice's reference, and the notice turns funded in the same transaction that moves the money. A read-back step confirms it before the dashboard counts it.
 - The ledger refuses a wrong amount, the wrong payer, the wrong reference and a reused payment, on DevNet and on LocalNet.
 - The unpaid LP stays unresolved, and the fund can mark it overdue only after the due time.
 - In [a LocalNet run](../evidence/local/ablation/20261002T193830Z/result.json), the same call on an ordinary database with a paid flag let four of five attacks through, and none got through DRAW. The database attacker had write access, as an operator or a compromised app server would. That's the part Canton changes.

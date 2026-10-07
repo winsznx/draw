@@ -1,6 +1,6 @@
 # DRAW documentation
 
-Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger.
+Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a read-back step confirms the settlement on the ledger.
 
 This page lists every document in the order to read it, grouped by what it's for, and defines the fund and Canton words they use. It's written for hackathon judges who may know Canton but not private fund operations, and for fund people who don't know Canton.
 
@@ -129,7 +129,7 @@ For judges checking the entry itself. These record how the entry was built and s
 | Allocation | A Token Standard contract in which a payer locks an exact amount for one settlement, naming the reference, payer, receiver, amount and instrument. Nothing moves until it's executed. A DRAW payment is an allocation that carries the notice's reference. |
 | AllocationRequest, payment request | The Token Standard interface an app uses to ask a user for an allocation. DRAW sends one with each notice, and on the HackCanton node the node's Canton Coin wallet lists it under Allocations with Accept. |
 | Settle | The fund's action that checks a payment against its notice, moves the coin to the fund and marks the notice funded, all in one transaction. The code calls it `Obligation_Settle`. |
-| Read-back step, receipt | After settlement, a separate read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Only a receipt that passes all 14 counts as verified funded. Why a second step: the app's own record that it submitted a settlement isn't proof that money arrived, so the read-back checks the ledger, and a claim the ledger doesn't back is marked CONTRADICTED and never counts. It runs in the same process as the step that submitted the settlement. |
+| Read-back step, receipt | After settlement, a read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Only a receipt that passes all 14 counts as verified funded. Why a second step: the app's own record that it submitted a settlement isn't proof that money arrived, so the read-back checks the ledger, and a claim the ledger doesn't back is marked CONTRADICTED and never counts. It runs in the same process as the step that submitted the settlement. |
 | Verifier party | An optional party a fund can name in package 0.3.0 to read the fund, its calls and its notices without acting. Daml Script only so far. It isn't the verifier client, the DevNet login the scripted run's read-back used, and it isn't the read-back step itself. |
 | Broken guards, mutation testing | Copies of DRAW's contract with one check removed or changed. The tests have to fail on every copy, and they caught 15 of 15 on package 0.3.0. |
 | Canton Coin (CC), Amulet | Canton Coin is the network's own token, and Amulet is the Splice token implementation behind it. DRAW's runs use Canton Coin from the DevNet faucet and Amulet on LocalNet, and neither has monetary value. The DevNet proof page shows the instrument id Amulet, because Amulet is Canton Coin's implementation. |

@@ -15,7 +15,7 @@ Labels, word for word, for anything shown on screen or said about a run:
 
 ### What does DRAW do?
 
-Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger. DRAW runs one capital-call workflow end to end: issue the call, a private notice per LP, payment, settlement, the read-back, and an explicit list of what's unresolved. It isn't fund accounting, NAV, KYC, a secondary market, a lending product or an audit console. We built it for the fund COO or operations lead at an emerging manager, meaning a newer, smaller fund manager, and for the outsourced administrator who runs calls for several of them. That they're the people who feel this problem most is our hypothesis.
+Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a read-back step confirms the settlement on the ledger. DRAW runs one capital-call workflow end to end: issue the call, a private notice per LP, payment, settlement, the read-back, and an explicit list of what's unresolved. It isn't fund accounting, NAV, KYC, a secondary market, a lending product or an audit console. We built it for the fund COO or operations lead at an emerging manager, meaning a newer, smaller fund manager, and for the outsourced administrator who runs calls for several of them. That they're the people who feel this problem most is our hypothesis.
 
 Backed by: [PRODUCT.md](../PRODUCT.md), [BUSINESS_BRIEF.md](../BUSINESS_BRIEF.md).
 
@@ -117,7 +117,7 @@ Backed by: [devnet] ([the scripted DevNet run](../../evidence/devnet/runs/202610
 
 ### How do you know a settlement actually happened?
 
-A separate read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Among them: the update exercises `Obligation_Settle`, the same transaction executes and consumes the referenced allocation, the fund's received holdings are active, owned by the fund and in the expected instrument, the received amount equals the amount due, and the payer is the LP that owed it. Only a receipt that passes all 14 counts as verified funded, and only then does the dashboard count the money as deployable. On LocalNet that step runs as a read-only login that can't submit. On DevNet it ran on a client of its own in the scripted run, and on the live site it reads with the backend login, as the answer above says. Since package 0.3.0 a fund can also name a verifier party that reads the fund, every call and every obligation, and the ledger refuses it when it tries to act. That has run in Daml Script only.
+A read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Among them: the update exercises `Obligation_Settle`, the same transaction executes and consumes the referenced allocation, the fund's received holdings are active, owned by the fund and in the expected instrument, the received amount equals the amount due, and the payer is the LP that owed it. Only a receipt that passes all 14 counts as verified funded, and only then does the dashboard count the money as deployable. On LocalNet that step runs as a read-only login that can't submit. On DevNet it ran on a client of its own in the scripted run, and on the live site it reads with the backend login, as the answer above says. Since package 0.3.0 a fund can also name a verifier party that reads the fund, every call and every obligation, and the ledger refuses it when it tries to act. That has run in Daml Script only.
 
 Backed by: [devnet], [real-token-settlement], [verifier-party], "Reading a receipt" in [PROOF.md](../PROOF.md#reading-a-receipt).
 
@@ -209,7 +209,7 @@ Backed by: [HACKATHON_DELTA.md](../HACKATHON_DELTA.md), git history.
 
 By default the site starts at most 3 new demo funds per visitor per hour and 20 overall. Actions from every demo fund run one at a time through one queue, and when the shared demo parties near their record ceiling, the site answers "The demo is full right now" instead of breaking. If it can't start a fund, the proof page, https://draw.timjosh507.workers.dev/proof, shows the newest run of the same journey step by step with screenshots, and needs no access code. Reading needs no code either, on the proof page and on every seat of a demo fund the browser has already started. Every action, starting with "Create the demo fund", needs the demo access code, and the site doesn't print it.
 
-Backed by: [DEPLOY.md](../DEPLOY.md#demo-limits-and-capacity), [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261006132858/result.json), [demo.md](materials/demo.md).
+Backed by: [DEPLOY.md](../DEPLOY.md#demo-limits-and-capacity), [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007015754/result.json), [demo.md](materials/demo.md).
 
 ### Can judges hold their own key on DevNet?
 

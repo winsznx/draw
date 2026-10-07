@@ -1,6 +1,6 @@
 # Business brief
 
-Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger.
+Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a read-back step confirms the settlement on the ledger.
 
 This is the one-page business case, written for fund people and for judges scoring value, audience and go-to-market. The product itself, step by step, is in [PRODUCT.md](PRODUCT.md), and the words are defined in [the glossary](README.md#words-used-in-these-docs).
 
@@ -24,7 +24,7 @@ We don't set an LP-count band, calls per year or a market size yet. The intervie
 
 ## What DRAW does
 
-The fund issues a call once, and each LP gets its own notice, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. The LP pays from its Canton wallet by locking the exact amount in a Token Standard allocation that carries the notice's reference. When the fund settles, the ledger checks the payment against the notice and refuses anything that doesn't match exactly. The payment carries the notice's reference, and the notice turns funded in the same transaction that moves the money. A separate read-back step then confirms the settlement on the ledger with 14 checks, and only then does the dashboard count the money as deployable. Anything unpaid stays on an explicit unresolved list until it's paid or waived, and the fund can mark it overdue after the due time or send it to review with a note.
+The fund issues a call once, and each LP gets its own notice, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. The LP pays from its Canton wallet by locking the exact amount in a Token Standard allocation that carries the notice's reference. When the fund settles, the ledger checks the payment against the notice and refuses anything that doesn't match exactly. The payment carries the notice's reference, and the notice turns funded in the same transaction that moves the money. A read-back step then confirms the settlement on the ledger with 14 checks, and only then does the dashboard count the money as deployable. Anything unpaid stays on an explicit unresolved list until it's paid or waived, and the fund can mark it overdue after the due time or send it to review with a note.
 
 An LP needs a Canton party, holdings in the settlement asset and a wallet whose validator has vetted DRAW's package. An LP that pays by wire still gets a private notice, but nothing in DRAW can mark a wire funded, so that notice stays unresolved or goes to review. [PRODUCT.md](PRODUCT.md) walks through each step from both sides.
 

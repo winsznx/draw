@@ -1,6 +1,6 @@
 # Go to market
 
-The GTM material: who DRAW goes to first, how we'll reach them, the pilot, the pricing hypothesis, the path to TestNet and MainNet, and the risks. It's for judges scoring distribution, and for anyone deciding whether to shadow a capital call with us. DRAW runs one capital-call workflow end to end on Canton: a private notice per LP, payment from the LP's Canton wallet, settlement, a separate read-back step, and an explicit list of what's unresolved.
+The GTM material: who DRAW goes to first, how we'll reach them, the pilot, the pricing hypothesis, the path to TestNet and MainNet, and the risks. It's for judges scoring distribution, and for anyone deciding whether to shadow a capital call with us. DRAW runs one capital-call workflow end to end on Canton: a private notice per LP, payment from the LP's Canton wallet, settlement, a read-back step, and an explicit list of what's unresolved.
 
 Status on 2026-10-06: nobody has agreed to a pilot, and no customer, partner or letter of intent exists. No conversation with a fund has been held yet. Everything below is the plan we're testing.
 

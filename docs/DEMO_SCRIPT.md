@@ -6,7 +6,7 @@ About three and a half minutes on the live DevNet site, https://draw.timjosh507.
 
 Use these labels on screen and in the narration. The deck and the video use the same words, and [claims.yaml](../claims.yaml) is their ceiling.
 
-- DevNet, the site's network note since about 13:25 UTC on 2026-10-06: "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat." With sign-in on, the site adds: "An LP that signs in with its own HackCanton login signs only for its own party." Footage from before 13:25 UTC shows the older note, "One hackathon login signs for every demo seat", so caption it as the earlier setup.
+- DevNet, the site's network note: "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat, and the same login reads each settlement back." With sign-in on, the site adds: "An LP that signs in with its own HackCanton login signs only for its own party." Footage from before about 13:25 UTC on 2026-10-06 shows the older note, "One hackathon login signs for every demo seat", and footage from before the 2026-10-06 evening deploy shows the note without the read-back clause, so caption either as the earlier setup.
 - LocalNet: "LocalNet. Each party signs with its own key."
 - Asset: "Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario."
 - Production asset: "Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx."
@@ -21,7 +21,7 @@ Use these labels on screen and in the narration. The deck and the video use the 
 
 ## 0:00 The question the fund has
 
-Screen: the landing page, "Capital calls only the right investor can read." That headline leaves out the fund and the node operator, so until the web copy changes, caption it: "Other LPs can't read a notice. The fund and the node's operator can."
+Screen: the landing page, "Capital calls where each LP sees only its own notice." Above it, "For fund operations and administrators". Below the buttons, the "What works on DevNet" line reads the newest passing run.
 
 > A fund is calling a million dollars from three investors. Afterwards it needs one number: how much of that can it actually deploy, and what's still outstanding?
 
@@ -65,7 +65,7 @@ Still as LP B, open its own notice from "Your notices". Click "Pay a different a
 
 Switch seat to Fund manager and open Calls, then Call 1. Click "Settle 40 CC", and "Settle 35 CC" if LP B paid. The notices show Funded and "Deployable now" goes up. Switch seat to LP A and open the notice: "Verified funded", with 14 of 14 checks.
 
-> Settling moves the coin and marks the notice funded in one transaction. A separate read-back step then reads that settlement and the fund's holdings from the ledger, here with the same backend login, before the dollars count as deployable. In our scripted DevNet run it used a login of its own, which the ledger refused when it tried to act as the fund.
+> Settling moves the coin and marks the notice funded in one transaction. A read-back step then reads that settlement and the fund's holdings from the ledger, here with the same backend login, before the dollars count as deployable. In our scripted DevNet run it used a login of its own, which the ledger refused when it tried to act as the fund.
 
 ## 3:00 The investor who didn't pay (optional)
 

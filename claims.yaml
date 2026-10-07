@@ -100,6 +100,8 @@ claims:
     status: devnet_verified
     environments: [devnet]
     evidence:
+      - evidence/devnet/browser/web-hackcanton-20261007015511/result.json
+      - evidence/devnet/browser/web-hackcanton-wallet-20261007015632/result.json
       - evidence/devnet/browser/web-hackcanton-20261006132613/result.json
       - evidence/devnet/browser/web-hackcanton-wallet-20261006132730/result.json
       - evidence/devnet/probes/20261006T133219Z/result.json
@@ -108,7 +110,7 @@ claims:
       - evidence/devnet/browser/web-hackcanton-20261006111458/result.json
       - evidence/devnet/browser/web-hackcanton-wallet-20261006111654/result.json
       - evidence/devnet/browser/web-hackcanton-wallet-20261006114558/result.json
-    limits: "The two newest runs record the site's setup: the demo seats on the backend client, no separate verifier, and DRAW's own Keycloak client for sign-in. The backend client's rights come from probe 20261006T133219Z, which records its check passing and the verifier client's failing, and the team's personal login was removed from the server before those runs. Earlier runs used a server that also held the team's personal login, which could act for the LP's party. Every run signed in with the team's own login as the LP, so the same person held both sides, though with different credentials in the newest runs. The verifier client NODERS issued can also act for that personal party, so it is not on the server. The LP's party is its login's wallet party, on the same NODERS participant as the fund, which has DRAW's package vetted. The token stays in the browser tab's session storage. The first four runs signed in through NODERS' public web-app client, the later ones through DRAW's own client. The runs from 11:14 UTC on are on the release where Sign out also ends the Keycloak session and every sign-in asks for the password."
+    limits: "The four newest runs record the site's setup: the demo seats on the backend client, no separate verifier, and DRAW's own Keycloak client for sign-in. The two from 2026-10-07 ran on the release whose screens say the read-back runs on the login that settled. The backend client's rights come from probe 20261006T133219Z, which records its check passing and the verifier client's failing, and the team's personal login was removed from the server before those runs. Earlier runs used a server that also held the team's personal login, which could act for the LP's party. Every run signed in with the team's own login as the LP, so the same person held both sides, though with different credentials in the newest runs. The verifier client NODERS issued can also act for that personal party, so it is not on the server. The LP's party is its login's wallet party, on the same NODERS participant as the fund, which has DRAW's package vetted. The token stays in the browser tab's session storage. The first four runs signed in through NODERS' public web-app client, the later ones through DRAW's own client. The runs from 11:14 UTC on are on the release where Sign out also ends the Keycloak session and every sign-in asks for the password."
 
   - id: grofty
     text: "An LP funds an obligation through Grofty on MainNet."
@@ -148,7 +150,8 @@ claims:
       - evidence/devnet/browser/web-journey-20261006091011/result.json
       - evidence/devnet/browser/web-journey-20261006101224/result.json
       - evidence/devnet/browser/web-journey-20261006132858/result.json
-    limits: "One credential acts for every demo party: the shared hackathon login in the first four runs, and the backend client NODERS issued for DRAW in the fifth. In every run the read-back step used that same credential. Actions on the public site need an access code. The second run is on the redesigned web app, the third adds a demo fund per browser, the fourth ran on the release with sign-in, and the fifth ran with the demo seats on the backend client NODERS issued for DRAW. The demo funds share the same five parties, so keeping one browser out of another's fund is the app's doing, while keeping each LP out of the others' records is the ledger's."
+      - evidence/devnet/browser/web-journey-20261007015754/result.json
+    limits: "One credential acts for every demo party: the shared hackathon login in the first four runs, and the backend client NODERS issued for DRAW in the fifth and sixth. In every run the read-back step used that same credential. Actions on the public site need an access code. The second run is on the redesigned web app, the third adds a demo fund per browser, the fourth ran on the release with sign-in, the fifth ran with the demo seats on the backend client NODERS issued for DRAW, and the sixth on the release whose screens say the read-back runs on that same login. The demo funds share the same five parties, so keeping one browser out of another's fund is the app's doing, while keeping each LP out of the others' records is the ledger's."
 
   - id: non-custodial
     text: "Each party can hold its own signing key: the participant prepares each transaction, the party's key signs it, and the participant cannot act for the party without that signature. Another party's key is refused. The scripted run passed 76 of 76 checks."

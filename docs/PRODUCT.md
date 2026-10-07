@@ -1,6 +1,6 @@
 # Product
 
-DRAW runs one capital call for a private fund, from the call to the money the fund can use. A capital call is how a fund collects money its investors already promised: each investor, an LP, commits an amount up front, and the fund draws it in parts when it needs it by sending each LP a notice for its share with a due date. In DRAW the fund issues the call once, and each LP gets its own notice, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. The LP pays it from its Canton wallet, the fund settles it, and the fund counts the money as deployable only after a separate read-back step confirms the settlement on the ledger.
+DRAW runs one capital call for a private fund, from the call to the money the fund can use. A capital call is how a fund collects money its investors already promised: each investor, an LP, commits an amount up front, and the fund draws it in parts when it needs it by sending each LP a notice for its share with a due date. In DRAW the fund issues the call once, and each LP gets its own notice, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. The LP pays it from its Canton wallet, the fund settles it, and the fund counts the money as deployable only after a read-back step confirms the settlement on the ledger.
 
 We built DRAW for the fund COO or operations lead at an emerging manager, a newer and smaller fund manager, and for the outsourced administrator who runs calls for such managers. This document describes the product for them and for judges: who does what in a call, step by step, what each side sees and what changes. Fund and Canton words are defined in [the glossary](README.md#words-used-in-these-docs).
 
@@ -52,9 +52,9 @@ In the demo the commitments come from the demo setup. There's no onboarding, KYC
 
 Shown on DevNet on the live site, where one action issues the call, and on LocalNet, where one ledger transaction issued the call to all three LPs. On DevNet one backend client reads for every demo seat, so the app picks which party it reads as. Each LP reading with its own separate login, and getting nothing of another LP's notice even by contract id, was shown on LocalNet.
 
-![The fund manager's call view just after issuing: Unresolved $100,000, one notice for LP A awaiting payment, and the toast "Each investor now sees only its own notice"](../evidence/devnet/browser/web-journey-20261006132858/03-call-issued.png)
+![The fund manager's call view just after issuing: Unresolved $100,000, one notice for LP A awaiting payment, and the toast "Each investor now sees only its own notice"](../evidence/devnet/browser/web-journey-20261007015754/03-call-issued.png)
 
-The call just issued, with everything still unresolved. From the live-site browser run on 2026-10-06, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat (the network note shows in each screen).
+The call just issued, with everything still unresolved. From the live-site browser run on 2026-10-07, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat (the network note shows in each screen).
 
 ### 3. The LP's wallet gets a payment request
 
@@ -85,9 +85,9 @@ Shown on DevNet: paying from the demo seats on the live site, and both signed-in
 
 Settlement is shown in Daml Script, on LocalNet with Amulet and on DevNet with Canton Coin. A wrong amount, wrong payer, wrong reference and a replayed payment were refused on DevNet and LocalNet. A wrong executor, wrong call and wrong instrument were refused in Daml Script only.
 
-### 6. A separate read-back step confirms it
+### 6. A read-back step confirms it
 
-- A separate read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Among them: the transaction ran the settle step, it executed and consumed the referenced payment, the fund's received holdings are active and in the right instrument, they equal the amount due, and the payer is the LP that owed it. [PROOF.md](PROOF.md#reading-a-receipt) lists all 14.
+- A read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Among them: the transaction ran the settle step, it executed and consumed the referenced payment, the fund's received holdings are active and in the right instrument, they equal the amount due, and the payer is the LP that owed it. [PROOF.md](PROOF.md#reading-a-receipt) lists all 14.
 - Why a second step: the app's own record that it submitted a settlement isn't proof that money arrived. The read-back reads the settled transaction and the fund's coin holdings from the ledger itself, and a claim the ledger doesn't back, such as one notice's settlement offered as evidence for another, is marked CONTRADICTED and never counts.
 - Only a receipt that passes all 14 counts as verified funded. Then the dashboard adds the money to Deployable now, and the LP's notice says "Verified funded" with 14 of 14 checks.
 - Who reads back depends on the setup. On LocalNet it's a separate ledger login with read rights on the fund only, checked in each run to be unable to submit. In the scripted DevNet run it's a client of its own, which the ledger refused when it tried to act as the fund. That client can also act and read as the team's personal wallet party, so it isn't called read-only, and the live server doesn't use it. On the live site the read-back uses the same backend client as the demo seats. In every setup the read-back runs in the same process as the step that submitted the settlement.
@@ -95,9 +95,9 @@ Settlement is shown in Daml Script, on LocalNet with Amulet and on DevNet with C
 
 In the scripted DevNet run, the read-back receipts are stamped 6.4 s (LP A) and 5.1 s (LP B) after the settlements' record times, the verifier's clock against the ledger's. On LocalNet, with a scripted fund acting at once on one machine, payment locked to verified funded took 1,047 ms for LP A. Neither figure is production latency.
 
-![LP A's own notice after settlement: Funded, with the steps Payment locked, Settled by the fund and Verified by read-back, and a Verified funded panel showing 14 of 14 checks](../evidence/devnet/browser/web-journey-20261006132858/07-lp-verified.png)
+![LP A's own notice after settlement: Funded, with the steps Payment locked, Settled by the fund and Verified by read-back, and a Verified funded panel showing 14 of 14 checks](../evidence/devnet/browser/web-journey-20261007015754/07-lp-verified.png)
 
-LP A's notice, verified funded with 14 of 14 checks. From the live-site browser run on 2026-10-06, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat (the network note shows in each screen).
+LP A's notice, verified funded with 14 of 14 checks. From the live-site browser run on 2026-10-07, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat (the network note shows in each screen).
 
 ### 7. Unpaid, late and wrong-party payments
 

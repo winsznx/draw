@@ -2,7 +2,7 @@
 
 This is DRAW's technical reference, for readers who know Canton or want to check how the product works underneath. It covers the parties, the Daml templates, who can see which contract, how a payment settles a notice, how an LP signs in on DevNet, which credentials the live site holds, the notice states and how the totals are computed. For the workflow in fund terms, read [PRODUCT.md](PRODUCT.md) first. The trust model is in [SECURITY.md](SECURITY.md), and what isn't built or shown yet is in [LIMITATIONS.md](LIMITATIONS.md).
 
-The fund's party issues a capital call, which creates one notice per LP, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. Each notice also reaches its LP as a CIP-0056 AllocationRequest. The LP pays by locking the exact amount in a Token Standard allocation. The payment carries the notice's reference, and when the fund settles, Daml checks the allocation against the notice and the notice turns funded in the same transaction that moves the money. A separate read-back step then reads the settlement and the fund's holdings from the ledger and runs 14 checks. The app counts a notice as deployable only when its receipt passes all 14.
+The fund's party issues a capital call, which creates one notice per LP, a contract between the fund and that LP that no other LP or unrelated party can read, though the operator of the node that hosts them can. Each notice also reaches its LP as a CIP-0056 AllocationRequest. The LP pays by locking the exact amount in a Token Standard allocation. The payment carries the notice's reference, and when the fund settles, Daml checks the allocation against the notice and the notice turns funded in the same transaction that moves the money. A read-back step then reads the settlement and the fund's holdings from the ledger and runs 14 checks. The app counts a notice as deployable only when its receipt passes all 14.
 
 ## The live DevNet deployment
 
@@ -145,7 +145,7 @@ Replay: `Allocation_ExecuteTransfer` is consuming, so the same allocation can't 
 
 ## Sign in with HackCanton (DevNet)
 
-An LP with its own HackCanton login can join a demo fund as itself. The API turns this on with `DRAW_SIGN_IN=true`, and only when each browser has its own demo fund. Every run of it signed in with the team's own login as the LP. The two newest, [paying from DRAW](../evidence/devnet/browser/web-hackcanton-20261006132613/) and [paying with Accept in the node's wallet](../evidence/devnet/browser/web-hackcanton-wallet-20261006132730/), ran with the server on the backend client and the browser on DRAW's own web client, as their `siteSetup` records. The first four used NODERS' public web-app client `web-app-ui-hackcanton-01-devnet`.
+An LP with its own HackCanton login can join a demo fund as itself. The API turns this on with `DRAW_SIGN_IN=true`, and only when each browser has its own demo fund. Every run of it signed in with the team's own login as the LP. The two newest, [paying from DRAW](../evidence/devnet/browser/web-hackcanton-20261007015511/) and [paying with Accept in the node's wallet](../evidence/devnet/browser/web-hackcanton-wallet-20261007015632/), ran with the server on the backend client and the browser on DRAW's own web client, as their `siteSetup` records. The first four used NODERS' public web-app client `web-app-ui-hackcanton-01-devnet`.
 
 ```text
 LP's browser -> node's Keycloak (realm noders-appsfactory, DRAW's public client xidoncapitals-web-app-hackcanton-01-devnet)

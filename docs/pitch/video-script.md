@@ -10,7 +10,7 @@ Use these exactly. They stay inside [claims.yaml](../../claims.yaml), and the de
 
 | Label | Text | When it's on screen |
 |---|---|---|
-| DevNet | DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat. | 0:00 to 2:40 and the optional sign-in scene, top bar or lower third. It's the site's own network note since about 13:25 UTC on 2026-10-06. Footage from before that shows "One hackathon login signs for every demo seat", so caption it as the earlier setup |
+| DevNet | DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat, and the same login reads each settlement back. | 0:00 to 2:40 and the optional sign-in scene, top bar or lower third. It's the site's own network note. Footage from before about 13:25 UTC on 2026-10-06 shows "One hackathon login signs for every demo seat", so caption it as the earlier setup |
 | Asset | Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario. | 0:00 to 0:20 and 0:42 to 1:52 |
 | LocalNet | LocalNet. Each party signs with its own key. | 2:40 to 3:10 |
 | Production asset | Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx. | 3:22 to 3:34 |
@@ -19,7 +19,7 @@ Use these exactly. They stay inside [claims.yaml](../../claims.yaml), and the de
 ## Before recording
 
 - Record the live site, https://draw.timjosh507.workers.dev, in a clean browser profile at 1920x1080.
-- Check the read-back wording on the live site first. LP A's steps bar should end in "Verified by read-back", the receipt should start "A separate read-back step", and the settle toast should say "Settled and verified by a separate read-back". If the site still says "Independently verified", don't film the DevNet scenes until the new copy is deployed.
+- Check the read-back wording on the live site first. LP A's steps bar should end in "Verified by read-back". The receipt should start "DRAW's read-back step read the settlement from the ledger" and say it ran on DRAW's backend login, the same one that settled, and the settle toast should start "Settled and verified funded". If the site still says "separate read-back" or "Independently verified", the current web copy isn't deployed, so don't film the DevNet scenes yet.
 - In that browser, click "Create the demo fund" and wait about a minute. Then take each LP seat in turn and click "Accept commitment", so all three LPs have accepted. Cut these steps from the video.
 - Check each LP's balance. "Add test CC" on the seat card taps the faucet. Cut this too.
 - With all three accepted, the first call comes prefilled with the standard amounts: LP A $400,000 (40 CC), LP B $350,000 (35 CC), LP C $250,000 (25 CC), $1,000,000 in all. The form lists only LPs that have accepted. If it shows other amounts, use what's there and change "forty" and "a million dollars" in the voiceover to match.
@@ -27,7 +27,7 @@ Use these exactly. They stay inside [claims.yaml](../../claims.yaml), and the de
 - Enter the access code off camera, unless it's public by then.
 - Keep the seat card in the bottom left in frame. It shows which party every screen is read as.
 - Film each scene as its own take. If a step fails on camera, don't stage it. Use the evidence file named in that scene instead and say what it shows.
-- For DevNet backups, use the screenshots in [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261006132858) first. That run is on the current setup, with the demo seats on the backend client, as its `siteSetup` records, and shows the current wording: the settle toast says "Settled and verified by a separate read-back", and LP A's steps bar ends in "Verified by read-back". Its call is $100,000 to LP A alone, paid as 10 CC, so match the voiceover to it if you use them. The screenshots in [the earlier journey from that morning](../../evidence/devnet/browser/web-journey-20261006091011) have the same wording on the earlier setup, with the network note naming one hackathon login.
+- For DevNet backups, use the screenshots in [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007015754) first. That run is on the current setup, with the demo seats on the backend client, as its `siteSetup` records, and shows the current wording: the settle toast says "Settled and verified funded. The read-back ran on DRAW's backend login, the same one that settled.", and LP A's steps bar ends in "Verified by read-back". Its call is $100,000 to LP A alone, paid as 10 CC, so match the voiceover to it if you use them. The screenshots in [the journey from the morning of 2026-10-06](../../evidence/devnet/browser/web-journey-20261006091011) have the earlier wording and the earlier setup, with the network note naming one hackathon login.
 - The older backup screenshots from 2026-10-05, in [the redesigned-UI journey](../../evidence/devnet/browser/web-journey-20261005214111) and [the LocalNet browser-key journey](../../evidence/local/browser/web-browser-keys-20261005005304), show the old wording "Independently verified" and "An independent read-only verifier". If you use one, crop that text out, or caption it "Screens from the 2026-10-05 UI." followed by "On DevNet the read-back then ran with the same shared login." or "On LocalNet the read-back runs as a separate read-only login."
 - If you show deck slides, use docs/pitch/DRAW-deck.pdf as re-exported on 2026-10-06, after the fixes listed in [SUBMISSION.md](../SUBMISSION.md#links).
 
@@ -81,7 +81,7 @@ Captions: "One transaction: the coin moves and the notice turns funded." Then: "
 
 Voiceover:
 
-> Back as the fund. Settling checks the reference, the payer, the amount and the asset, then moves the coin and marks the notice funded, all in one transaction. A separate read-back step then fetches the settlement and runs fourteen checks. Only now does the deployable figure go up.
+> Back as the fund. Settling checks the reference, the payer, the amount and the asset, then moves the coin and marks the notice funded, all in one transaction. A read-back step then fetches the settlement and runs fourteen checks. Only now does the deployable figure go up.
 
 #### 1:42 Verified
 
@@ -91,7 +91,7 @@ Voiceover:
 
 > LP A sees the same result: verified funded, fourteen of fourteen checks.
 
-Backup if a step fails: [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261006132858/result.json), the same journey, 10 of 10 steps on 2026-10-06, on the backend client, with screenshots in the current wording. Or [the 2026-10-05 journey](../../evidence/devnet/browser/web-journey-20261005214111/result.json), 8 of 8 steps, with the older wording and the shared login.
+Backup if a step fails: [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007015754/result.json), the same journey, 10 of 10 steps on 2026-10-07, on the backend client, with screenshots in the current wording. Or [the 2026-10-05 journey](../../evidence/devnet/browser/web-journey-20261005214111/result.json), 8 of 8 steps, with the older wording and the shared login.
 
 ### 1:52 to 2:15 Privacy
 

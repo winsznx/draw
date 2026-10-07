@@ -6,7 +6,7 @@ The smallest useful deployment is one fund, run by its manager or its administra
 
 - A call issued once, producing a separate notice per LP, each a contract between the fund and that LP that no other LP or outsider can read.
 - Payments that either match the notice exactly or are refused by the ledger with a stated reason. There is no "looks about right" match.
-- A notice that turns funded in the same transaction that moves the money, plus a 14-check receipt from a separate read-back step.
+- A notice that turns funded in the same transaction that moves the money, plus a 14-check receipt from a read-back step.
 - A deployable figure that is the sum of verified notices, and an explicit unresolved list of late, mismatched and in-review notices.
 - A note on every review, reopen, release and waive decision, recorded on the ledger. Marking a notice overdue takes no note, and the ledger allows it only after the due time.
 
