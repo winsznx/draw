@@ -28,7 +28,7 @@ The submission rules ask for a concise presentation covering four things. Where 
 
 ## Track 3 expected output
 
-Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, is the track DRAW proposes to enter, pending the owner's confirmation ([TRACK_PROOF_MODALITY.md](TRACK_PROOF_MODALITY.md)). The expected output is quoted from the same rules page.
+Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, is the track DRAW enters, confirmed by the owner on 2026-10-07 ([TRACK_PROOF_MODALITY.md](TRACK_PROOF_MODALITY.md)). The expected output is quoted from the same rules page.
 
 | Expected output | DRAW |
 |---|---|

@@ -311,3 +311,5 @@ For DevNet, copy `.env.example` to `.env`, uncomment the HackCanton block with y
 ## About this project
 
 DRAW was built from scratch during HackCanton Season 3 by a single author. The first commit is dated 2026-10-01 ([docs/HACKATHON_DELTA.md](docs/HACKATHON_DELTA.md)). DRAW was built with AI-assisted tools (Claude Code) for code, tests and documentation. The author directed the work and is responsible for all of it. The product itself has no AI features. [CLAUDE.md](CLAUDE.md) holds the rules the AI coding assistant worked under, public as part of that disclosure.
+
+DRAW is licensed under the Apache License 2.0, in [LICENSE](LICENSE).

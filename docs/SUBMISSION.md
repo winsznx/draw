@@ -6,7 +6,7 @@ This hackathon process record holds the draft answers for the HackCanton project
 
 Project name: DRAW
 
-Track: Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, pending the owner's confirmation. Its wishlist asks for "A Daml workflow for the full lifecycle of private fund subscriptions, capital calls, distributions and redemptions", and DRAW covers the capital-call part. Fallback: Track 1, Real-World Assets (RWA) & Business Workflows.
+Track: Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, confirmed by the owner on 2026-10-07. Its wishlist asks for "A Daml workflow for the full lifecycle of private fund subscriptions, capital calls, distributions and redemptions", and DRAW covers the capital-call part. Fallback: Track 1, Real-World Assets (RWA) & Business Workflows.
 
 One-line description: Private capital calls on Canton. Each LP reads and pays only its own notice, and the fund counts the money as deployable only after a read-back step confirms the settlement on the ledger.
 
@@ -39,7 +39,7 @@ Post-hackathon plan: Conversations and usability tests first, then the shadow pi
 | Repository | Not public yet, and the repository has no git remote. The URL goes here once it's published |
 | Demo video | Not recorded yet. The link goes here at submission |
 | Deck | v1, not linked yet. These fixes are made in [deck.html](pitch/deck.html), each checked against [claims.yaml](../claims.yaml), and the PDF was re-exported on 2026-10-06. Slide 8's timing comes from run 20261006T131900Z, 6.4 s and 5.1 s. Slide 2 no longer names a vendor and no longer says funds count money only once it's reconciled. The cover reads "Capital calls where each LP sees only its own notice." Slide 3 marks the small-fund line as our assumption. Slide 7 says the Scan line comes from the Scan docs and hasn't been checked against Scan. Next, the owner reviews it, and then the README links it |
-| Demo access code | The site doesn't print it. Its `/api/config` returned no code on 2026-10-06. Open decision: set `DRAW_ACCESS_CODE_PUBLIC=true` on the API so the landing page prints it, or give the code in the submission form. The code itself never goes in a tracked file |
+| Demo access code | The site doesn't print it yet. The owner decided on 2026-10-07 that it goes public on submission day: on 2026-10-09, set `DRAW_ACCESS_CODE_PUBLIC=true` in the API's `.env`, restart `draw`, and check that the landing page prints the code and the access dialog fills it in. Until then testers get the code directly. The code itself never goes in a tracked file |
 
 ## The six materials
 
@@ -61,10 +61,10 @@ From the Season 3 rules.
 | Requirement | Status on 2026-10-06 |
 |---|---|
 | Submitted by 2026-10-09 23:59 UTC. Aim for 18:00 UTC. Nothing changed after the deadline counts | Open |
-| Public repository with all code and a README describing the project | Open. Not published yet, with no git remote and no LICENSE file, so a license still has to be chosen. On 2026-10-06 gitleaks 8.30.1 and a check for every `.env` value found nothing in the 45 commits up to `94ffc14`. The repository now has 68 commits, up to `515569d`, so both scans have to be re-run on the release commit at the freeze, with its id and date recorded in [SECURITY.md](SECURITY.md) |
+| Public repository with all code and a README describing the project | Open. Not published yet and with no git remote. The repository goes public on 2026-10-09, and it has an Apache-2.0 [LICENSE](../LICENSE) since 2026-10-07. On 2026-10-06 gitleaks 8.30.1 and a check for every `.env` value found nothing in the 45 commits up to `94ffc14`. The repository now has 68 commits, up to `515569d`, so both scans have to be re-run on the release commit at the freeze, with its id and date recorded in [SECURITY.md](SECURITY.md) |
 | Demo: working prototype, live demo or recorded video, at most 5 minutes | The live site works. The video isn't recorded yet |
 | Pitch materials: problem and why it matters, solution and how Canton is used, target users and go-to-market, key metrics or validation | Drafts of the six materials, not yet reviewed. The deck has the fixes listed under Links and waits for the owner's review before the README links it |
-| One track, selected at submission | Track 3 proposed, pending the owner's confirmation |
+| One track, selected at submission | Track 3, confirmed by the owner on 2026-10-07. Select it in the submission form |
 | 1,000 Mana burned toward the project | 100 of 1,000 on 2026-10-04. The rules add that 1,000 Mana "requires at least 10 days of daily activity on the platform", and the deadline is 2026-10-09, so this is an eligibility risk. The account's days of activity aren't recorded here and need checking on the dashboard. Before buying any Mana, ask AppsFactory about the 10-day condition and whether bought Mana counts |
 | Completed project profile: description, team information, track | Open |
 | Non-empty journal, ideally an entry every day | One entry as of 2026-10-04. The plan is one a day from 2026-10-06 |

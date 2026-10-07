@@ -4,7 +4,7 @@ This hackathon process record covers the track DRAW enters and what would underc
 
 ## The track
 
-Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, pending the owner's confirmation at submission. The fallback is Track 1, Real-World Assets (RWA) & Business Workflows.
+Track 3, Investment Infrastructure: Funds, DAOs & Governance Tools, confirmed by the owner on 2026-10-07. Track 1, Real-World Assets (RWA) & Business Workflows, was the fallback.
 
 What Track 3 expects, item by item, and what DRAW offers for each is in [RUBRIC_ARTIFACT_MAP.md](RUBRIC_ARTIFACT_MAP.md#track-3-expected-output). The proof chain, from an issued call to the unpaid notice that stays unresolved, is in [PROOF.md](PROOF.md#the-proof-chain).
 

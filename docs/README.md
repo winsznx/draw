@@ -82,7 +82,7 @@ For judges checking the entry itself. These record how the entry was built and s
 36. [SUBMISSION.md](SUBMISSION.md): draft answers for the project page, the links, and the compliance checklist.
 37. [RUBRIC_ARTIFACT_MAP.md](RUBRIC_ARTIFACT_MAP.md): each of the six judging criteria, where DRAW answers it, and what's still missing.
 38. [HACKATHON_DELTA.md](HACKATHON_DELTA.md): what was built during the event. First commit, build period, third-party material.
-39. [TRACK_PROOF_MODALITY.md](TRACK_PROOF_MODALITY.md): the track DRAW proposes to enter, pending the owner's confirmation, and what that track expects.
+39. [TRACK_PROOF_MODALITY.md](TRACK_PROOF_MODALITY.md): the track DRAW enters, Track 3, confirmed by the owner on 2026-10-07, and what that track expects.
 40. [JUDGE_NOTE.md](JUDGE_NOTE.md): what a judge should be able to say back after 10 seconds, 30 seconds and 2 minutes, and the words that mean the story failed.
 41. [JUDGE_SCORECARD.md](JUDGE_SCORECARD.md): our own check against the six criteria, without scores, and the next action for each.
 42. [PORTFOLIO_NOVELTY.md](PORTFOLIO_NOVELTY.md): how DRAW differs from the author's earlier products.
