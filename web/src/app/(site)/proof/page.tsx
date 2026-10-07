@@ -60,6 +60,8 @@ const CUSTODY_NOTE: Record<string, string> = {
   SERVER_SUBMITS_FOR_PARTIES: 'The run’s own login submitted for every party. No party held its own key.',
   EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY: 'Every party signed its own transactions with its own key.',
 };
+// With external parties one login can submit for all of them, but only what each party's key signed.
+const SUBMITS_ONLY_SIGNED = 'One ledger login submitted for every party and read each settlement back. It could not act for a party without that party’s signature.';
 // The probe check of the read-back's client, as scripts/demo/probe.mjs names it.
 const PROBE_VERIFIER = "credentials: the verifier's client only reads, as the fund's party";
 
@@ -179,8 +181,11 @@ export default async function ProofPage() {
   const probeVerifier = probe?.verifierUser && probe.verifierUser === c?.verifierUser ? probe.checks.find((check) => check.id === PROBE_VERIFIER) : undefined;
   const seatsShared = c?.credentialSeparation === 'VERIFIER_ONLY' || c?.credentialSeparation === 'NOT_TESTED_SINGLE_CREDENTIAL';
   const hidden = c?.reasonsHidden?.length ?? 0;
+  const ownKeys = c?.custody === 'EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY';
   const signing = [
-    c?.credentialSeparation && (SEPARATION_NOTE[c.credentialSeparation] ?? c.credentialSeparation),
+    c?.credentialSeparation && (ownKeys && c.credentialSeparation === 'NOT_TESTED_SINGLE_CREDENTIAL'
+      ? SUBMITS_ONLY_SIGNED
+      : SEPARATION_NOTE[c.credentialSeparation] ?? c.credentialSeparation),
     c?.custody && (CUSTODY_NOTE[c.custody] ?? c.custody),
     ...(c?.skipped ?? []).map((s) => `Skipped “${s.id}”${s.reason ? `: ${s.reason.replace(/\.$/, '')}` : ''}.`),
     hidden === 1 ? '1 refusal came back with only a trace id, so the run could not check its reason.' : null,
@@ -254,7 +259,7 @@ export default async function ProofPage() {
               id="privacy"
               title="Who could read what"
               env={proof.network}
-              lead={`Each row is one party’s own ledger query after the call settled${seatsShared ? ', made through the one login the demo seats shared' : ''}. Leaks counts any contract a party saw that it is not a party to.`}
+              lead={`Each row is one party’s own ledger query after the call settled${seatsShared ? `, made through the one login ${ownKeys ? 'that submitted for every party' : 'the demo seats shared'}` : ''}. Leaks counts any contract a party saw that it is not a party to.`}
             >
               <div className={`sheet sheet-pad ${styles.scroll}`}>
                 <table className="table">
