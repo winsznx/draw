@@ -1,0 +1,49 @@
+{
+  "run": "20261007215349",
+  "test": "an LP signs in with its own HackCanton login and pays from its own Canton wallet",
+  "site": "https://drawcalls.xyz",
+  "siteSetup": {
+    "network": "DevNet",
+    "seatCredential": "backend-client",
+    "singleCredential": true,
+    "separateVerifier": true,
+    "signInClientId": "xidoncapitals-web-app-hackcanton-01-devnet",
+    "release": {
+      "version": "0.3.0",
+      "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534"
+    }
+  },
+  "steps": [
+    {
+      "step": "demo fund started",
+      "at": "2026-10-07T21:54:12.998Z"
+    },
+    {
+      "step": "signed in on the node Keycloak",
+      "at": "2026-10-07T21:54:18.722Z"
+    },
+    {
+      "step": "LP accepted with its own login",
+      "at": "2026-10-07T21:54:32.236Z"
+    },
+    {
+      "step": "call issued to the signed-in LP",
+      "at": "2026-10-07T21:54:41.354Z"
+    },
+    {
+      "step": "LP paid from its own Canton wallet",
+      "at": "2026-10-07T21:54:54.015Z"
+    },
+    {
+      "step": "fund manager settled, read-back confirmed",
+      "at": "2026-10-07T21:55:07.596Z"
+    },
+    {
+      "step": "LP sees verified funded",
+      "at": "2026-10-07T21:55:12.729Z"
+    }
+  ],
+  "expectedSteps": 7,
+  "verdict": "PASS",
+  "error": null
+}

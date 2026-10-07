@@ -147,7 +147,7 @@ Replay: `Allocation_ExecuteTransfer` is consuming, so the same allocation can't 
 
 ## Sign in with HackCanton (DevNet)
 
-An LP with its own HackCanton login can join a demo fund as itself. The API turns this on with `DRAW_SIGN_IN=true`, and only when each browser has its own demo fund. Every run of it signed in with the team's own login as the LP. The two newest, [paying from DRAW](../evidence/devnet/browser/web-hackcanton-20261007130106/) and [paying with Accept in the node's wallet](../evidence/devnet/browser/web-hackcanton-wallet-20261007130229/), ran with the demo seats on the backend client, the read-back on the verifier client and the browser on DRAW's own web client, as their `siteSetup` records. The first four used NODERS' public web-app client `web-app-ui-hackcanton-01-devnet`.
+An LP with its own HackCanton login can join a demo fund as itself. The API turns this on with `DRAW_SIGN_IN=true`, and only when each browser has its own demo fund. Every run of it signed in with the team's own login as the LP. The two newest, [paying from DRAW](../evidence/devnet/browser/web-hackcanton-20261007215349/) and [paying with Accept in the node's wallet](../evidence/devnet/browser/web-hackcanton-wallet-20261007215129/), ran with the demo seats on the backend client, the read-back on the verifier client and the browser on DRAW's own web client, as their `siteSetup` records. The first four used NODERS' public web-app client `web-app-ui-hackcanton-01-devnet`.
 
 ```text
 LP's browser -> node's Keycloak (realm noders-appsfactory, DRAW's public client xidoncapitals-web-app-hackcanton-01-devnet)
