@@ -22,7 +22,7 @@ Financing is a separate product hypothesis. The states are ISSUED, PAYMENT_PENDI
 
 An allocation carries the obligation reference in `settlementRef.id` and `transferLegId`, plus sender, receiver, executor, amount and instrument, in its on-ledger view. `Obligation_Settle` checks all of them in Daml and executes the transfer in the same transaction, so correlation doesn't depend on an off-ledger matcher reading transfer metadata. A plain `TransferFactory_Transfer` would put the reference only in choice-argument metadata, which Daml can't read back.
 
-Reverse if the network DRAW runs on doesn't support Amulet allocations. LocalNet 0.8.4 does ([the first canonical LocalNet run](../evidence/local/runs/20261001T162427Z/)), and so does the HackCanton DevNet node ([the scripted DevNet run](../evidence/devnet/runs/20261006T131900Z/)). The USDCx MainNet registry's metadata lists the same allocation API, `splice-api-token-allocation-v1`, but DRAW hasn't run with USDCx.
+Reverse if the network DRAW runs on doesn't support Amulet allocations. LocalNet 0.8.4 does ([the first canonical LocalNet run](../evidence/local/runs/20261001T162427Z/)), and so does the HackCanton DevNet node ([the canonical DevNet run](../evidence/devnet/runs/20261007T130259Z/)). The USDCx MainNet registry's metadata lists the same allocation API, `splice-api-token-allocation-v1`, but DRAW hasn't run with USDCx.
 
 ## D-005 Obligations are co-signed by admin and LP (2026-10-01)
 
@@ -60,6 +60,8 @@ Why: in the production model the app server holds no LP credentials, and LP paym
 
 ## D-012 The verifier client stays off the live server (2026-10-06)
 
-NODERS issued DRAW a verifier client for the read-back step. The ledger refused it when it tried to act as the fund in [the scripted DevNet run](../evidence/devnet/runs/20261006T131900Z/), but [the probe of the NODERS clients](../evidence/devnet/probes/20261006T133219Z/result.json) found it can also act and read as the team's personal wallet party, so it isn't read-only. Every sign-in run used that personal party as the LP, so on the live server the verifier client could have acted for the signed-in LP. The live server holds only the backend client, and the read-back reads through that same client. The scripted run still used the verifier client, and checks that it can't submit as the fund.
+NODERS issued DRAW a verifier client for the read-back step. The ledger refused it when it tried to act as the fund in [run 20261006T131900Z](../evidence/devnet/runs/20261006T131900Z/), but [the probe of the NODERS clients](../evidence/devnet/probes/20261006T133219Z/result.json) found it could also act and read as the team's personal wallet party, so it wasn't read-only. Every sign-in run used that personal party as the LP, so on the live server the verifier client could have acted for the signed-in LP. The live server held only the backend client, and the read-back read through that same client. The scripted run still used the verifier client, and checked that it can't submit as the fund.
 
 Reverse when NODERS removes the extra right and the probe's read-only check passes ([DEPLOY.md](DEPLOY.md), [LIMITATIONS.md](LIMITATIONS.md)).
+
+Reversed on 2026-10-07. NODERS removed the right, [probe 20261007T125624Z](../evidence/devnet/probes/20261007T125624Z/result.json) records the verifier client reading only as the fund, and the live server has read back through it since about 13:00 UTC that day.

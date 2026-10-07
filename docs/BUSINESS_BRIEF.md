@@ -48,9 +48,10 @@ Canton doesn't hide LPs from their own fund. Today one node operator hosts every
 
 ## Working today
 
-The DevNet items below carry the label "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat." They settle in Canton Coin from the DevNet faucet. Dollar figures are the scenario, and neither Canton Coin nor LocalNet's Amulet has monetary value.
+The DevNet items below, apart from the run where each party signs with its own key, carry the label "DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat, and a different login reads each settlement back." They settle in Canton Coin from the DevNet faucet. Dollar figures are the scenario, and neither Canton Coin nor LocalNet's Amulet has monetary value.
 
-- DevNet, scripted run: the full call on package 0.3.0 passed 82 of 82 checks, plus 1 credential check skipped with its reason recorded. Two LPs settled, bad payments were refused, the unpaid LP went overdue after the due time, and the fund's totals matched the coin it received.
+- DevNet, scripted run: the full call on package 0.3.0 passed 82 of 82 checks, plus 1 credential check skipped with its reason recorded. Two LPs settled, bad payments were refused, the unpaid LP went overdue after the due time, and the fund's totals matched the coin it received. The read-back ran on a client that only reads as the fund.
+- DevNet, each party's own key: in another scripted run the fund, three LPs and an unrelated party each signed their own transactions with their own key, and the same call passed 83 of 83 checks, with 2 credential checks skipped and their reasons recorded. All five keys sat on the machine that ran the script, so the run shows that the ledger needs each party's signature. It doesn't show that separate people held the keys. One login, the team's own, submitted for every party and read each settlement back, and the ledger refused it when it tried to act for LP A without LP A's key. The live site doesn't use these parties.
 - DevNet, the live site at https://draw.timjosh507.workers.dev: take a seat, issue a call, pay, see that another LP's ledger returns nothing for your notice link, settle, and see it verified funded. Each browser gets its own demo fund.
 - DevNet, sign-in: an LP signs in with its own HackCanton login, reads its notices with its own token, and pays from its own Canton wallet, from DRAW or with Accept in the node's Canton Coin wallet. DRAW's server never receives its token. Every run used the team's own login as the LP.
 - LocalNet: the same lifecycle with a separate ledger login per party and a read-back login that can't submit, 100 seeded calls with 0 false fundings and 0 privacy violations, and the database comparison. In a separate run each party signed with its own key, 76 of 76 checks. Every LocalNet run used package 0.2.0 or earlier.
@@ -84,7 +85,7 @@ In this order:
 
 1. Conversations with people who run capital calls, and usability tests on the live site.
 2. The shadow pilot of one real call.
-3. On DevNet, a read-only read-back client, a sign-in run with a second person's login, and LPs holding their own keys. These need NODERS or a second person.
+3. On DevNet, a sign-in run with a second person's login, LP keys held by separate people instead of on one machine, and demo seats on the live site that sign with their own keys. The first two need a second person.
 4. Sign-in for every seat, the fund manager included.
 5. Automatic settlement when a matching payment arrives.
 6. TestNet with USDCx, then MainNet.

@@ -2,7 +2,7 @@
 
 The ICP material: who we built DRAW for, their job and their question, what frustrates them, what they've tried, what would make them try DRAW, who isn't a fit, the administrator, the LP, who pays, how we'd size it, and what the first interviews will test. It's for judges scoring the audience, and it's the list of assumptions we'll check with the first people we talk to.
 
-Status on 2026-10-06: built from 12 public sources and our product docs, [BUSINESS_BRIEF.md](../../BUSINESS_BRIEF.md) and [PRODUCT.md](../../PRODUCT.md). No conversation with a practitioner has been held yet, so everything here is a hypothesis until the interviews in [metrics.md](metrics.md) test it. Numbers in brackets point to the source list in [PROBLEM_EVIDENCE.md](../../PROBLEM_EVIDENCE.md).
+Status on 2026-10-07: built from 12 public sources and our product docs, [BUSINESS_BRIEF.md](../../BUSINESS_BRIEF.md) and [PRODUCT.md](../../PRODUCT.md). No conversation with a practitioner has been held yet, so everything here is a hypothesis until the interviews in [metrics.md](metrics.md) test it. Numbers in brackets point to the source list in [PROBLEM_EVIDENCE.md](../../PROBLEM_EVIDENCE.md).
 
 A capital call, for readers new to funds: an LP commits money to a fund up front, and the fund draws it in parts when it needs it, by sending each LP a notice for its share with a due date. It's also called a drawdown.
 
@@ -15,7 +15,7 @@ A capital call, for readers new to funds: an LP commits money to a fund up front
 | Owns | Issuing the call, matching wires to LPs, chasing late payers, and reporting funded versus outstanding |
 | Tools today | A spreadsheet or admin system to build notices, email to send them, wires into the fund's bank account, a bank export to match them, and a spreadsheet to track who has paid |
 | Their question | "How much of this capital call is deployable right now, and what amount remains unresolved?" DRAW's dashboard opens on it |
-| LPs per fund, calls per year | Not set yet. The interviews will record both, and we'll band the ICP from what they show instead of guessing. None has been held as of 2026-10-06 |
+| LPs per fund, calls per year | Not set yet. The interviews will record both, and we'll band the ICP from what they show instead of guessing. None has been held as of 2026-10-07 |
 
 ### What frustrates them (hypothesis from public sources)
 
@@ -49,7 +49,7 @@ An outsourced administrator runs calls for several emerging managers at once, so
 
 ## On the other side: the LP
 
-Each LP gets a notice that's a contract between the fund and that LP, which no other LP or unrelated party can read, though the operator of the node that hosts them can. It pays with a Canton token and gets a clear answer: verified funded with a 14-check receipt, or refused with the ledger's reason. To pay through DRAW an LP needs a Canton party, holdings in the settlement asset, to accept its commitment on the ledger once, and a wallet or participant that has vetted DRAW's package ([PRODUCT.md](../../PRODUCT.md#what-the-lp-needs)). In DRAW's model an LP can keep its own signing key while a node it doesn't run hosts its party. That ran on LocalNet, with the LP's party on LocalNet's LP participant rather than the fund's node. On the HackCanton DevNet node an LP with its own login can also sign in, see only its own notices and pay from its own Canton wallet, which we ran with the team's own login.
+Each LP gets a notice that's a contract between the fund and that LP, which no other LP or unrelated party can read, though the operator of the node that hosts them can. It pays with a Canton token and gets a clear answer: verified funded with a 14-check receipt, or refused with the ledger's reason. To pay through DRAW an LP needs a Canton party, holdings in the settlement asset, to accept its commitment on the ledger once, and a wallet or participant that has vetted DRAW's package ([PRODUCT.md](../../PRODUCT.md#what-the-lp-needs)). In DRAW's model an LP can keep its own signing key while a node it doesn't run hosts its party. That ran on LocalNet, with the LP's party on LocalNet's LP participant rather than the fund's node, and in one scripted run on the HackCanton DevNet node, with every party on the fund's node and all five keys on the machine that ran it. On that node an LP with its own login can also sign in, see only its own notices and pay from its own Canton wallet, which we ran with the team's own login.
 
 ## Who pays (hypothesis)
 

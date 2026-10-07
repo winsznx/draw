@@ -23,7 +23,7 @@ Each LP also accepts its commitment once and needs a wallet or participant whose
 
 ## Evidence at this size
 
-- The canonical scripted runs use one fund, three LPs, one call and one instrument, on two networks. On DevNet, HackCanton shared node, where DRAW's backend login signs for every demo seat, the run on package 0.3.0 passed 82 of 82 checks and settled in Canton Coin from the DevNet faucet. On LocalNet, with a separate ledger login per party, the runs on package 0.2.0 or earlier settled in Amulet.
+- The canonical scripted runs use one fund, three LPs, one call and one instrument, on two networks. On DevNet, HackCanton shared node, two runs on package 0.3.0 settled in Canton Coin from the DevNet faucet. The one where each party signed with its own key, with every key on one machine, passed 83 of 83 checks, and the one where DRAW's backend login signed for every demo seat passed 82 of 82. On LocalNet, with a separate ledger login per party, the runs on package 0.2.0 or earlier settled in Amulet.
 - The newest live-site journey on DevNet called one LP, LP A, for $100,000 paid as 10 CC, and it ended verified funded.
 - In the LocalNet campaign of 100 seeded calls, 40 cases call a single LP and 29 call two, and every case passed.
 

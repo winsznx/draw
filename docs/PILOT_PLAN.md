@@ -24,13 +24,13 @@ Needs from the fund: commitment amounts for one call, and one operations person 
 - Two or three LPs willing to hold a small amount of a Canton test asset: Canton Coin on DevNet, or USDCx if the pilot runs on TestNet.
 - Run one small call with real parties on DevNet or TestNet, while the real call stays on the existing rail and DRAW runs in parallel.
 - Each LP signs its own payment in one of three ways:
-  - with a key it holds in its browser while the fund's node hosts its party. DRAW's browser-key mode has run on LocalNet only, and there the LP's party sat on LocalNet's LP participant, not the fund's node
+  - with a key it holds in its browser while the fund's node hosts its party. DRAW's browser-key mode has run on LocalNet only, and there the LP's party sat on LocalNet's LP participant, not the fund's node. On DevNet a scripted run had each party sign with its own key while the HackCanton node hosted it, with all five keys on the machine that ran the script
   - from its own participant, with DRAW's package vetted there, which hasn't run yet
   - on the HackCanton node, by signing in with a wallet party on the fund's node and paying from that wallet, which has been shown on DevNet with the team's own login as the LP
 
 Measure: time from an LP's payment to verified funded, payments refused and why, manual interventions, and any LP who could see more than its own record.
 
-Needs: DevNet or TestNet parties for the fund and the LPs, a way for each LP to sign as above, and the fund's agreement that test transfers are fine. An LP's wallet on another validator, for example through a CIP-0103 wallet provider, works only if that validator has vetted DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. On the HackCanton node, LP parties that hold their own keys also need the node operator to allocate them.
+Needs: DevNet or TestNet parties for the fund and the LPs, a way for each LP to sign as above, and the fund's agreement that test transfers are fine. An LP's wallet on another validator, for example through a CIP-0103 wallet provider, works only if that validator has vetted DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. On the HackCanton node, LP parties that hold their own keys also need the node operator to allocate them, as NODERS did for DRAW's scripted run on 2026-10-07.
 
 ## Stage 3: the integrations a genuine pilot requires
 

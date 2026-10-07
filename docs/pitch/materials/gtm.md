@@ -2,7 +2,7 @@
 
 The GTM material: who DRAW goes to first, how we'll reach them, the pilot, the pricing hypothesis, the path to TestNet and MainNet, and the risks. It's for judges scoring distribution, and for anyone deciding whether to shadow a capital call with us. DRAW runs one capital-call workflow end to end on Canton: a private notice per LP, payment from the LP's Canton wallet, settlement, a read-back step, and an explicit list of what's unresolved.
 
-Status on 2026-10-06: nobody has agreed to a pilot, and no customer, partner or letter of intent exists. No conversation with a fund has been held yet. Everything below is the plan we're testing.
+Status on 2026-10-07: nobody has agreed to a pilot, and no customer, partner or letter of intent exists. No conversation with a fund has been held yet. Everything below is the plan we're testing.
 
 ## Who first
 
@@ -75,7 +75,7 @@ DRAW runs on the HackCanton DevNet shared node and on LocalNet. Here's what the 
 Two things to plan around:
 
 - DevNet resets about every three months, and a reset deletes every party and contract on a node. Pilot data shouldn't live only on DevNet.
-- An LP whose party lives in a third-party wallet can't co-sign DRAW's settlement unless that wallet's validator vets DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. DRAW's answers are an LP that keeps its own key while a node it doesn't run hosts its party, which has run on LocalNet with the party on LocalNet's LP participant, and an LP whose wallet party is already on the fund's node signing in with its own login and paying from that wallet, which runs on the HackCanton DevNet node with the team's own login.
+- An LP whose party lives in a third-party wallet can't co-sign DRAW's settlement unless that wallet's validator vets DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. DRAW has two answers. One is an LP that keeps its own key while a node it doesn't run hosts its party. That has run on LocalNet, with the party on LocalNet's LP participant, and in one scripted DevNet run, with all five keys on the machine that ran it. The other is an LP whose wallet party is already on the fund's node signing in with its own login and paying from that wallet, which runs on the HackCanton DevNet node with the team's own login.
 
 The USDCx line, word for word: "Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx."
 

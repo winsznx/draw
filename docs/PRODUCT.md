@@ -25,7 +25,7 @@ Three records carry the workflow: the capital call, one notice per LP, and for e
 | Outsourced fund administrator | A firm that runs calls for one or more emerging managers | The same seat, run on the manager's behalf | Likely first channel, a hypothesis: one relationship reaches several funds |
 | LP | Each investor in the fund | A private notice, a payment that matches exactly or is refused with a reason, and a 14-check receipt once it's funded | Needs a Canton party and holdings in the settlement asset ([What the LP needs](#what-the-lp-needs)) |
 | Payer | The manager, as a subscription per fund, or the administrator, per call | The manager: a deployable figure tied to verified settlement and an explicit unresolved list. The administrator: less matching work across its clients | Hypothesis. No pricing conversation has happened and no price is set |
-| Operator | Whoever runs DRAW's app server and the fund's ledger access | Runs the server | In the demo the server holds the backend client for every demo seat. In production it should hold no LP credentials ([SECURITY.md](SECURITY.md)) |
+| Operator | Whoever runs DRAW's app server and the fund's ledger access | Runs the server | In the demo the server holds the backend client for every demo seat, and since 2026-10-07 a client for the read-back that only reads as the fund. In production it should hold no LP credentials ([SECURITY.md](SECURITY.md)) |
 | Integrator | Whoever connects the fund's admin system, the LP's wallet or custodian, and the settlement asset | | Not built. Pilot stage 3 ([PILOT_PLAN.md](PILOT_PLAN.md)) |
 | Named verifier party, optional | A party the fund names when it creates the fund, such as an auditor | Reads the fund, every call and every notice, including the settled amount. LP privacy is unchanged, and the ledger refuses it when it tries to act | Package 0.3.0, Daml Script only. No app screen for it yet |
 | Lender, custodian or other outside views | | | Not built, and kept out of the core workflow |
@@ -52,16 +52,16 @@ In the demo the commitments come from the demo setup. There's no onboarding, KYC
 
 Shown on DevNet on the live site, where one action issues the call, and on LocalNet, where one ledger transaction issued the call to all three LPs. On DevNet one backend client reads for every demo seat, so the app picks which party it reads as. Each LP reading with its own separate login, and getting nothing of another LP's notice even by contract id, was shown on LocalNet.
 
-![The fund manager's call view just after issuing: Unresolved $100,000, one notice for LP A awaiting payment, and the toast "Each investor now sees only its own notice"](../evidence/devnet/browser/web-journey-20261007015754/03-call-issued.png)
+![The fund manager's call view just after issuing: Unresolved $100,000, one notice for LP A awaiting payment, and the toast "Each investor now sees only its own notice"](../evidence/devnet/browser/web-journey-20261007130359/03-call-issued.png)
 
-The call just issued, with everything still unresolved. From the live-site browser run on 2026-10-07, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat (the network note shows in each screen).
+The call just issued, with everything still unresolved. From the live-site browser run on 2026-10-07, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat and a different login reading each settlement back (the network note shows in each screen).
 
 ### 3. The LP's wallet gets a payment request
 
 - With each notice the ledger also creates a payment request for that LP in the Token Standard's own form, a CIP-0056 AllocationRequest. That's the interface an app uses to ask a user for an allocation, and it names the settlement, payer, receiver, amount and instrument. Other LPs and unrelated parties can't see it.
 - On the HackCanton node, the node's own Canton Coin wallet lists the request under Allocations, with Accept and Reject. It's the only wallet that has been shown listing and approving a DRAW request.
 
-Shown on DevNet and in Daml Script. In the scripted DevNet run, the run script created LP A's payment from its request through the demo seats' shared credential, and LP B paid with a plain allocation carrying the reference, which settles the same way. The wallet listing and Accept were shown with the team's own HackCanton login as the LP.
+Shown on DevNet and in Daml Script. In the newest scripted DevNet run, LP A created its payment from its request and signed it with its own key, and in the scripted runs on the demo seats the run script did that through their shared credential. LP B paid with a plain allocation carrying the reference, which settles the same way. The wallet listing and Accept were shown with the team's own HackCanton login as the LP.
 
 ![The node's Canton Coin wallet listing a DRAW capital call under Allocation Requests, with its DRAW reference, the fund as receiver, and an Accept button](pitch/img/devnet-signin-04-wallet-request-crop.png)
 
@@ -74,7 +74,7 @@ The node's Canton Coin wallet listing a DRAW capital call as an allocation reque
 - When the payment matches the notice, the fund sees "Payment received, ready to settle". When it doesn't, both sides see that it doesn't match, and the fund gets no Settle button for it.
 - Only the exact amount settles. There are no partial payments, so any other amount is refused, and the LP withdraws it and pays again.
 
-Shown on DevNet: paying from the demo seats on the live site, and both signed-in ways with the team's own login as the LP. The mismatch screens ran in a browser only on LocalNet, in the 2026-10-04 runs on the earlier Vite app. On DevNet the ledger's refusal of a wrong amount comes from the scripted run.
+Shown on DevNet: paying from the demo seats on the live site, and both signed-in ways with the team's own login as the LP. In a scripted DevNet run LP A and LP B each signed its own payment with its own key, with every party's key on the machine that ran the script. The mismatch screens ran in a browser only on LocalNet, in the 2026-10-04 runs on the earlier Vite app. On DevNet the ledger's refusal of a wrong amount comes from the scripted runs.
 
 ### 5. The fund settles
 
@@ -90,14 +90,14 @@ Settlement is shown in Daml Script, on LocalNet with Amulet and on DevNet with C
 - A read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Among them: the transaction ran the settle step, it executed and consumed the referenced payment, the fund's received holdings are active and in the right instrument, they equal the amount due, and the payer is the LP that owed it. [PROOF.md](PROOF.md#reading-a-receipt) lists all 14.
 - Why a second step: the app's own record that it submitted a settlement isn't proof that money arrived. The read-back reads the settled transaction and the fund's coin holdings from the ledger itself, and a claim the ledger doesn't back, such as one notice's settlement offered as evidence for another, is marked CONTRADICTED and never counts.
 - Only a receipt that passes all 14 counts as verified funded. Then the dashboard adds the money to Deployable now, and the LP's notice says "Verified funded" with 14 of 14 checks.
-- Who reads back depends on the setup. On LocalNet it's a separate ledger login with read rights on the fund only, checked in each run to be unable to submit. In the scripted DevNet run it's a client of its own, which the ledger refused when it tried to act as the fund. That client can also act and read as the team's personal wallet party, so it isn't called read-only, and the live server doesn't use it. On the live site the read-back uses the same backend client as the demo seats. In every setup the read-back runs in the same process as the step that submitted the settlement.
+- Who reads back depends on the setup. On LocalNet it's a separate ledger login with read rights on the fund only, checked in each run to be unable to submit. On DevNet it's a client of its own, which the node reports can only read as the fund, and which the ledger refused when a scripted run tried to act as the fund with it. The live site has read back with that client since about 13:00 UTC on 2026-10-07, and used the demo seats' backend client before that. In the scripted run where each party signs with its own key, the team's own login, which submitted for every party, also read back, because that client may read only as the live site's fund party, and that run's fund was a different, external party. In every setup the read-back runs in the same process as the step that submitted the settlement.
 - A fund can also name a verifier party that reads the fund, every call and every notice, and is refused when it tries to act. That's in package 0.3.0 and has run in Daml Script only. No ledger run has read back through it yet.
 
-In the scripted DevNet run, the read-back receipts are stamped 6.4 s (LP A) and 5.1 s (LP B) after the settlements' record times, the verifier's clock against the ledger's. On LocalNet, with a scripted fund acting at once on one machine, payment locked to verified funded took 1,047 ms for LP A. Neither figure is production latency.
+In the newest scripted DevNet run, 20261007T130259Z, the read-back receipts are stamped 5.0 s (LP A) and 5.3 s (LP B) after the settlements' record times, and in run 20261007T125638Z, with the read-back on its own client, 7.5 s and 5.2 s, each the read-back's clock against the ledger's. On LocalNet, with a scripted fund acting at once on one machine, payment locked to verified funded took 1,047 ms for LP A. None of these figures is production latency.
 
-![LP A's own notice after settlement: Funded, with the steps Payment locked, Settled by the fund and Verified by read-back, and a Verified funded panel showing 14 of 14 checks](../evidence/devnet/browser/web-journey-20261007015754/07-lp-verified.png)
+![LP A's own notice after settlement: Funded, with the steps Payment locked, Settled by the fund and Verified by read-back, and a Verified funded panel showing 14 of 14 checks](../evidence/devnet/browser/web-journey-20261007130359/07-lp-verified.png)
 
-LP A's notice, verified funded with 14 of 14 checks. From the live-site browser run on 2026-10-07, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat (the network note shows in each screen).
+LP A's notice, verified funded with 14 of 14 checks. From the live-site browser run on 2026-10-07, a $100,000 call to LP A paid as 10 CC, with DRAW's backend login signing for every demo seat and a different login reading each settlement back (the network note shows in each screen).
 
 ### 7. Unpaid, late and wrong-party payments
 
@@ -160,7 +160,7 @@ What this is worth to a fund, in fewer reconciliation questions, less matching w
 - A Canton party, hosted by the LP itself or by a provider it trusts.
 - Holdings in the settlement asset. Today that's Canton Coin from the DevNet faucet on DevNet, and Amulet on LocalNet. A real pilot needs an asset the fund and LPs already accept, such as a tokenized dollar.
 - To accept its commitment on the ledger, once. In plain words, accepting gives the fund the LP's signature that settlement needs, so the LP signs its commitment once and after that only its own payments. The fund can use that signature only inside the settle step, after every check passes, and only on a payment the LP itself created. DRAW's contract still refuses any call above the LP's remaining commitment, which is tested in Daml Script.
-- A wallet or participant whose validator has vetted DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. Today that means the node's own Canton Coin wallet, for a party on the fund's node (DevNet, shown with the team's own login), or on LocalNet a key in the LP's browser, with its party on LocalNet's LP participant, which hosts every LP there.
+- A wallet or participant whose validator has vetted DRAW's package, because every participant that confirms a DRAW transaction must have vetted it. Today that means the node's own Canton Coin wallet, for a party on the fund's node (DevNet, shown with the team's own login), a key of its own for a party the node operator allocates on the fund's node (DevNet, shown in a scripted run with every party's key on one machine), or on LocalNet a key in the LP's browser, with its party on LocalNet's LP participant, which hosts every LP there.
 
 ## LPs who pay by wire
 

@@ -73,7 +73,7 @@ The six uploads the hackathon platform asks for, one per judging criterion, then
 34. [DEMO_SCRIPT.md](DEMO_SCRIPT.md): the presenter's script for showing the live site, with labels, timings and narration.
 35. [pitch/video-script.md](pitch/video-script.md): scenes and voiceover for the demo video.
 
-The deck, pitch/DRAW-deck.pdf, is v1. The fixes listed in [SUBMISSION.md](SUBMISSION.md#links) are made and the PDF was re-exported on 2026-10-06, and it isn't linked here until the owner has reviewed it.
+The deck, pitch/DRAW-deck.pdf, is v1. The fixes listed in [SUBMISSION.md](SUBMISSION.md#links) are made and the PDF was re-exported on 2026-10-07, and it isn't linked here until the owner has reviewed it.
 
 ### Hackathon process records
 
@@ -123,6 +123,7 @@ For judges checking the entry itself. These record how the entry was built and s
 | Party | An identity on the ledger that signs and sees contracts. The fund, each LP and an unrelated party are separate parties. |
 | Party id hint | The readable start of a party id, such as `draw-lpa`. |
 | Participant node, validator | A participant node hosts parties. It stores their contracts and submits and confirms their transactions, and its operator can read every party it hosts. A validator is a participant node on the Canton Network. |
+| External party | A party whose own key signs each of its transactions. Its participant node prepares each transaction and can't act for the party without that signature. DRAW's LocalNet custody run and browser-key journey use external parties, and so does one DevNet run, whose parties NODERS allocated because a team can't allocate them on the HackCanton node. |
 | Signatory, observer | A signatory is a party whose authority a contract needs, and it sees the contract. An observer sees a contract without signing it. Each DRAW notice has two signatories, the fund and its LP. |
 | Splice | The open-source code behind Canton Network's validator and Super Validator apps, Canton Coin, the wallet, Scan and the Token Standard APIs. DRAW's Token Standard packages come from its 0.8.4 release, and DRAW's LocalNet and the HackCanton node run Splice 0.8.4. |
 | Token Standard (CIP-0056) | Canton's common interface for tokens, so apps and wallets can handle any token that implements it. CIP-0056 is the proposal that defines it. |
@@ -130,7 +131,7 @@ For judges checking the entry itself. These record how the entry was built and s
 | AllocationRequest, payment request | The Token Standard interface an app uses to ask a user for an allocation. DRAW sends one with each notice, and on the HackCanton node the node's Canton Coin wallet lists it under Allocations with Accept. |
 | Settle | The fund's action that checks a payment against its notice, moves the coin to the fund and marks the notice funded, all in one transaction. The code calls it `Obligation_Settle`. |
 | Read-back step, receipt | After settlement, a read-back step reads the settlement and the fund's holdings from the ledger and runs 14 checks. Only a receipt that passes all 14 counts as verified funded. Why a second step: the app's own record that it submitted a settlement isn't proof that money arrived, so the read-back checks the ledger, and a claim the ledger doesn't back is marked CONTRADICTED and never counts. It runs in the same process as the step that submitted the settlement. |
-| Verifier party | An optional party a fund can name in package 0.3.0 to read the fund, its calls and its notices without acting. Daml Script only so far. It isn't the verifier client, the DevNet login the scripted run's read-back used, and it isn't the read-back step itself. |
+| Verifier party | An optional party a fund can name in package 0.3.0 to read the fund, its calls and its notices without acting. Daml Script only so far. It isn't the verifier client, the DevNet login the live site's read-back uses, and it isn't the read-back step itself. |
 | Broken guards, mutation testing | Copies of DRAW's contract with one check removed or changed. The tests have to fail on every copy, and they caught 15 of 15 on package 0.3.0. |
 | Canton Coin (CC), Amulet | Canton Coin is the network's own token, and Amulet is the Splice token implementation behind it. DRAW's runs use Canton Coin from the DevNet faucet and Amulet on LocalNet, and neither has monetary value. The DevNet proof page shows the instrument id Amulet, because Amulet is Canton Coin's implementation. |
 | USDCx | A CIP-0056 token that represents USDC deposited into Circle's xReserve, documented for TestNet and MainNet. Its registry lists the allocation API DRAW settles through. DRAW hasn't run with USDCx. |
@@ -139,7 +140,7 @@ For judges checking the entry itself. These record how the entry was built and s
 | LocalNet | A small Canton network that runs on one machine in Docker, from the Splice release. DRAW's LocalNet runs used Splice 0.8.4. |
 | HackCanton DevNet node, NODERS | NODERS runs a shared DevNet participant for HackCanton, on Canton 3.5.19 and Splice 0.8.4. DRAW's live site and DevNet runs use it, and every party there sits on that one participant. |
 | Seat, demo fund | A seat is one role in the live demo: Fund manager, LP A, LP B, LP C or an unrelated party. Each seat reads the ledger as its own party. Each browser gets its own demo fund, and every demo fund uses the same five parties, so the app keeps one browser out of another's fund and the ledger keeps each LP out of the others' records. |
-| Backend client, verifier client | Two of the three Keycloak clients NODERS issued for DRAW on 2026-10-06. The third is DRAW's public web client for sign-in. The backend client acts for the five demo parties and nothing else, and DRAW's server uses it for every demo seat. The site's network note calls it DRAW's backend login. The verifier client did the read-back in the scripted DevNet run, but it can also act and read as the team's personal wallet party, so it isn't read-only and the live server doesn't use it. |
+| Backend client, verifier client | Two of the three Keycloak clients NODERS issued for DRAW on 2026-10-06. The third is DRAW's public web client for sign-in. The backend client acts for the five demo parties and nothing else, and DRAW's server uses it for every demo seat. The site's network note calls it DRAW's backend login. The verifier client reads only as the fund's party. It did the read-back in the scripted DevNet runs whose demo seats used the backend client, and the live site has read back on it since about 13:00 UTC on 2026-10-07. Until 2026-10-07, when NODERS removed the right, it could also act and read as the team's personal wallet party. |
 | Keycloak | The login server on the HackCanton node. An LP that signs in with HackCanton does so there, from its own browser, and gets its own token. |
 | Scan | The network's public explorer. Per the Splice Scan API docs, the Canton Coin leg of each payment appears in Scan with its random reference and the party ids, whose hints such as `draw-lpa` are readable, and the notices don't. We inferred this from the docs and haven't checked it against Scan. |
 | The DSO | The party behind Canton Coin's token registry. Per the Splice token design, it's a stakeholder of each Canton Coin allocation and so sees its reference, which in DRAW is random and names no one. No run has read the DSO's view. |
@@ -153,7 +154,8 @@ Where a screen, a slide or a claim needs a label, these are used word for word:
 
 | Where it applies | Label |
 |---|---|
-| DevNet | DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat. |
+| The live site and the DevNet runs on the backend client | DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat, and a different login reads each settlement back. |
+| The DevNet run with external parties | DevNet, HackCanton shared node. Each party signs with its own key. All five keys sat on the machine that ran the script. |
 | The asset on DevNet | Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario. |
 | The LocalNet custody run and browser-key journey | LocalNet. Each party signs with its own key. |
 | The other LocalNet runs | LocalNet, a separate ledger login per party. |
@@ -162,7 +164,8 @@ Where a screen, a slide or a claim needs a label, these are used word for word:
 
 The README's claims table says who signed each run in these words:
 
-- One backend client for every demo seat: the DevNet demo seats in the newest runs.
+- One backend client for every demo seat: the DevNet demo seats on the live site since the afternoon of 2026-10-06, and in two scripted runs.
+- Each party's own key, all five on one machine, through the team's own login: the DevNet run with external parties.
 - One shared hackathon login for every party: the earlier DevNet runs.
 - The LP's own HackCanton login (the team's own in every run): the sign-in runs on DevNet.
 - A separate ledger login per party: the standard LocalNet runs.

@@ -21,7 +21,7 @@ This is a hackathon process record of the build machine's tool versions, for any
 
 | Item | Value |
 |---|---|
-| DevNet credentials | A HackCanton login in `.env` since 2026-10-04, and the backend and verifier client secrets NODERS issued for DRAW since 2026-10-06. None of them committed |
+| DevNet credentials | A HackCanton login in `.env` since 2026-10-04, the backend and verifier client secrets NODERS issued for DRAW since 2026-10-06, and the Ed25519 keys of the five external parties NODERS allocated on 2026-10-07, in the gitignored `.keys/` folder. None of them committed |
 | NODERS material | The HackCanton DevNet quickstart, shared by the organizers on 2026-10-04 ([DEVNET_DEPLOYMENT.md](DEVNET_DEPLOYMENT.md)) |
 | Web app | Next.js 15.5 on Cloudflare Workers through `@opennextjs/cloudflare` 1.20 and Wrangler 4.147, since 2026-10-05 |
 | Hosting | Cloudflare Workers for the web, a Hostinger VPS with 4 GB of RAM behind Caddy for the API ([DEPLOY.md](DEPLOY.md)) |

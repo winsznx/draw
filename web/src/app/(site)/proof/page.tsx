@@ -58,7 +58,7 @@ const SEPARATION_NOTE: Record<string, string> = {
 };
 const CUSTODY_NOTE: Record<string, string> = {
   SERVER_SUBMITS_FOR_PARTIES: 'The run’s own login submitted for every party. No party held its own key.',
-  EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY: 'Every party signed its own transactions with its own key.',
+  EACH_PARTY_SIGNS_WITH_ITS_OWN_KEY: 'Every party signed its own transactions with its own key. All the keys sat on the machine that ran the script, so this shows the ledger needs each party’s signature, not that separate people held the keys.',
 };
 // With external parties one login can submit for all of them, but only what each party's key signed.
 const SUBMITS_ONLY_SIGNED = 'One ledger login submitted for every party and read each settlement back. It could not act for a party without that party’s signature.';
@@ -288,7 +288,7 @@ export default async function ProofPage() {
             env={proof.network}
             lead={`After each settlement, a read-back step reads the transaction and the fund’s holdings from the ledger and writes the receipt before the notice counts as funded. ${
               !c.verifierCheck?.ran
-                ? `In this ${proof.network} run that step read as the same ledger user as the seats.`
+                ? `In this ${proof.network} run that step read as the same ledger user that ${ownKeys ? 'submitted for every party' : 'the seats used'}.`
                 : c.verifierCheck.ok
                   ? `In this ${proof.network} run that step had a login of its own, and the ledger refused it when it tried to act as the fund.`
                   : `In this ${proof.network} run that step had a login of its own, but the ledger did not refuse it when it tried to act as the fund.`

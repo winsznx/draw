@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DRAW pitch deck</title>
-<meta name="description" content="DRAW: private capital calls on Canton. Ten slides, 16:9.">
+<meta name="description" content="DRAW: private capital calls on Canton. Eleven slides, 16:9.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400..900&display=swap">
@@ -473,7 +473,7 @@ img, svg { display: block; }
           <div class="viewers" aria-hidden="true"><span class="on">Fund manager</span><span>LP A</span><span>LP B</span><span>LP C</span><span>Anyone else</span></div>
           <div class="cs-head">
             <div>
-              <p class="cs-run">DevNet run 20261006T131900Z</p>
+              <p class="cs-run">DevNet run 20261007T130259Z</p>
               <p class="cs-title">Call 1, three LPs</p>
             </div>
             <p class="cs-due">Due time passed</p>
@@ -489,7 +489,7 @@ img, svg { display: block; }
           </div>
         </div>
       </div>
-      <figcaption class="cover-note">DevNet, HackCanton shared node. DRAW’s backend login signs for every demo seat.<br>Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</figcaption>
+      <figcaption class="cover-note">DevNet, HackCanton shared node. Each party signs with its own key. All five keys sat on the machine that ran the script.<br>Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</figcaption>
     </figure>
   </div>
   <footer class="foot">
@@ -614,7 +614,7 @@ img, svg { display: block; }
       <div class="step-top"><span class="step-n">04</span><span class="who">Read-back</span></div>
       <p class="name">Verify</p>
       <p class="body">A read-back step reads the settlement from the ledger and runs 14 checks. Only then does the money count as deployable.</p>
-      <p class="led">Read-only login on LocalNet, a login of its own in the DevNet run</p>
+      <p class="led">A login that only reads, on LocalNet and on the live site</p>
     </li>
   </ol>
   <p class="unpaid"><span class="mark bad">Overdue</span>An LP that doesn’t pay stays unresolved. Before the due time the ledger refuses to mark it overdue. After it, the fund can. The fund can also send a notice to review, or waive an overdue or reviewed one, each with a note.</p>
@@ -633,7 +633,7 @@ img, svg { display: block; }
       <h2 class="title">It runs on DevNet today.</h2>
       <p class="lead">The deployed app in a real browser, against the HackCanton node, where its latest journey passed 10 of 10 steps.</p>
       <div class="labels">
-        <p class="label">DevNet, HackCanton shared node. DRAW’s backend login signs for every demo seat.</p>
+        <p class="label">DevNet, HackCanton shared node. DRAW’s backend login signs for every demo seat, and a different login reads each settlement back.</p>
         <p class="label">Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</p>
       </div>
       <p class="url">draw.timjosh507.workers.dev</p>
@@ -661,7 +661,7 @@ img, svg { display: block; }
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-journey-20261005214111</span>, the 2026-10-05 UI, when one hackathon login signed for every seat. 1, 2 and 4 are cropped. Latest journey: <span class="path">web-journey-20261006132858</span>. The live site reads each settlement back with the backend login.</span>
+    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-journey-20261005214111</span>, the 2026-10-05 UI, when one hackathon login signed for every seat. 1, 2 and 4 are cropped. Latest journey: <span class="path">web-journey-20261007130359</span>. The live site reads each settlement back with a login of its own.</span>
     <span class="num">5 / 11</span>
   </footer>
 </section>
@@ -700,7 +700,7 @@ img, svg { display: block; }
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-hackcanton-wallet-20261006132730</span>, with the server on the backend client. 2 and 3 show the top of the wallet page. Paying from DRAW instead: <span class="path">web-hackcanton-20261006132613</span>.</span>
+    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-hackcanton-wallet-20261006132730</span>, with the server on the backend client. 2 and 3 show the top of the wallet page. Newest runs, with the read-back on a login of its own: <span class="path">web-hackcanton-wallet-20261007130229</span>, and paying from DRAW, <span class="path">web-hackcanton-20261007130106</span>.</span>
     <span class="num">6 / 11</span>
   </footer>
 </section>
@@ -737,7 +737,7 @@ img, svg { display: block; }
         <p class="h3">A payment can’t be reused</p>
         <p class="body">A settled allocation is consumed. The same payment can’t fund a second notice.</p>
       </li>
-      <li class="limits">What it doesn’t hide: the fund sees every LP by design, the node operator that hosts every party can read them all, and per the Scan docs the Canton Coin leg shows up in Scan under a random reference, which we haven’t checked against Scan.</li>
+      <li class="limits">What it doesn’t hide: the fund sees every LP by design, the node operator that hosts every party can read them all, and per the Scan docs the Canton Coin leg shows up in Scan with its random reference and the party ids, whose hints such as draw-lpa are readable, which we haven’t checked against Scan.</li>
     </ul>
   </div>
   <footer class="foot">
@@ -754,9 +754,9 @@ img, svg { display: block; }
     <div class="tiles">
       <div class="module tile">
         <span class="net">DevNet</span>
-        <p class="fig">82/82</p>
+        <p class="fig">83/83</p>
         <p class="what">checks on the HackCanton node</p>
-        <p class="small">Two LPs funded in test Canton Coin, bad payments refused, the unpaid LP overdue. The read-back’s own login was refused as the fund. 1&nbsp;check skipped: one backend login signs for every seat.</p>
+        <p class="small">Each party signed with its own key, all five keys on one machine. Two LPs funded in test Canton Coin, bad payments refused, the unpaid LP overdue. 2&nbsp;checks skipped: one login submitted for every party and read back.</p>
       </div>
       <div class="module tile">
         <span class="net local">LocalNet</span>
@@ -782,14 +782,14 @@ img, svg { display: block; }
       <div class="shot"><img src="img/localnet-05-call-issued-crop.png" alt="LocalNet: the fund manager's view of Call 1 to LP A and LP B, with the seat card reading Signs with your browser key"></div>
       <p class="label">LocalNet. Each party signs with its own key.</p>
       <div class="speed">
-        <div><b>6.4 s</b><span class="net">DevNet</span><p>Settlement record time to LP A’s read-back receipt, 5.1 s for LP B. The read-back’s clock against the ledger’s</p></div>
+        <div><b>5.0 s</b><span class="net">DevNet</span><p>Settlement record time to LP A’s read-back receipt, 5.3 s for LP B, in the 83/83 run. The read-back’s clock against the ledger’s</p></div>
         <div><b>1,047 ms</b><span class="net local">LocalNet</span><p>Payment locked to verified funded. One machine, scripted fund manager, not production latency</p></div>
       </div>
     </div>
   </div>
   <footer class="foot">
     <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Runs: DevNet <span class="path">20261006T131900Z</span> on package 0.3.0, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
+    <span class="src">Runs: DevNet <span class="path">20261007T130259Z</span> and <span class="path">20261007T125638Z</span> (82/82 on the demo seats, with a read-back login that only reads) on package 0.3.0, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
     <span class="num">8 / 11</span>
   </footer>
 </section>
@@ -815,7 +815,7 @@ img, svg { display: block; }
         <li>Goal: 3 to 5 COOs or ops leads at emerging managers, fund administrators or LPs, 20 minutes each.</li>
         <li>We record role, fund size band, LP count, calls per year, hours per call, the last incident and whether they’d shadow one call.</li>
       </ul>
-      <p class="todo">To fill after the interviews: number held (0 as of Oct 6), roles, what they said about hours per call and the last incident, and who’d shadow a call.</p>
+      <p class="todo">To fill after the interviews: number held (0 as of Oct 7), roles, what they said about hours per call and the last incident, and who’d shadow a call.</p>
     </div>
     <div class="module col">
       <span class="mark wait status">Planned</span>
@@ -887,12 +887,12 @@ img, svg { display: block; }
     <li class="now">
       <p class="when">Now</p>
       <p class="h3">DevNet and LocalNet</p>
-      <p class="body">The full call on the shared HackCanton node, and LP sign-in with a HackCanton login. A key per party on LocalNet.</p>
+      <p class="body">The full call on the shared HackCanton node, and LP sign-in with a HackCanton login. A key per party on LocalNet and in one scripted DevNet run.</p>
     </li>
     <li>
       <p class="when">Next</p>
       <p class="h3">Shadow pilot</p>
-      <p class="body">One real call alongside a fund or administrator. On DevNet, a read-back login that only reads, and a second person signing in.</p>
+      <p class="body">One real call alongside a fund or administrator. On DevNet, a second person signing in, and keys held by separate people.</p>
     </li>
     <li>
       <p class="when">Then</p>

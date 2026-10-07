@@ -10,7 +10,8 @@ Use these exactly. They stay inside [claims.yaml](../../claims.yaml), and the de
 
 | Label | Text | When it's on screen |
 |---|---|---|
-| DevNet | DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat, and the same login reads each settlement back. | 0:00 to 2:40 and the optional sign-in scene, top bar or lower third. It's the site's own network note. Footage from before about 13:25 UTC on 2026-10-06 shows "One hackathon login signs for every demo seat", so caption it as the earlier setup |
+| DevNet | DevNet, HackCanton shared node. DRAW's backend login signs for every demo seat, and a different login reads each settlement back. | 0:00 to 2:40 and the optional sign-in scene, top bar or lower third. It has been the site's own network note since about 13:00 UTC on 2026-10-07. Earlier footage says "the same login reads each settlement back" or stops after "every demo seat", and footage from before about 13:25 UTC on 2026-10-06 shows "One hackathon login signs for every demo seat", so caption it as the earlier setup |
+| DevNet, own keys | DevNet, HackCanton shared node. Each party signs with its own key. All five keys sat on the machine that ran the script. | the DevNet line at the end of the LocalNet scene |
 | Asset | Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario. | 0:00 to 0:20 and 0:42 to 1:52 |
 | LocalNet | LocalNet. Each party signs with its own key. | 2:40 to 3:10 |
 | Production asset | Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx. | 3:22 to 3:34 |
@@ -19,7 +20,7 @@ Use these exactly. They stay inside [claims.yaml](../../claims.yaml), and the de
 ## Before recording
 
 - Record the live site, https://draw.timjosh507.workers.dev, in a clean browser profile at 1920x1080.
-- Check the read-back wording on the live site first. LP A's steps bar should end in "Verified by read-back". The receipt should start "DRAW's read-back step read the settlement from the ledger" and say it ran on DRAW's backend login, the same one that settled, and the settle toast should start "Settled and verified funded". If the site still says "separate read-back" or "Independently verified", the current web copy isn't deployed, so don't film the DevNet scenes yet.
+- Check the read-back wording on the live site first. LP A's steps bar should end in "Verified by read-back". The receipt should start "A read-back step with a login of its own read the settlement from the ledger", the settle toast should start "Settled and verified funded by a read-back with a login of its own", and the network note should end "a different login reads each settlement back". If the site still says "separate read-back" or "Independently verified", the current web copy isn't deployed, so don't film the DevNet scenes yet.
 - In that browser, click "Create the demo fund" and wait about a minute. Then take each LP seat in turn and click "Accept commitment", so all three LPs have accepted. Cut these steps from the video.
 - Check each LP's balance. "Add test CC" on the seat card taps the faucet. Cut this too.
 - With all three accepted, the first call comes prefilled with the standard amounts: LP A $400,000 (40 CC), LP B $350,000 (35 CC), LP C $250,000 (25 CC), $1,000,000 in all. The form lists only LPs that have accepted. If it shows other amounts, use what's there and change "forty" and "a million dollars" in the voiceover to match.
@@ -27,9 +28,9 @@ Use these exactly. They stay inside [claims.yaml](../../claims.yaml), and the de
 - Enter the access code off camera, unless it's public by then.
 - Keep the seat card in the bottom left in frame. It shows which party every screen is read as.
 - Film each scene as its own take. If a step fails on camera, don't stage it. Use the evidence file named in that scene instead and say what it shows.
-- For DevNet backups, use the screenshots in [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007015754) first. That run is on the current setup, with the demo seats on the backend client, as its `siteSetup` records, and shows the current wording: the settle toast says "Settled and verified funded. The read-back ran on DRAW's backend login, the same one that settled.", and LP A's steps bar ends in "Verified by read-back". Its call is $100,000 to LP A alone, paid as 10 CC, so match the voiceover to it if you use them. The screenshots in [the journey from the morning of 2026-10-06](../../evidence/devnet/browser/web-journey-20261006091011) have the earlier wording and the earlier setup, with the network note naming one hackathon login.
+- For DevNet backups, use the screenshots in [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007130359) first. That run is on the current setup, with the demo seats on the backend client and the read-back on a login of its own, as its `siteSetup` records, and shows the current wording: the settle toast says "Settled and verified funded by a read-back with a login of its own. 10 CC received.", and LP A's steps bar ends in "Verified by read-back". Its call is $100,000 to LP A alone, paid as 10 CC, so match the voiceover to it if you use them. The screenshots in [the journey from 01:57 UTC on 2026-10-07](../../evidence/devnet/browser/web-journey-20261007015754) show the read-back on DRAW's backend login, the same one that settled, and those in [the journey from the morning of 2026-10-06](../../evidence/devnet/browser/web-journey-20261006091011) have the earlier wording and the earlier setup, with the network note naming one hackathon login.
 - The older backup screenshots from 2026-10-05, in [the redesigned-UI journey](../../evidence/devnet/browser/web-journey-20261005214111) and [the LocalNet browser-key journey](../../evidence/local/browser/web-browser-keys-20261005005304), show the old wording "Independently verified" and "An independent read-only verifier". If you use one, crop that text out, or caption it "Screens from the 2026-10-05 UI." followed by "On DevNet the read-back then ran with the same shared login." or "On LocalNet the read-back runs as a separate read-only login."
-- If you show deck slides, use docs/pitch/DRAW-deck.pdf as re-exported on 2026-10-06, after the fixes listed in [SUBMISSION.md](../SUBMISSION.md#links).
+- If you show deck slides, use docs/pitch/DRAW-deck.pdf as re-exported on 2026-10-07, after the fixes listed in [SUBMISSION.md](../SUBMISSION.md#links).
 
 ## Scenes
 
@@ -77,7 +78,7 @@ Voiceover:
 
 On screen: switch seat to Fund manager, open the call, click "Settle 40 CC". LP A turns Funded. Go to the overview: "Deployable now" goes up.
 
-Captions: "One transaction: the coin moves and the notice turns funded." Then: "Read-back step: 14 checks. On the live site it reads with the same backend login."
+Captions: "One transaction: the coin moves and the notice turns funded." Then: "Read-back step: 14 checks, on a login of its own that can only read as the fund."
 
 Voiceover:
 
@@ -91,7 +92,7 @@ Voiceover:
 
 > LP A sees the same result: verified funded, fourteen of fourteen checks.
 
-Backup if a step fails: [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007015754/result.json), the same journey, 10 of 10 steps on 2026-10-07, on the backend client, with screenshots in the current wording. Or [the 2026-10-05 journey](../../evidence/devnet/browser/web-journey-20261005214111/result.json), 8 of 8 steps, with the older wording and the shared login.
+Backup if a step fails: [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007130359/result.json), the same journey, 10 of 10 steps on 2026-10-07, with the demo seats on the backend client and the read-back on a login of its own, with screenshots in the current wording. Or [the 2026-10-05 journey](../../evidence/devnet/browser/web-journey-20261005214111/result.json), 8 of 8 steps, with the older wording and the shared login.
 
 ### 1:52 to 2:15 Privacy
 
@@ -103,13 +104,13 @@ Voiceover:
 
 > Here's LP A's notice link, opened as LP B. LP B's own ledger query comes back empty, so the page has nothing to show. An unrelated party gets nothing at all. On this shared DevNet node, one backend login signs for every demo seat. Separate logins per party run on LocalNet.
 
-Backup: [streams.json from the scripted DevNet run](../../evidence/devnet/runs/20261006T131900Z/streams.json), where each party's own transaction stream holds no event about another party's records.
+Backup: [streams.json from the scripted DevNet run on the demo seats](../../evidence/devnet/runs/20261007T125638Z/streams.json), where each party's own transaction stream holds no event about another party's records.
 
 ### 2:15 to 2:40 A wrong amount, and an LP that doesn't pay
 
 On screen: as LP B, open its notice, click "Pay a different amount", pay 30. The notice says the payment doesn't match the amount due. As Fund manager, the payment shows as a mismatch, and the app offers no Settle button for it. After the due time, "Mark overdue" on LP C. LP C shows Overdue and stays in the unresolved total.
 
-The app hides both buttons, so the camera never shows the ledger refusing. While the voiceover names each refusal, overlay the ledger's own words from [the scripted DevNet run](../../evidence/devnet/runs/20261006T131900Z/result.json), in the mono font:
+The app hides both buttons, so the camera never shows the ledger refusing. While the voiceover names each refusal, overlay the ledger's own words from [the scripted DevNet run on the demo seats](../../evidence/devnet/runs/20261007T125638Z/result.json), in the mono font:
 
 - Check `negative: wrong amount does not fund`. DAML_FAILURE in `Obligation_Settle`: "allocation amount does not equal amount due".
 - Check `deadline: overdue refused before due time`. DAML_FAILURE in `Obligation_MarkOverdue`: "obligation is not yet due".
@@ -120,7 +121,7 @@ Voiceover:
 
 > If LP B pays the wrong amount, the app gives the fund nothing to settle. Our DevNet run tried anyway, and the ledger refused it. LP C hasn't paid at all. The ledger won't mark it overdue before the due time. After that the fund can, and LP C stays on the unresolved list instead of quietly going missing.
 
-Backup: the `negative`, `deadline` and `unpaid` checks in [the scripted DevNet run](../../evidence/devnet/runs/20261006T131900Z/result.json).
+Backup: the `negative`, `deadline` and `unpaid` checks in [the same run](../../evidence/devnet/runs/20261007T125638Z/result.json).
 
 ### 2:40 to 3:10 LocalNet: each party holds its own key
 
@@ -128,13 +129,13 @@ On screen: the LocalNet app with its "LocalNet" chip. Onboarding: "Create your k
 
 This needs LocalNet running (about 10 GB of RAM). The browser-key flow has passed on LocalNet only on the web app before the 2026-10-05 redesign, so before filming it on the current build, run the browser-key journey against LocalNet on that build, as [DEMO_SCRIPT.md](../DEMO_SCRIPT.md) describes, and film only if it passes. Otherwise use the four screenshots in [the LocalNet browser-key journey](../../evidence/local/browser/web-browser-keys-20261005005304) with a slow pan, caption them as the earlier UI, and keep the label on.
 
-Captions: LocalNet label, for the whole scene. "The node can't act for a party without that party's signature."
+Captions: LocalNet label, for the whole scene. "The node can't act for a party without that party's signature." Under the last line of the voiceover, the DevNet own-keys label.
 
 Voiceover:
 
-> This part runs on LocalNet. Each person creates a key in the browser and signs every action. The node prepares each transaction, but it can't act for a party without that party's signature, and another party's key is refused. On the shared DevNet node, teams can't create parties like this yet.
+> This part runs on LocalNet. Each person creates a key in the browser and signs every action. The node prepares each transaction, but it can't act for a party without that party's signature, and another party's key is refused. A scripted run on DevNet shows the same, with every party's key on the one machine that ran it.
 
-Evidence: [the custody run](../../evidence/local/runs/20261004T183146Z/result.json), 76 of 76 checks, and [the LocalNet browser-key journey](../../evidence/local/browser/web-browser-keys-20261005005304/result.json).
+Evidence: [the custody run](../../evidence/local/runs/20261004T183146Z/result.json), 76 of 76 checks, [the LocalNet browser-key journey](../../evidence/local/browser/web-browser-keys-20261005005304/result.json), and on DevNet [the external-party run](../../evidence/devnet/runs/20261007T130259Z/result.json), 83 of 83 checks, where one login submitted for every party and read each settlement back.
 
 ### Optional, about 20 seconds: an LP signs in as itself
 
@@ -148,7 +149,7 @@ Voiceover:
 
 > An LP with its own HackCanton login can join as itself. Its browser reads its notice from the ledger with its own login. The call also shows up in its Canton Coin wallet as an allocation request, and Accept there locks the coin for the fund. DRAW's server only learns its party id.
 
-Backup: the screenshots in [the wallet run](../../evidence/devnet/browser/web-hackcanton-wallet-20261006132730), among them [04-wallet-request.png](../../evidence/devnet/browser/web-hackcanton-wallet-20261006132730/04-wallet-request.png) and [05-wallet-accepted.png](../../evidence/devnet/browser/web-hackcanton-wallet-20261006132730/05-wallet-accepted.png), from a run on the current setup. That run used the team's own login as the LP, so keep the sign-in label on.
+Backup: the screenshots in [the newest wallet run](../../evidence/devnet/browser/web-hackcanton-wallet-20261007130229), among them [04-wallet-request.png](../../evidence/devnet/browser/web-hackcanton-wallet-20261007130229/04-wallet-request.png) and [05-wallet-accepted.png](../../evidence/devnet/browser/web-hackcanton-wallet-20261007130229/05-wallet-accepted.png), from a run on the current setup. That run used the team's own login as the LP, so keep the sign-in label on.
 
 ### 3:10 to 3:34 Why Canton, and the honest line
 
@@ -183,13 +184,13 @@ The second version adds about 8 seconds and ends near 3:58.
 - MainNet, real money, or settlement in USDCx.
 - Customers, pilots, partners or letters of intent.
 - A second person's login on DevNet. Every sign-in run used the team's own login as the LP.
-- LP-held keys on DevNet.
+- That separate people held the parties' keys on DevNet. In the scripted run in which each party signed with its own key, all five keys sat on the machine that ran it.
 - That payments are hidden from the network. Going by the Scan docs, the Canton Coin leg of each payment appears in Scan.
 - That the server holds no credentials. The demo server holds the backend client for every demo seat.
 - A scheduler, partial payments, notifications or KYC.
 - That viewers can hold their own key on DevNet.
 - That any Canton wallet can pay a DRAW request. The node's own Canton Coin wallet did, for a party on the fund's node.
-- "Independent" for the read-back on any network, since it runs in the same process as the submitter. "Read-only" for the DevNet read-back. On the live site it's a separate step run with the same backend login. In the scripted run it used a client of its own, which can still act for the team's personal party.
+- "Independent" for the read-back on any network, since it runs in the same process as the submitter. On the live site since about 13:00 UTC on 2026-10-07 it runs on a login of its own that can only read as the fund. Footage from before then shows it on the same login as the seats.
 - That only the LP and the fund can read a notice. The node operator can read every party it hosts.
 
 ## After the edit
