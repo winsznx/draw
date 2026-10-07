@@ -18,6 +18,9 @@ export default defineConfig({
     channel: 'chrome',
     viewport: { width: 1280, height: 860 },
     trace: 'retain-on-failure',
+    // DRAW_HOST_RESOLVER_RULES pins a hostname to an address, for a domain whose
+    // DNS this machine hasn't picked up yet, e.g. "MAP drawcalls.xyz 104.21.24.185".
+    launchOptions: process.env.DRAW_HOST_RESOLVER_RULES ? { args: [`--host-resolver-rules=${process.env.DRAW_HOST_RESOLVER_RULES}`] } : {},
   },
   webServer: remote ? undefined : [
     {

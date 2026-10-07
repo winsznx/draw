@@ -65,6 +65,12 @@ const SUBMITS_ONLY_SIGNED = 'One ledger login submitted for every party and read
 // The probe check of the read-back's client, as scripts/demo/probe.mjs names it.
 const PROBE_VERIFIER = "credentials: the verifier's client only reads, as the fund's party";
 
+// Runs before the custom domain went through the worker's workers.dev address, the same site.
+const siteName = (site: string): string => {
+  const host = site.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  return host.endsWith('.workers.dev') ? `${host}, this site’s address before drawcalls.xyz` : host;
+};
+
 // Browser journeys, in the order a visitor would try them.
 const JOURNEY_ORDER = ['journey', 'hackcanton-wallet', 'hackcanton', 'browser-keys'];
 const JOURNEY_NAME: Record<string, string> = {
@@ -374,7 +380,7 @@ export default async function ProofPage() {
                 {run.siteSetup?.separateVerifier === false && run.steps.some((step) => step.includes('verifier confirmed')) && (
                   <p className="t-sm muted">&ldquo;Verifier confirmed&rdquo; in this run means DRAW&rsquo;s read-back step on that same login.</p>
                 )}
-                <p className="t-sm"><a className="link" href={file(run.path, 'result.json')}>{run.runId}</a>{run.site ? <span className="muted"> against {run.site}</span> : null}</p>
+                <p className="t-sm"><a className="link" href={file(run.path, 'result.json')}>{run.runId}</a>{run.site ? <span className="muted"> against {siteName(run.site)}</span> : null}</p>
               </div>
             ))}
           </div>

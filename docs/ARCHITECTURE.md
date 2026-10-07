@@ -6,13 +6,13 @@ The fund's party issues a capital call, which creates one notice per LP, a contr
 
 ## The live DevNet deployment
 
-The live site, https://draw.timjosh507.workers.dev, runs on the HackCanton shared DevNet node that NODERS hosts for the hackathon: Canton 3.5.19, Splice 0.8.4, package `draw` 0.3.0. DRAW's backend login signs for every demo seat, and since about 13:00 UTC on 2026-10-07 a different login reads each settlement back. Payments settle in Canton Coin from the DevNet faucet, and the dollar figures are the scenario.
+The live site, https://drawcalls.xyz, runs on the HackCanton shared DevNet node that NODERS hosts for the hackathon: Canton 3.5.19, Splice 0.8.4, package `draw` 0.3.0. DRAW's backend login signs for every demo seat, and since about 13:00 UTC on 2026-10-07 a different login reads each settlement back. Payments settle in Canton Coin from the DevNet faucet, and the dollar figures are the scenario.
 
 ```mermaid
 flowchart LR
   visitor["Visitor's browser: any seat and the proof page"]
   lp["Signed-in LP's browser, with its own HackCanton token"]
-  web["Web app on Cloudflare Workers, draw.timjosh507.workers.dev"]
+  web["Web app on Cloudflare Workers, drawcalls.xyz"]
   api["DRAW API on a VPS behind Caddy, holds the backend and verifier clients"]
   subgraph noders["NODERS HackCanton DevNet node"]
     keycloak["Keycloak, realm noders-appsfactory"]
@@ -151,7 +151,7 @@ An LP with its own HackCanton login can join a demo fund as itself. The API turn
 
 ```text
 LP's browser -> node's Keycloak (realm noders-appsfactory, DRAW's public client xidoncapitals-web-app-hackcanton-01-devnet)
-                authorization code with PKCE, back to https://draw.timjosh507.workers.dev/auth/callback
+                authorization code with PKCE, back to https://drawcalls.xyz/auth/callback
                 token kept in this tab's sessionStorage, renewed with the refresh token
 LP's browser -> JSON Ledger API GET /v2/authenticated-user     -> primaryParty, the login's wallet party
 LP's browser -> DRAW API action "join" { party }               (the party id is all DRAW receives)

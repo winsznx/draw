@@ -1,0 +1,10 @@
+{
+  "run": "20261007200454",
+  "test": "capital call journey",
+  "site": "https://drawcalls.xyz",
+  "siteSetup": null,
+  "steps": [],
+  "expectedSteps": 10,
+  "verdict": "FAIL",
+  "error": null
+}

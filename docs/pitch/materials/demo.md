@@ -6,8 +6,8 @@ The Demo material, for the MVP criterion. It's for judges who want to use DRAW o
 
 | | |
 |---|---|
-| Live demo | https://draw.timjosh507.workers.dev |
-| Proof page | https://draw.timjosh507.workers.dev/proof |
+| Live demo | https://drawcalls.xyz |
+| Proof page | https://drawcalls.xyz/proof |
 | The product, step by step | [PRODUCT.md](../../PRODUCT.md) |
 | How to check each claim | [PROOF.md](../../PROOF.md) |
 | Every claim, with its network and limits | [claims.yaml](../../../claims.yaml) |
@@ -28,7 +28,7 @@ Every action, starting with "Create the demo fund", needs the demo access code, 
 
 ## The tour
 
-1. Open https://draw.timjosh507.workers.dev and click "Take a seat in the demo fund". If this browser has no demo fund yet, click "Create the demo fund", enter the access code when asked, and wait about a minute while it funds each LP with test Canton Coin and sends the invitations.
+1. Open https://drawcalls.xyz and click "Take a seat in the demo fund". If this browser has no demo fund yet, click "Create the demo fund", enter the access code when asked, and wait about a minute while it funds each LP with test Canton Coin and sends the invitations.
 2. Choose LP A, click Continue, enter the access code if the site asks for it, click "Open the app", then "Accept commitment". Click "Switch seat" and do the same as LP B and as LP C. The call form lists only LPs that have accepted.
 3. Switch seat to Fund manager and click "Create capital call". A new fund's first call comes prefilled: LP A $400,000 as 40 CC, LP B $350,000 as 35 CC, LP C $250,000 as 25 CC. The due time defaults to 10 minutes ahead. Click "Issue capital call".
 4. Switch seat to LP A, open the notice under "Your notices" and click "Pay 40 CC". The notice says the payment is locked for the fund. Copy the page address.

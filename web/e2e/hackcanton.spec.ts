@@ -89,7 +89,18 @@ async function joinAndGetCalled(page: Page, ev: Evidence, call: string): Promise
   await sitAsSignedInLp(page);
   await page.getByRole('link').filter({ hasText: call }).click();
   await expect(page).toHaveURL(/\/app\/notices\//);
+  await topUpIfShort(page);
   return page.url();
+}
+
+// Runs drain the team login's wallet. When the notice says the balance is short,
+// tap the DevNet faucet with the seat card's own button, as an LP would.
+async function topUpIfShort(page: Page) {
+  const short = page.getByText('Add test CC from your seat card first.', { exact: false });
+  await page.getByRole('heading', { name: 'Capital call notice' }).waitFor();
+  if (!(await short.isVisible())) return;
+  await page.getByRole('button', { name: 'Add test CC' }).click();
+  await expect(short).toBeHidden();
 }
 
 async function settleAndVerify(page: Page, ev: Evidence, call: string, noticeUrl: string) {

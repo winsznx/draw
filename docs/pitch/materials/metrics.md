@@ -85,7 +85,7 @@ What would change our plan: if the people we reach say matching takes minutes, o
 
 ## 3. Usability tests on the live DevNet site
 
-Goal: 2 to 3 people, 15 minutes each, on https://draw.timjosh507.workers.dev. Any technical person can take part. We tell them it's a demo on a test network where one backend login signs for every demo seat. Before each test we create the demo fund and accept the three LPs' commitments, so the person starts with a fund ready to call. Someone with a HackCanton login can also take an LP seat with it, which would be the first run with a second person's login.
+Goal: 2 to 3 people, 15 minutes each, on https://drawcalls.xyz. Any technical person can take part. We tell them it's a demo on a test network where one backend login signs for every demo seat. Before each test we create the demo fund and accept the three LPs' commitments, so the person starts with a fund ready to call. Someone with a HackCanton login can also take an LP seat with it, which would be the first run with a second person's login.
 
 Tasks:
 

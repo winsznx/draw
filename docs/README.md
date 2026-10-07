@@ -4,7 +4,7 @@ Private capital calls on Canton. Each LP reads and pays only its own notice, and
 
 This page lists every document in the order to read it, grouped by what it's for, and defines the fund and Canton words they use. It's written for hackathon judges who may know Canton but not private fund operations, and for fund people who don't know Canton.
 
-Short on time? Open the proof page, https://draw.timjosh507.workers.dev/proof, which shows the newest run of each kind step by step and needs no access code. Then read the repository's [README](../README.md). If you have the demo access code, follow its section [Try it in a few minutes](../README.md#try-it-in-a-few-minutes) on the live site, https://draw.timjosh507.workers.dev.
+Short on time? Open the proof page, https://drawcalls.xyz/proof, which shows the newest run of each kind step by step and needs no access code. Then read the repository's [README](../README.md). If you have the demo access code, follow its section [Try it in a few minutes](../README.md#try-it-in-a-few-minutes) on the live site, https://drawcalls.xyz.
 
 Scoring by criterion? [RUBRIC_ARTIFACT_MAP.md](RUBRIC_ARTIFACT_MAP.md) maps each of the six judging criteria to where DRAW answers it.
 

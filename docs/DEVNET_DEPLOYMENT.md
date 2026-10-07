@@ -109,7 +109,7 @@ This is how run [20261007T130259Z](../evidence/devnet/runs/20261007T130259Z/) ra
 
 ## Sign in with HackCanton on this node
 
-DRAW's own public client `xidoncapitals-web-app-hackcanton-01-devnet` runs the authorization code flow with PKCE for the live site, back to https://draw.timjosh507.workers.dev/auth/callback. The first four sign-in runs used NODERS' public client `web-app-ui-hackcanton-01-devnet`, the same one the password grant above uses. The browser then reads the login's wallet party from `GET /v2/authenticated-user` (`primaryParty`), reads and accepts on the JSON Ledger API, and pays through the validator's wallet API, all with the LP's own token. A login whose party isn't onboarded yet has to open the node's Canton Coin wallet once. Variables and CORS are in [DEPLOY.md](DEPLOY.md#sign-in-with-hackcanton), and the endpoints are in [SPONSOR_FINDINGS.md](SPONSOR_FINDINGS.md).
+DRAW's own public client `xidoncapitals-web-app-hackcanton-01-devnet` runs the authorization code flow with PKCE for the live site, back to https://drawcalls.xyz/auth/callback. The first four sign-in runs used NODERS' public client `web-app-ui-hackcanton-01-devnet`, the same one the password grant above uses. The browser then reads the login's wallet party from `GET /v2/authenticated-user` (`primaryParty`), reads and accepts on the JSON Ledger API, and pays through the validator's wallet API, all with the LP's own token. A login whose party isn't onboarded yet has to open the node's Canton Coin wallet once. Variables and CORS are in [DEPLOY.md](DEPLOY.md#sign-in-with-hackcanton), and the endpoints are in [SPONSOR_FINDINGS.md](SPONSOR_FINDINGS.md).
 
 ## Limitations specific to DevNet
 

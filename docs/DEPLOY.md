@@ -13,7 +13,7 @@ The browser never talks to the VPS directly, so DRAW's API needs no CORS, and th
 
 | Part | Where | Notes |
 |---|---|---|
-| Web | https://draw.timjosh507.workers.dev | Worker `draw`. `DRAW_API_URL` in [web/wrangler.jsonc](../web/wrangler.jsonc), `DRAW_SERVICE_TOKEN` as a Worker secret |
+| Web | https://drawcalls.xyz, and the same worker at https://draw.timjosh507.workers.dev, the address in evidence recorded before 2026-10-07 evening | Worker `draw`, with `drawcalls.xyz` as a custom domain in [web/wrangler.jsonc](../web/wrangler.jsonc). `DRAW_API_URL` in [web/wrangler.jsonc](../web/wrangler.jsonc), `DRAW_SERVICE_TOKEN` as a Worker secret |
 | API | Hostinger VPS, `https://187-77-178-30.sslip.io` behind Caddy | systemd `draw.service`, user `draw`, code in `/opt/draw/app`, session in `/opt/draw/state`. Answers 403 without the service token |
 
 The API acts on the HackCanton DevNet node. Since about 13:25 UTC on 2026-10-06 it runs with `LEDGER_AUTH_MODE=oauth` and the backend client NODERS issued for DRAW (`DRAW_BACKEND_CLIENT_ID` and its secret) for every demo seat. Before that it used the team's personal login (`HACKCANTON_USERNAME` and `HACKCANTON_PASSWORD`) for every seat, and that login is no longer on the server. Since about 13:00 UTC on 2026-10-07 the read-back step reads through the verifier client (`DRAW_VERIFIER_CLIENT_ID` and its secret), which can only read as the fund ([probe 20261007T125624Z](../evidence/devnet/probes/20261007T125624Z/result.json)). `/api/config` reports `seatCredential: backend-client` and `separateVerifier: true`. Before that the read-back read through the backend client. The live site doesn't use the external parties NODERS allocated for the scripted run with each party's own key ([DEVNET_DEPLOYMENT.md](DEVNET_DEPLOYMENT.md#external-parties-noders-allocated-for-draw-2026-10-07)).
@@ -28,7 +28,7 @@ The live journey (take a seat, issue, LP A pays, LP B opening LP A's notice gets
 
 ```sh
 cd web
-DRAW_WEB_URL=https://draw.timjosh507.workers.dev DRAW_ACCESS_CODE=<the code> npm run e2e
+DRAW_WEB_URL=https://drawcalls.xyz DRAW_ACCESS_CODE=<the code> npm run e2e
 ```
 
 This runs the browser journey against the live site and issues a real call on DevNet. `DRAW_ACCESS_CODE` is needed because the live site doesn't print the code. On a build with a demo fund per browser each run starts its own fund. On an older build it uses the shared demo fund and spends its LPs' remaining commitment, so later visitors may have to start over.
@@ -80,7 +80,7 @@ With `DRAW_SIGN_IN=true`, an LP with its own HackCanton login can join a demo fu
 
 If a required value can't be worked out, sign-in stays off and the API logs which one. `GET /api/config` hands these values to the site, with the template and interface ids the browser queries.
 
-The browser comes back from Keycloak to the site's own `/auth/callback`, which is https://draw.timjosh507.workers.dev/auth/callback on the live site, so the Keycloak client must accept `https://<site>/auth/callback` as a redirect. The browser then calls the node from the site's origin, so the node has to allow that origin. On 2026-10-06 CORS preflights from https://draw.timjosh507.workers.dev and http://localhost:3100 to the JSON Ledger API, the validator API and the Keycloak token endpoint all returned 200 with that origin allowed. The API never sees the LP's token, so it needs no CORS settings of its own. A signed-in LP's party has to be onboarded in the node's Canton Coin wallet first.
+The browser comes back from Keycloak to the site's own `/auth/callback`, which is https://drawcalls.xyz/auth/callback on the live site, so the Keycloak client must accept `https://<site>/auth/callback` as a redirect. The browser then calls the node from the site's origin, so the node has to allow that origin. On 2026-10-06 CORS preflights from https://drawcalls.xyz and http://localhost:3100 to the JSON Ledger API, the validator API and the Keycloak token endpoint all returned 200 with that origin allowed. The API never sees the LP's token, so it needs no CORS settings of its own. A signed-in LP's party has to be onboarded in the node's Canton Coin wallet first.
 
 ## Demo limits and capacity
 

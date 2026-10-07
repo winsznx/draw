@@ -4,8 +4,8 @@ The Pitch material: DRAW in one line, in thirty seconds and in two minutes slide
 
 - Deck, 11 slides: `docs/pitch/DRAW-deck.pdf`, built from `docs/pitch/deck.html`. It's v1. The fixes listed in [SUBMISSION.md](../../SUBMISSION.md#links) are made, the PDF was re-exported on 2026-10-07 with the newest DevNet runs, and it isn't linked here until the owner has reviewed it.
 - Script for the demo video: [video-script.md](../video-script.md). The video link is added at submission.
-- Live demo on DevNet: https://draw.timjosh507.workers.dev
-- Proof page: https://draw.timjosh507.workers.dev/proof
+- Live demo on DevNet: https://drawcalls.xyz
+- Proof page: https://drawcalls.xyz/proof
 - Judge Q&A: [judge-qa.md](../judge-qa.md)
 
 ## One line

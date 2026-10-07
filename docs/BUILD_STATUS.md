@@ -35,7 +35,7 @@ Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (writte
 
 | Requirement | Status | Where, or what is left |
 |---|---|---|
-| Web app in TypeScript and React | DONE | [web/](../web) (Next.js on Cloudflare Workers through OpenNext, which replaced `app/web` on 2026-10-05). Live at https://draw.timjosh507.workers.dev |
+| Web app in TypeScript and React | DONE | [web/](../web) (Next.js on Cloudflare Workers through OpenNext, which replaced `app/web` on 2026-10-05). Live at https://drawcalls.xyz |
 | Fund manager dashboard: deployable now, unresolved, calls, needs attention | DONE | |
 | Create capital call: name, note, due date, per-LP amounts | DONE | |
 | Call detail: progress, notices, evidence, resolutions | DONE | |
@@ -45,7 +45,7 @@ Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (writte
 | Role switcher with real party context and a demo label | DONE | Seat onboarding and "Switch seat". On DevNet the screens say who signs for the demo seats, from the API's own settings: DRAW's backend login since about 13:25 UTC on 2026-10-06, and a different login for the read-back since about 13:00 UTC on 2026-10-07 |
 | An LP signs in with its own HackCanton login and pays from its own Canton wallet | DONE on DevNet, with the team's own login | "Sign in with HackCanton" on the seat screen, `DRAW_SIGN_IN=true` on the API. Newest live runs, with the demo seats on the backend client and the read-back on the verifier client: [web-hackcanton-20261007130106](../evidence/devnet/browser/web-hackcanton-20261007130106/result.json) (7 of 7, paid from DRAW) and [web-hackcanton-wallet-20261007130229](../evidence/devnet/browser/web-hackcanton-wallet-20261007130229/result.json) (9 of 9, Accept in the node's Canton Coin wallet), after nine earlier runs. Every run used the team's own login as the LP. A run with a second person's login is still to do |
 | Errors in plain language with technical detail, empty states, mobile | DONE | |
-| `/proof` judge surface | DONE | https://draw.timjosh507.workers.dev/proof |
+| `/proof` judge surface | DONE | https://drawcalls.xyz/proof |
 | Reconciliation inbox | DONE | Payments tab |
 | Automatic settlement of exact matches | BLOCKED_ON_LOCALNET | `DRAW_AUTO_SETTLE=true` in [app/server.mjs](../app/server.mjs). Its browser test was `app/web/e2e/auto-settle.spec.ts`, removed with the old UI and kept in git history. Off by default and not claimed |
 | Lender projection | SKIPPED | Optional, and excluded for the core pass by [CLAUDE.md](../CLAUDE.md) |

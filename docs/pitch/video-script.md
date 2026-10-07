@@ -19,7 +19,7 @@ Use these exactly. They stay inside [claims.yaml](../../claims.yaml), and the de
 
 ## Before recording
 
-- Record the live site, https://draw.timjosh507.workers.dev, in a clean browser profile at 1920x1080.
+- Record the live site, https://drawcalls.xyz, in a clean browser profile at 1920x1080.
 - Check the read-back wording on the live site first. LP A's steps bar should end in "Verified by read-back". The receipt should start "A read-back step with a login of its own read the settlement from the ledger", the settle toast should start "Settled and verified funded by a read-back with a login of its own", and the network note should end "a different login reads each settlement back". If the site still says "separate read-back" or "Independently verified", the current web copy isn't deployed, so don't film the DevNet scenes yet.
 - In that browser, click "Create the demo fund" and wait about a minute. Then take each LP seat in turn and click "Accept commitment", so all three LPs have accepted. Cut these steps from the video.
 - Check each LP's balance. "Add test CC" on the seat card taps the faucet. Cut this too.
@@ -167,7 +167,7 @@ Evidence: [the ablation run](../../evidence/local/ablation/20261002T193830Z/resu
 
 On screen: slide 3, then slide 11 with the live link.
 
-Caption: draw.timjosh507.workers.dev
+Caption: drawcalls.xyz
 
 Voiceover, if no conversation has happened yet:
 

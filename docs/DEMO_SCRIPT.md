@@ -2,7 +2,7 @@
 
 The presenter's script for showing DRAW live, for whoever records the demo video or presents it. Judges trying the site themselves should follow [Try it in a few minutes](../README.md#try-it-in-a-few-minutes) in the README instead.
 
-About three and a half minutes on the live DevNet site, https://draw.timjosh507.workers.dev, then a short LocalNet segment. It opens on the fund's question and gets to Canton later. The click paths follow the live site as it ran on 2026-10-07, which gives each browser its own demo fund, has Sign in with HackCanton, and names who signs from the API's own settings. The site is still changing, so check every click path against it on the day you record.
+About three and a half minutes on the live DevNet site, https://drawcalls.xyz, then a short LocalNet segment. It opens on the fund's question and gets to Canton later. The click paths follow the live site as it ran on 2026-10-07, which gives each browser its own demo fund, has Sign in with HackCanton, and names who signs from the API's own settings. The site is still changing, so check every click path against it on the day you record.
 
 Use these labels on screen and in the narration. The deck and the video use the same words, and [claims.yaml](../claims.yaml) is their ceiling.
 
@@ -110,7 +110,7 @@ If LocalNet can't run (it needs about 10 GB of RAM), use the screenshots saved w
 
 > A fund called capital from three investors. Each saw only its own notice, two paid, and the fund knows exactly what it can deploy and what's still unresolved.
 
-End on the proof page, https://draw.timjosh507.workers.dev/proof, as where to check every number.
+End on the proof page, https://drawcalls.xyz/proof, as where to check every number.
 
 ## Recording notes
 

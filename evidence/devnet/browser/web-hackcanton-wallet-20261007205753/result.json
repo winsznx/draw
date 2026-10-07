@@ -1,0 +1,20 @@
+{
+  "run": "20261007205753",
+  "test": "an LP approves the capital call in the node's Canton Coin wallet",
+  "site": "https://drawcalls.xyz",
+  "siteSetup": {
+    "network": "DevNet",
+    "seatCredential": "backend-client",
+    "singleCredential": true,
+    "separateVerifier": true,
+    "signInClientId": "xidoncapitals-web-app-hackcanton-01-devnet",
+    "release": {
+      "version": "0.3.0",
+      "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534"
+    }
+  },
+  "steps": [],
+  "expectedSteps": 9,
+  "verdict": "FAIL",
+  "error": null
+}

@@ -1,0 +1,61 @@
+{
+  "run": "20261007205208",
+  "test": "capital call journey",
+  "site": "https://drawcalls.xyz",
+  "siteSetup": {
+    "network": "DevNet",
+    "seatCredential": "backend-client",
+    "singleCredential": true,
+    "separateVerifier": true,
+    "signInClientId": "xidoncapitals-web-app-hackcanton-01-devnet",
+    "release": {
+      "version": "0.3.0",
+      "packageId": "733ba37d82f44d827f37b0f9d9bb64f2b7bc784bce951a70f87320aa3f50d534"
+    }
+  },
+  "steps": [
+    {
+      "step": "landing loads",
+      "at": "2026-10-07T20:52:12.308Z"
+    },
+    {
+      "step": "LP A committed",
+      "at": "2026-10-07T20:52:37.299Z"
+    },
+    {
+      "step": "fund manager onboarded",
+      "at": "2026-10-07T20:52:39.671Z"
+    },
+    {
+      "step": "call issued",
+      "at": "2026-10-07T20:52:45.935Z"
+    },
+    {
+      "step": "LP A locked its payment",
+      "at": "2026-10-07T20:52:54.551Z"
+    },
+    {
+      "step": "LP B cannot open LP A notice",
+      "at": "2026-10-07T20:52:58.256Z"
+    },
+    {
+      "step": "fund manager settled, read-back confirmed",
+      "at": "2026-10-07T20:53:15.084Z"
+    },
+    {
+      "step": "LP A sees verified funded",
+      "at": "2026-10-07T20:53:18.714Z"
+    },
+    {
+      "step": "a second browser gets its own demo fund",
+      "at": "2026-10-07T20:53:21.399Z"
+    },
+    {
+      "step": "starting over leaves this browser without a fund",
+      "at": "2026-10-07T20:53:33.016Z"
+    }
+  ],
+  "expectedSteps": 10,
+  "verdict": "PASS",
+  "error": null
+}
