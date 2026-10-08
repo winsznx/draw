@@ -74,7 +74,7 @@ The node's Canton Coin wallet listing a DRAW capital call as an allocation reque
 - When the payment matches the notice, the fund sees "Payment received, ready to settle". When it doesn't, both sides see that it doesn't match, and the fund gets no Settle button for it.
 - Only the exact amount settles. There are no partial payments, so any other amount is refused, and the LP withdraws it and pays again.
 
-Shown on DevNet: paying from the demo seats on the live site, and both signed-in ways with the team's own login as the LP. In a scripted DevNet run LP A and LP B each signed its own payment with its own key, with every party's key on the machine that ran the script. The mismatch screens ran in a browser only on LocalNet, in the 2026-10-04 runs on the earlier Vite app. On DevNet the ledger's refusal of a wrong amount comes from the scripted runs.
+Shown on DevNet: paying from the demo seats on the live site, and both signed-in ways with the team's personal login as the LP. Paying from DRAW also ran signed in as xidoncapitals-t1, a second login NODERS created for the team, whose party isn't the team's personal party. The team ran both logins, and no outside LP has used DRAW. In a scripted DevNet run LP A and LP B each signed its own payment with its own key, with every party's key on the machine that ran the script. The mismatch screens ran in a browser only on LocalNet, in the 2026-10-04 runs on the earlier Vite app. On DevNet the ledger's refusal of a wrong amount comes from the scripted runs.
 
 ### 5. The fund settles
 

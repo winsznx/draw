@@ -53,7 +53,7 @@ The DevNet items below, apart from the run where each party signs with its own k
 - DevNet, scripted run: the full call on package 0.3.0 passed 82 of 82 checks, plus 1 credential check skipped with its reason recorded. Two LPs settled, bad payments were refused, the unpaid LP went overdue after the due time, and the fund's totals matched the coin it received. The read-back ran on a client that only reads as the fund.
 - DevNet, each party's own key: in another scripted run the fund, three LPs and an unrelated party each signed their own transactions with their own key, and the same call passed 83 of 83 checks, with 2 credential checks skipped and their reasons recorded. All five keys sat on the machine that ran the script, so the run shows that the ledger needs each party's signature. It doesn't show that separate people held the keys. One login, the team's own, submitted for every party and read each settlement back, and the ledger refused it when it tried to act for LP A without LP A's key. The live site doesn't use these parties.
 - DevNet, the live site at https://drawcalls.xyz: take a seat, issue a call, pay, see that another LP's ledger returns nothing for your notice link, settle, and see it verified funded. Each browser gets its own demo fund.
-- DevNet, sign-in: an LP signs in with its own HackCanton login, reads its notices with its own token, and pays from its own Canton wallet, from DRAW or with Accept in the node's Canton Coin wallet. DRAW's server never receives its token. Every run used the team's own login as the LP.
+- DevNet, sign-in: an LP signs in with its own HackCanton login, reads its notices with its own token, and pays from its own Canton wallet, from DRAW or with Accept in the node's Canton Coin wallet. DRAW's server never receives its token. The team ran every run. All but the newest signed in with the team's personal login, and the newest, on drawcalls.xyz, signed in with a second HackCanton login NODERS created for the team, whose party isn't the team's personal party. The LP's login and party were separate from the team's but the people weren't, and no outside LP has used DRAW.
 - LocalNet: the same lifecycle with a separate ledger login per party and a read-back login that can't submit, 100 seeded calls with 0 false fundings and 0 privacy violations, and the database comparison. In a separate run each party signed with its own key, 76 of 76 checks. Every LocalNet run used package 0.2.0 or earlier.
 
 Every caveat, by network, is in [LIMITATIONS.md](LIMITATIONS.md).
@@ -85,7 +85,7 @@ In this order:
 
 1. Conversations with people who run capital calls, and usability tests on the live site.
 2. The shadow pilot of one real call.
-3. On DevNet, a sign-in run with a second person's login, LP keys held by separate people instead of on one machine, and demo seats on the live site that sign with their own keys. The first two need a second person.
+3. On DevNet, a sign-in run with a second person's login, LP keys held by separate people instead of on one machine, and demo seats on the live site that sign with their own keys. The first two need a second person. The newest sign-in run used a second login NODERS created for the team, but the team ran it, so it doesn't close the first.
 4. Sign-in for every seat, the fund manager included.
 5. Automatic settlement when a matching payment arrives.
 6. TestNet with USDCx, then MainNet.

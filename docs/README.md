@@ -167,7 +167,7 @@ The README's claims table says who signed each run in these words:
 - One backend client for every demo seat: the DevNet demo seats on the live site since the afternoon of 2026-10-06, and in two scripted runs.
 - Each party's own key, all five on one machine, through the team's own login: the DevNet run with external parties.
 - One shared hackathon login for every party: the earlier DevNet runs.
-- The LP's own HackCanton login (the team's own in every run): the sign-in runs on DevNet.
+- The LP's own HackCanton login (the team's personal one in every run but the newest, which used a second login NODERS created for the team, run by the team too): the sign-in runs on DevNet.
 - A separate ledger login per party: the standard LocalNet runs.
 - Each party's own key: the LocalNet custody run and the browser-key journey.
 - Test runner: Daml Script tests, which run with no participant node and a test token.

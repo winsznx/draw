@@ -183,7 +183,7 @@ The second version adds about 8 seconds and ends near 3:58.
 
 - MainNet, real money, or settlement in USDCx.
 - Customers, pilots, partners or letters of intent.
-- A second person's login on DevNet. Every sign-in run used the team's own login as the LP.
+- A second person's login or an outside user on DevNet. Every sign-in run but the newest used the team's personal login as the LP, and the team ran the newest too, with a second login NODERS created for it.
 - That separate people held the parties' keys on DevNet. In the scripted run in which each party signed with its own key, all five keys sat on the machine that ran it.
 - That payments are hidden from the network. Going by the Scan docs, the Canton Coin leg of each payment appears in Scan.
 - That the server holds no credentials. The demo server holds the backend client for every demo seat.

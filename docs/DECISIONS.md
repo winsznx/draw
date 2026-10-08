@@ -60,7 +60,7 @@ Why: in the production model the app server holds no LP credentials, and LP paym
 
 ## D-012 The verifier client stays off the live server (2026-10-06)
 
-NODERS issued DRAW a verifier client for the read-back step. The ledger refused it when it tried to act as the fund in [run 20261006T131900Z](../evidence/devnet/runs/20261006T131900Z/), but [the probe of the NODERS clients](../evidence/devnet/probes/20261006T133219Z/result.json) found it could also act and read as the team's personal wallet party, so it wasn't read-only. Every sign-in run used that personal party as the LP, so on the live server the verifier client could have acted for the signed-in LP. The live server held only the backend client, and the read-back read through that same client. The scripted run still used the verifier client, and checked that it can't submit as the fund.
+NODERS issued DRAW a verifier client for the read-back step. The ledger refused it when it tried to act as the fund in [run 20261006T131900Z](../evidence/devnet/runs/20261006T131900Z/), but [the probe of the NODERS clients](../evidence/devnet/probes/20261006T133219Z/result.json) found it could also act and read as the team's personal wallet party, so it wasn't read-only. Every sign-in run up to then used that personal party as the LP, so on the live server the verifier client could have acted for the signed-in LP. The live server held only the backend client, and the read-back read through that same client. The scripted run still used the verifier client, and checked that it can't submit as the fund.
 
 Reverse when NODERS removes the extra right and the probe's read-only check passes ([DEPLOY.md](DEPLOY.md), [LIMITATIONS.md](LIMITATIONS.md)).
 
