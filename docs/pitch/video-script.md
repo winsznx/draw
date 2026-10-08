@@ -153,7 +153,7 @@ Backup: the screenshots in [the newest wallet run](../../evidence/devnet/browser
 
 ### 3:10 to 3:34 Why Canton, and the honest line
 
-On screen: slide 7 of the deck, the five attacks with "4 of 5" and "0 of 5". Then the production asset label.
+On screen: slide 8 of the deck, the five attacks with "4 of 5" and "0 of 5". Then the production asset label.
 
 Captions: "LocalNet ablation run, evidence/local/ablation/20261002T193830Z". "The database attacker had write access, as an operator or a compromised app server would." Production asset label from 3:22.
 

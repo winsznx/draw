@@ -14,33 +14,29 @@
   --paper: #f5f6f5;
   --sheet: #ffffff;
   --sheet-2: #f2f4f3;
-  --sheet-3: #e7ebe9;
   --ink: #101a17;
   --ink-2: #55625d;
   --ink-3: #87938e;
   --rule: #e1e6e3;
   --rule-2: #cbd3cf;
   --intaglio: #134a3d;
-  --intaglio-2: #0d362c;
   --intaglio-3: #1d6b57;
   --intaglio-soft: #e3efea;
   --mint: #c9ecdd;
   --on-intaglio: #f3f8f6;
+  --on-intaglio-2: #c8ded5;
   --guilloche: #a9c7bb;
-  --invert: #0f1714;
-  --on-invert: #f1f5f3;
   --funded: #0f7a55;
   --funded-soft: #e2f3eb;
-  --waiting: #9a5f0c;
-  --waiting-soft: #f8efdf;
   --refused: #b3261e;
   --refused-soft: #f9e6e4;
-  --plain-soft: #edf0ef;
-  --shadow-lift: 0 1px 2px rgb(16 26 23 / 0.04), 0 12px 32px -12px rgb(16 26 23 / 0.16);
+  --waiting: #9a5f0c;
+  --waiting-soft: #f8efdf;
+  --shadow-lift: 0 1px 2px rgb(16 26 23 / 0.04), 0 16px 40px -16px rgb(16 26 23 / 0.2);
   --shadow-float: 0 2px 4px rgb(16 26 23 / 0.04), 0 24px 56px -20px rgb(16 26 23 / 0.28);
   --font-sans: 'Schibsted Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --pad-x: 96px;
+  --pad-x: 120px;
   color-scheme: light;
 }
 
@@ -55,7 +51,7 @@ body {
   background: var(--canvas);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 21px;
+  font-size: 22px;
   line-height: 1.5;
   letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
@@ -72,7 +68,7 @@ img, svg { display: block; }
   height: 900px;
   overflow: hidden;
   background: var(--paper);
-  padding: 80px var(--pad-x) 112px;
+  padding: 104px var(--pad-x) 120px;
   break-after: page;
 }
 
@@ -83,59 +79,57 @@ img, svg { display: block; }
   .slide { zoom: var(--fit, 1); border-radius: 20px; box-shadow: var(--shadow-float); }
 }
 
-/* ---------------------------------------------------------- shared type */
+/* type */
 .title {
-  font-size: 58px;
-  line-height: 1.05;
-  letter-spacing: -0.036em;
+  font-size: 76px;
+  line-height: 1.02;
+  letter-spacing: -0.042em;
   font-weight: 550;
   text-wrap: balance;
+  max-width: 17ch;
 }
 
 .lead {
-  font-size: 23px;
-  line-height: 1.45;
+  margin-top: 28px;
+  max-width: 34em;
+  font-size: 26px;
+  line-height: 1.42;
   color: var(--ink-2);
   text-wrap: pretty;
 }
 
-.h3 { font-size: 23px; line-height: 1.25; letter-spacing: -0.014em; font-weight: 600; }
-.body { font-size: 19px; line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
-.small { font-size: 16px; line-height: 1.45; color: var(--ink-2); }
-.path { font-family: var(--font-mono); font-size: 0.86em; letter-spacing: 0; color: var(--ink-2); }
-.strong { color: var(--ink); font-weight: 600; }
+.note { font-size: 17px; line-height: 1.45; color: var(--ink-3); text-wrap: pretty; }
 
-/* ---------------------------------------------------------- footer */
+/* footer */
 .foot {
   position: absolute;
   left: var(--pad-x);
   right: var(--pad-x);
-  bottom: 40px;
+  bottom: 48px;
   display: flex;
   align-items: center;
-  gap: 28px;
-  font-size: 14px;
-  line-height: 1.4;
+  justify-content: space-between;
+  gap: 32px;
+  font-size: 15px;
   color: var(--ink-3);
 }
 
-.foot .brand { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 650; letter-spacing: -0.02em; color: var(--ink); flex: none; }
-.foot .src { flex: 1; min-width: 0; }
-.foot .num { flex: none; color: var(--ink-3); }
+.foot .brand { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 650; letter-spacing: -0.02em; color: var(--ink); }
+.foot .check { flex: 1; text-align: right; }
 
 .seal { width: 22px; height: 22px; color: var(--intaglio); --seal-mark: var(--on-intaglio); }
 
-/* ---------------------------------------------------------- marks, chips, labels */
+/* net chip */
 .net {
   display: inline-flex;
   align-items: center;
   gap: 9px;
   min-height: 32px;
-  padding: 0 13px 0 11px;
+  padding: 0 14px 0 12px;
   border-radius: 999px;
   border: 1px solid var(--rule);
   background: var(--sheet);
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
@@ -155,40 +149,17 @@ img, svg { display: block; }
   font-size: 14.5px;
   font-weight: 600;
   white-space: nowrap;
-  background: var(--plain-soft);
-  color: var(--ink-2);
 }
 
-.mark::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.85; flex: none; }
+.mark::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.85; }
 .mark.good { background: var(--funded-soft); color: var(--funded); }
-.mark.wait { background: var(--waiting-soft); color: var(--waiting); }
 .mark.bad { background: var(--refused-soft); color: var(--refused); }
 .mark.bad::before { border-radius: 1px; transform: rotate(45deg); }
-
-.label {
-  padding-left: 14px;
-  border-left: 2px solid var(--guilloche);
-  font-size: 16px;
-  line-height: 1.45;
-  color: var(--ink-2);
-}
-
-.todo {
-  border: 1.5px dashed var(--waiting);
-  background: var(--waiting-soft);
-  color: var(--waiting);
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-size: 16px;
-  line-height: 1.4;
-  font-weight: 550;
-}
-
-.module { background: var(--sheet); border: 1px solid var(--rule); border-radius: 22px; }
+.mark.wait { background: var(--waiting-soft); color: var(--waiting); }
 
 .shot {
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid var(--rule);
   background: var(--sheet);
   box-shadow: var(--shadow-lift);
@@ -196,9 +167,8 @@ img, svg { display: block; }
 
 .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top left; }
 
-/* ---------------------------------------------------------- 1 cover */
-.cover {
-  padding: 0;
+/* green surfaces share the cover's gradient and engraving */
+.green {
   color: var(--on-intaglio);
   background:
     radial-gradient(70% 60% at 85% 10%, rgb(201 236 221 / 0.28) 0%, transparent 60%),
@@ -206,240 +176,164 @@ img, svg { display: block; }
     linear-gradient(165deg, #1d6b57 0%, #134a3d 48%, #0b2f26 100%);
 }
 
-.cover::before {
+.green::before {
   content: '';
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background-image: repeating-radial-gradient(circle at 50% 125%, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 15px);
 }
 
-.cover-grid {
-  position: relative;
-  height: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 584px;
-  gap: 80px;
-  align-items: center;
-  padding: 0 var(--pad-x);
-}
+.green > * { position: relative; }
+.green .foot { position: absolute; color: var(--guilloche); }
+.green .foot .brand { color: var(--on-intaglio); }
+.green .seal { color: var(--on-intaglio); --seal-mark: var(--intaglio); }
 
-.cover-copy { display: grid; gap: 30px; align-content: center; }
-.cover-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 25px; font-weight: 650; letter-spacing: -0.02em; }
-.cover-brand .seal { width: 30px; height: 30px; color: var(--on-intaglio); --seal-mark: var(--intaglio); }
-
+/* 1 cover */
+.cover { padding-top: 96px; }
+.cover-brand { display: inline-flex; align-items: center; gap: 12px; font-size: 30px; font-weight: 650; letter-spacing: -0.02em; }
+.cover-brand .seal { width: 36px; height: 36px; }
 .cover-title {
-  font-size: 92px;
+  margin-top: 112px;
+  max-width: 15ch;
+  font-size: 104px;
   line-height: 0.98;
-  letter-spacing: -0.046em;
+  letter-spacing: -0.048em;
   font-weight: 550;
   text-wrap: balance;
 }
-
-.cover-lead { max-width: 30em; font-size: 23px; line-height: 1.5; color: #c8ded5; text-wrap: pretty; }
-
+.cover-lead { margin-top: 36px; max-width: 30em; font-size: 26px; line-height: 1.45; color: var(--on-intaglio-2); text-wrap: pretty; }
 .cover-live {
-  justify-self: start;
+  position: absolute;
+  left: var(--pad-x);
+  bottom: 72px;
   display: inline-flex;
   align-items: center;
-  gap: 11px;
-  min-height: 46px;
-  padding: 0 20px 0 16px;
+  gap: 12px;
+  min-height: 50px;
+  padding: 0 22px 0 18px;
   border-radius: 999px;
   border: 1px solid rgb(255 255 255 / 0.24);
   background: rgb(255 255 255 / 0.08);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 550;
-  color: #eef6f2;
 }
+.cover-live::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: #7fd1b2; box-shadow: 0 0 0 4px rgb(127 209 178 / 0.22); }
+.cover-num { position: absolute; right: var(--pad-x); bottom: 84px; font-size: 15px; color: var(--guilloche); }
 
-.cover-live::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #7fd1b2; box-shadow: 0 0 0 4px rgb(127 209 178 / 0.22); }
+/* 2 problem */
+.problem { display: grid; grid-template-columns: minmax(0, 1fr) 560px; gap: 96px; align-items: center; height: 100%; }
+.problem .title { font-size: 70px; max-width: 13ch; }
+.quote { display: grid; gap: 36px; padding-left: 40px; border-left: 3px solid var(--intaglio-3); }
+.quote blockquote { font-size: 34px; line-height: 1.28; letter-spacing: -0.024em; font-weight: 500; text-wrap: pretty; }
+.quote cite { font-style: normal; font-size: 18px; line-height: 1.45; color: var(--ink-2); }
+.quote cite b { display: block; color: var(--ink); font-weight: 600; }
 
-.callsheet { padding: 11px; border-radius: 30px; background: var(--sheet); color: var(--ink); box-shadow: 0 2px 4px rgb(0 0 0 / 0.06), 0 30px 70px -24px rgb(0 0 0 / 0.55); }
-.callsheet-in { border: 1px solid var(--rule); border-radius: 21px; padding: 24px 26px 22px; }
+/* 3 who */
+.who { display: grid; grid-template-columns: minmax(0, 1fr) 620px; gap: 96px; align-items: center; height: 100%; }
+.question { position: relative; overflow: hidden; border-radius: 28px; padding: 52px 52px 56px; }
+.question p { font-size: 44px; line-height: 1.14; letter-spacing: -0.03em; font-weight: 550; text-wrap: balance; }
+.question small { display: block; margin-bottom: 24px; font-size: 18px; color: var(--on-intaglio-2); letter-spacing: 0; }
 
-.viewers { display: flex; gap: 4px; padding: 4px; margin-bottom: 22px; border-radius: 999px; background: var(--sheet-2); }
-.viewers span { flex: 1 0 auto; display: grid; place-items: center; min-height: 34px; padding: 0 10px; border-radius: 999px; font-size: 14px; font-weight: 550; color: var(--ink-2); }
-.viewers .on { background: var(--sheet); color: var(--ink); box-shadow: 0 0 0 1px var(--rule); }
+/* vertically centered statement slides */
+.slide.middle { display: flex; flex-direction: column; justify-content: center; padding-top: 64px; }
 
-.cs-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
-.cs-run { font-size: 13.5px; color: var(--ink-2); }
-.cs-title { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
-.cs-due { font-size: 13.5px; color: var(--ink-3); }
+/* 4 how */
+.steps { margin-top: 80px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 48px; }
+.step { padding-top: 24px; border-top: 2px solid var(--rule-2); display: grid; gap: 14px; align-content: start; }
+.step:last-child { border-top-color: var(--intaglio); }
+.step-n { font-size: 16px; font-weight: 600; color: var(--ink-3); }
+.step .name { font-size: 46px; line-height: 1; letter-spacing: -0.035em; font-weight: 600; }
+.step .line { font-size: 24px; line-height: 1.42; color: var(--ink-2); text-wrap: pretty; }
 
-.cs-rows li { display: grid; grid-template-columns: 1fr auto 158px; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
-.cs-rows b { display: block; font-size: 17px; font-weight: 600; }
-.cs-rows small { display: block; font-size: 13.5px; color: var(--ink-3); }
-.cs-rows .amt { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
+/* 5 live */
+.live { display: grid; grid-template-columns: 540px minmax(0, 1fr); gap: 72px; height: 100%; align-items: center; }
+.live .title { font-size: 66px; }
+.live .lead { font-size: 24px; }
+.live .net { margin-bottom: 28px; }
+.live-note { margin-top: 28px; }
+.callsheet { padding: 12px; border-radius: 30px; background: var(--sheet); box-shadow: var(--shadow-float); }
+.callsheet-in { border: 1px solid var(--rule); border-radius: 20px; padding: 28px 32px 28px; }
+.cs-head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+.cs-title { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.cs-due { font-size: 15px; color: var(--ink-3); }
+.cs-rows li { display: grid; grid-template-columns: 1fr auto 170px; align-items: center; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.cs-rows b { display: block; font-size: 19px; font-weight: 600; }
+.cs-rows small { display: block; font-size: 14.5px; color: var(--ink-3); }
+.cs-rows .amt { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; }
 .cs-rows .mark { justify-self: end; }
-
-.cs-foot { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 16px; }
-.cs-foot p { font-size: 14px; color: var(--ink-2); }
-.cs-foot .cs-fig { font-size: 40px; line-height: 1.05; letter-spacing: -0.04em; font-weight: 600; color: var(--ink); }
-.cs-foot .cs-fig.green { color: var(--funded); }
+.cs-foot { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-top: 22px; }
+.cs-foot p { font-size: 16px; color: var(--ink-2); }
+.cs-foot .cs-fig { margin-top: 4px; font-size: 58px; line-height: 1; letter-spacing: -0.045em; font-weight: 600; color: var(--ink); }
+.cs-foot .cs-fig.ok { color: var(--funded); }
 .cs-foot .r { text-align: right; }
 
-.cover-note { margin-top: 16px; font-size: 15px; line-height: 1.45; color: #c8ded5; }
+/* 6, 7 single screenshot slides */
+.pair { display: grid; grid-template-columns: 500px minmax(0, 1fr); gap: 80px; height: 100%; align-items: center; }
+.pair .title { font-size: 64px; }
+.pair .lead { font-size: 24px; }
+.pair .net { margin-bottom: 28px; }
+.pair .note { margin-top: 28px; }
+.pair .shot { aspect-ratio: 1280 / 860; }
+.crop { position: relative; overflow: hidden; }
+.crop img { position: absolute; max-width: none; height: auto; }
+.lpb .crop { aspect-ratio: 600 / 210; }
+.lpb .crop img { width: calc(1280 / 600 * 100%); left: calc(-280 / 600 * 100%); top: calc(-160 / 210 * 100%); }
+.urlbar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; font-size: 19px; color: var(--ink-2); }
+.urlbar code { font-family: var(--font-mono); font-size: 17px; color: var(--ink); padding: 6px 12px; border-radius: 10px; background: var(--sheet); border: 1px solid var(--rule); }
 
-.cover .foot { color: #a9c7bb; }
-.cover .foot .brand { color: var(--on-intaglio); }
-.cover .foot .seal { color: var(--on-intaglio); --seal-mark: var(--intaglio); }
+/* 7 wallet, stacked so the request row reads at full size */
+.wallet-slide { padding-top: 72px; }
+.wallet-head { display: grid; grid-template-columns: minmax(0, 1fr) 560px; gap: 72px; align-items: end; }
+.wallet-head .title { font-size: 60px; max-width: 14ch; }
+.wallet-head .lead { margin-top: 0; font-size: 22px; }
+.wallet-head .note { margin-top: 14px; }
+.wallet-head .net { margin-bottom: 22px; }
+.wallet-shot { margin-top: 28px; aspect-ratio: 1200 / 414; border-color: #2a2a2a; background: #111; }
+.wallet-shot img { width: calc(1478 / 1200 * 100%); left: calc(-40 / 1200 * 100%); top: calc(-318 / 414 * 100%); }
+.ring { position: absolute; left: calc(1018 / 1200 * 100%); top: calc(324 / 414 * 100%); width: calc(105 / 1200 * 100%); height: calc(56 / 414 * 100%); border-radius: 999px; border: 3px solid #4fd39f; box-shadow: 0 0 0 6px rgb(79 211 159 / 0.25); }
+.shot-cap { margin-top: 12px; }
 
-/* ---------------------------------------------------------- 2 problem */
-.problem { display: grid; grid-template-columns: minmax(0, 1fr) 520px; gap: 72px; height: 100%; }
-.problem .title { max-width: 15em; }
-.pain { margin-top: 40px; display: grid; gap: 0; }
-.pain li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 0 20px; padding: 22px 0; border-top: 1px solid var(--rule); }
-.pain li:last-child { border-bottom: 1px solid var(--rule); }
-.pain .ico { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: var(--intaglio-soft); color: var(--intaglio); }
-.pain .h3 { margin-bottom: 6px; }
-.pain .src { margin-top: 6px; font-size: 14.5px; color: var(--ink-3); }
+/* 8 canton */
+.vs { margin-top: 56px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.vs div { padding: 32px 40px 36px; border-radius: 24px; background: var(--sheet); border: 1px solid var(--rule); }
+.vs .who-l { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; }
+.vs .big { margin-top: 12px; font-size: 140px; line-height: 0.9; letter-spacing: -0.06em; font-weight: 600; }
+.vs .big small { font-size: 40px; letter-spacing: -0.03em; font-weight: 550; color: var(--ink-3); margin-left: 12px; }
+.vs .bad .big { color: var(--refused); }
+.vs .good .big { color: var(--funded); }
+.vs p.sub { margin-top: 14px; font-size: 19px; color: var(--ink-2); }
+.vs p.sub + p.sub { margin-top: 8px; }
+.canton-note { margin-top: 24px; }
 
-.quote {
-  position: relative;
-  align-self: stretch;
-  display: grid;
-  align-content: space-between;
-  padding: 44px 42px 38px;
-  border-radius: 26px;
-  overflow: hidden;
-  color: var(--on-intaglio);
-  background:
-    radial-gradient(80% 60% at 100% 0%, rgb(201 236 221 / 0.22) 0%, transparent 60%),
-    linear-gradient(160deg, #1d6b57 0%, #134a3d 55%, #0b2f26 100%);
-}
+/* 9 proof */
+.figs { margin-top: 72px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 40px; }
+.figs li { display: grid; gap: 14px; align-content: start; padding-top: 24px; border-top: 2px solid var(--rule-2); }
+.figs li:first-child { border-top-color: var(--intaglio); }
+.figs .net { justify-self: start; }
+.figs .fig { font-size: 82px; line-height: 0.95; letter-spacing: -0.05em; font-weight: 600; }
+.figs .what { font-size: 20px; line-height: 1.38; color: var(--ink-2); text-wrap: pretty; }
+.limits { margin-top: 56px; display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; justify-content: start; gap: 4px 56px; }
 
-.quote::before { content: ''; position: absolute; inset: 0; background-image: repeating-radial-gradient(circle at 110% 110%, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 13px); }
-.quote > * { position: relative; }
-.quote .mark-q { font-size: 96px; line-height: 0.6; color: var(--mint); font-weight: 600; height: 44px; }
-.quote blockquote { font-size: 33px; line-height: 1.24; letter-spacing: -0.024em; font-weight: 500; text-wrap: pretty; }
-.quote cite { display: block; font-style: normal; font-size: 16px; line-height: 1.45; color: #c8ded5; }
-.quote cite b { display: block; color: var(--on-intaglio); font-weight: 600; }
+/* 10 gtm */
+.road { margin-top: 72px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; }
+.road li { display: grid; gap: 12px; align-content: start; padding-top: 24px; border-top: 2px solid var(--rule-2); }
+.road li:first-child { border-top-color: var(--intaglio); }
+.road .when { font-size: 16px; font-weight: 600; color: var(--ink-3); }
+.road .h { font-size: 32px; line-height: 1.1; letter-spacing: -0.028em; font-weight: 600; }
+.road .line { font-size: 21px; line-height: 1.42; color: var(--ink-2); text-wrap: pretty; }
+.pricing { margin-top: 64px; display: flex; align-items: center; gap: 16px; font-size: 21px; color: var(--ink-2); }
 
-/* ---------------------------------------------------------- 3 person */
-.person { display: grid; grid-template-columns: 640px minmax(0, 1fr); gap: 64px; margin-top: 44px; }
-.idcard { overflow: hidden; }
-.idcard-top { display: flex; align-items: center; gap: 18px; padding: 28px 32px; background: var(--intaglio-soft); border-bottom: 1px solid var(--rule); }
-.idcard-ico { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--intaglio); color: var(--on-intaglio); flex: none; }
-.idcard-role { font-size: 27px; line-height: 1.15; letter-spacing: -0.024em; font-weight: 600; }
-.idcard-sub { font-size: 16px; color: var(--ink-2); }
-.idcard dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 15px 22px; padding: 26px 32px 8px; font-size: 18.5px; line-height: 1.4; }
-.idcard dt { color: var(--ink-3); }
-.idcard dd .mark { margin-left: 8px; vertical-align: 1px; }
-.idcard-q { margin: 18px 32px 30px; padding: 18px 20px; border-radius: 16px; background: var(--sheet-2); font-size: 20px; line-height: 1.35; font-weight: 550; letter-spacing: -0.012em; }
-.idcard-q small { display: block; margin-bottom: 4px; font-size: 14.5px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
-
-.others { display: grid; gap: 0; align-content: start; }
-.others li { padding: 26px 0; border-top: 1px solid var(--rule); }
-.others li:first-child { padding-top: 6px; border-top: 0; }
-.others .h3 { margin-bottom: 8px; }
-
-/* ---------------------------------------------------------- 4 how */
-.how-head { display: grid; grid-template-columns: minmax(0, 1fr) 470px; gap: 64px; align-items: end; }
-.steps { margin-top: 56px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
-.step { position: relative; padding: 28px 26px 26px; display: flex; flex-direction: column; gap: 14px; min-height: 392px; }
-.step-top { display: flex; align-items: center; justify-content: space-between; }
-.step-n { font-size: 15px; font-weight: 600; color: var(--ink-3); }
-.who { display: inline-flex; align-items: center; min-height: 28px; padding: 0 11px; border-radius: 999px; background: var(--sheet-2); font-size: 14px; font-weight: 600; color: var(--ink-2); }
-.step .name { margin-top: 6px; font-size: 40px; line-height: 1.05; letter-spacing: -0.032em; font-weight: 600; }
-.step .body { font-size: 19.5px; }
-.step .led { margin-top: auto; padding-top: 14px; border-top: 1px dashed var(--rule-2); font-size: 15.5px; line-height: 1.4; color: var(--ink-3); }
-.step-final { background: var(--intaglio); border-color: var(--intaglio); color: var(--on-intaglio); }
-.step-final .step-n, .step-final .led { color: #a9c7bb; border-color: rgb(255 255 255 / 0.18); }
-.step-final .who { background: rgb(255 255 255 / 0.1); color: #d9efe6; }
-.step-final .body { color: #c8ded5; }
-.unpaid { margin-top: 24px; display: flex; align-items: center; gap: 16px; padding: 18px 24px; border-radius: 16px; background: var(--sheet-2); font-size: 19px; color: var(--ink-2); }
-.unpaid .mark { flex: none; }
-
-/* ---------------------------------------------------------- 5 devnet */
-.live { display: grid; grid-template-columns: 430px minmax(0, 1fr); gap: 56px; height: 100%; }
-.live-copy { display: grid; gap: 24px; align-content: start; }
-.live-copy .labels { display: grid; gap: 14px; margin-top: 6px; }
-.url { font-size: 19px; font-weight: 600; color: var(--intaglio); }
-.grid4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 24px; align-content: start; }
-.grid4 figure { display: grid; gap: 10px; }
-.grid4 .shot { aspect-ratio: 1280 / 860; }
-.grid4 figcaption { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; font-size: 16px; line-height: 1.4; color: var(--ink-2); }
-.grid4 figcaption b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--intaglio-soft); color: var(--intaglio); font-size: 13.5px; font-weight: 650; }
-
-/* ---------------------------------------------------------- 6 canton */
-.canton { display: grid; grid-template-columns: minmax(0, 1fr) 470px; gap: 64px; margin-top: 40px; }
-.attacks { width: 100%; border-collapse: collapse; font-size: 19px; }
-.attacks th { text-align: left; font-size: 15px; font-weight: 550; color: var(--ink-3); padding: 0 12px 14px; border-bottom: 1px solid var(--rule-2); }
-.attacks td { padding: 17px 12px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
-.attacks th:first-child, .attacks td:first-child { padding-left: 0; }
-.attacks th:last-child, .attacks td:last-child { padding-right: 0; }
-.attacks tfoot td { border-bottom: 0; padding-top: 18px; font-weight: 600; color: var(--ink); }
-.attacks .count { font-size: 34px; letter-spacing: -0.03em; font-weight: 600; }
-.attacks .count.bad { color: var(--refused); }
-.attacks .count.good { color: var(--funded); }
-.why { display: grid; gap: 0; align-content: start; }
-.why li { padding: 20px 0; border-top: 1px solid var(--rule); }
-.why li:first-child { padding-top: 0; border-top: 0; }
-.why .h3 { margin-bottom: 6px; }
-.limits { margin-top: 6px; padding: 16px 18px; border-radius: 14px; background: var(--sheet-2); font-size: 16px; line-height: 1.45; color: var(--ink-2); }
-
-/* ---------------------------------------------------------- 7 proof */
-.proof { display: grid; grid-template-columns: minmax(0, 1fr) 560px; gap: 48px; margin-top: 36px; }
-.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-content: start; }
-.tile { padding: 22px 24px 22px; display: grid; gap: 8px; align-content: start; min-height: 252px; }
-.tile .net { justify-self: start; margin-bottom: 4px; }
-.fig { font-size: 76px; line-height: 0.95; letter-spacing: -0.045em; font-weight: 600; }
-.tile .what { font-size: 19px; font-weight: 600; line-height: 1.3; }
-.tile .small { font-size: 15.5px; }
-.keys { display: grid; gap: 14px; align-content: start; }
-.keys .shot { aspect-ratio: 1280 / 795; }
-.speed { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 6px; }
-.speed div { padding-top: 14px; border-top: 1px solid var(--rule-2); }
-.speed b { display: block; font-size: 36px; line-height: 1.05; letter-spacing: -0.035em; font-weight: 600; }
-.speed .net { margin: 8px 0 6px; min-height: 26px; font-size: 13px; }
-.speed p { font-size: 15px; line-height: 1.4; color: var(--ink-2); }
-
-/* ---------------------------------------------------------- 8 validation */
-.val { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 40px; }
-.col { padding: 26px 26px 26px; display: flex; flex-direction: column; gap: 14px; min-height: 520px; }
-.col .h3 { font-size: 24px; }
-.col .status { align-self: flex-start; }
-.col ul { display: grid; gap: 10px; }
-.col li { position: relative; padding-left: 18px; font-size: 17.5px; line-height: 1.45; color: var(--ink-2); }
-.col li::before { content: ''; position: absolute; left: 0; top: 0.66em; width: 6px; height: 6px; border-radius: 50%; background: var(--guilloche); }
-.col .big { font-size: 64px; line-height: 0.95; letter-spacing: -0.045em; font-weight: 600; color: var(--ink); }
-.col .big small { font-size: 21px; letter-spacing: -0.01em; font-weight: 550; color: var(--ink-2); margin-left: 6px; }
-.col .todo { margin-top: auto; }
-.pilotline { margin-top: 20px; font-size: 18px; color: var(--ink-2); }
-
-/* ---------------------------------------------------------- 9 gtm */
-.gtm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 40px; }
-.gtm .module { padding: 26px 28px; display: grid; gap: 10px; align-content: start; }
-.gtm .h3, .pilot .h3 { display: flex; align-items: center; gap: 12px; }
-.gtm .h3 .mark { font-size: 13.5px; }
-.gtm .body { font-size: 18.5px; }
-.pilot { margin-top: 20px; padding: 26px 28px 28px; }
-.stages { margin-top: 18px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; counter-reset: stage; }
-.stages li { display: grid; gap: 6px; align-content: start; padding-top: 16px; border-top: 2px solid var(--rule-2); }
-.stages li:first-child { border-top-color: var(--intaglio); }
-.stages .when { font-size: 14.5px; font-weight: 600; color: var(--ink-3); }
-.stages .h4 { font-size: 20px; line-height: 1.25; letter-spacing: -0.012em; font-weight: 600; }
-.stages .body { font-size: 17.5px; }
-
-/* ---------------------------------------------------------- 10 roadmap */
-.road { margin-top: 52px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; position: relative; }
-.road::before { content: ''; position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: linear-gradient(90deg, var(--intaglio) 0 25%, var(--rule-2) 25% 100%); }
-.road li { position: relative; padding: 42px 28px 0 0; }
-.road li::before { content: ''; position: absolute; top: 5px; left: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--paper); border: 2px solid var(--rule-2); }
-.road li.now::before { background: var(--intaglio); border-color: var(--intaglio); box-shadow: 0 0 0 5px var(--intaglio-soft); }
-.road .when { font-size: 15px; font-weight: 600; color: var(--ink-3); }
-.road .h3 { margin: 4px 0 8px; font-size: 26px; }
-.road .body { font-size: 18px; }
-.askrow { margin-top: 52px; display: grid; grid-template-columns: minmax(0, 1fr) 470px; gap: 28px; align-items: stretch; }
-.ask { padding: 34px 38px; border-radius: 24px; background: var(--invert); color: var(--on-invert); display: grid; gap: 18px; align-content: start; }
-.ask .h3 { font-size: 22px; color: #a9c7bb; font-weight: 600; }
-.ask ol { display: grid; gap: 16px; counter-reset: ask; }
-.ask li { counter-increment: ask; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; font-size: 24px; line-height: 1.35; letter-spacing: -0.014em; font-weight: 500; }
-.ask li::before { content: counter(ask); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: rgb(255 255 255 / 0.1); font-size: 15px; font-weight: 650; color: var(--mint); }
-.links { padding: 26px 28px; display: grid; gap: 12px; align-content: start; }
-.links dl { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 10px 14px; font-size: 17px; line-height: 1.4; }
-.links dt { color: var(--ink-3); }
-.links .todo { padding: 6px 10px; font-size: 14.5px; border-radius: 10px; display: inline-block; }
+/* 11 ask */
+.ask { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 96px; height: 100%; align-items: center; }
+.asks { margin-top: 48px; display: grid; gap: 22px; counter-reset: ask; }
+.asks li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; font-size: 26px; line-height: 1.35; letter-spacing: -0.012em; text-wrap: pretty; }
+.asks li::before { counter-increment: ask; content: counter(ask); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: rgb(255 255 255 / 0.12); font-size: 18px; font-weight: 600; margin-top: 1px; }
+.links { display: grid; gap: 0; }
+.links div { display: grid; gap: 6px; padding: 22px 0; border-top: 1px solid rgb(255 255 255 / 0.18); }
+.links div:last-child { border-bottom: 1px solid rgb(255 255 255 / 0.18); }
+.links dt { font-size: 16px; color: var(--guilloche); }
+.links dd { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
 </style>
 </head>
 <body>
@@ -451,482 +345,178 @@ img, svg { display: block; }
     <path d="M14 6.5a7.5 7.5 0 0 1 7.13 9.82" fill="none" style="stroke: var(--seal-mark)" stroke-width="2.6" stroke-linecap="round"/>
     <circle cx="14" cy="14" r="2.6" style="fill: var(--seal-mark)"/>
   </symbol>
-  <symbol id="i-eyeoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.6A9.8 9.8 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.9 3.7M6.2 6.7C3.8 8.4 2.5 12 2.5 12S6 18.5 12 18.5a9 9 0 0 0 4.6-1.3M9.9 10a3 3 0 0 0 4.2 4.2"/></symbol>
-  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l4.5 4.5v12.5H7z"/><path d="M14 3.5V8h4.5M10 12.5h5.5M10 16h5.5"/></symbol>
-  <symbol id="i-payments" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h13.5M4 8.5l3.5-3.5M4 8.5 7.5 12M20 15.5H6.5M20 15.5 16.5 12M20 15.5 16.5 19"/></symbol>
-  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 19 6.5v5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5v-5z"/><path d="m9 12 2 2 4-4"/></symbol>
-  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20.5h16M6 20.5V5.5l6-2 6 2v15M9.5 9h1M13.5 9h1M9.5 12.5h1M13.5 12.5h1M10.5 20.5v-4h3v4"/></symbol>
 </svg>
 
-<!-- 1 ---------------------------------------------------------------- -->
-<section class="slide cover" aria-label="DRAW in one line">
-  <div class="cover-grid">
-    <div class="cover-copy">
-      <p class="cover-brand"><svg class="seal"><use href="#seal"/></svg>draw</p>
-      <h1 class="cover-title">Capital calls where each LP sees only its own notice.</h1>
-      <p class="cover-lead">DRAW runs a fund’s capital call on Canton. Each LP gets a private notice and pays it with a Canton token. The fund counts money as deployable only after a read-back step confirms it arrived.</p>
-      <p class="cover-live">Live on DevNet: drawcalls.xyz</p>
-    </div>
-    <figure>
-      <div class="callsheet">
-        <div class="callsheet-in">
-          <div class="viewers" aria-hidden="true"><span class="on">Fund manager</span><span>LP A</span><span>LP B</span><span>LP C</span><span>Anyone else</span></div>
-          <div class="cs-head">
-            <div>
-              <p class="cs-run">DevNet run 20261007T130259Z</p>
-              <p class="cs-title">Call 1, three LPs</p>
-            </div>
-            <p class="cs-due">Due time passed</p>
-          </div>
-          <ul class="cs-rows">
-            <li><div><b>LP A</b><small>40 CC</small></div><span class="amt">$400,000</span><span class="mark good">Verified funded</span></li>
-            <li><div><b>LP B</b><small>35 CC</small></div><span class="amt">$350,000</span><span class="mark good">Verified funded</span></li>
-            <li><div><b>LP C</b><small>25 CC</small></div><span class="amt">$250,000</span><span class="mark bad">Overdue</span></li>
-          </ul>
-          <div class="cs-foot">
-            <div><p>Deployable now</p><p class="cs-fig green">$750,000</p></div>
-            <div class="r"><p>Unresolved</p><p class="cs-fig">$250,000</p></div>
-          </div>
-        </div>
-      </div>
-      <figcaption class="cover-note">DevNet, HackCanton shared node. Each party signs with its own key. All five keys sat on the machine that ran the script.<br>Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</figcaption>
-    </figure>
-  </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">HackCanton Season 3. Every test result in this deck traces to a script-written file in the repo, and claims.yaml is its ceiling.</span>
-    <span class="num">1 / 11</span>
-  </footer>
+<!-- 1 -->
+<section class="slide green cover" aria-label="DRAW in one line">
+  <p class="cover-brand"><svg class="seal"><use href="#seal"/></svg>draw</p>
+  <h1 class="cover-title">Capital calls where each LP sees only its own notice.</h1>
+  <p class="cover-lead">DRAW runs a fund’s capital call on Canton. Each LP gets a private notice and pays it in a Canton token, and the money counts only once the ledger confirms it.</p>
+  <p class="cover-live">Live on Canton DevNet: drawcalls.xyz</p>
+  <span class="cover-num">1 / 11</span>
 </section>
 
-<!-- 2 ---------------------------------------------------------------- -->
+<!-- 2 -->
 <section class="slide" aria-label="The problem">
   <div class="problem">
     <div>
-      <h2 class="title">Today a capital call is a notice, a wire and a spreadsheet.</h2>
-      <ul class="pain">
-        <li>
-          <span class="ico"><svg width="22" height="22"><use href="#i-file"/></svg></span>
-          <div>
-            <p class="h3">Payments get matched in batches, from bank exports.</p>
-            <p class="body">One fund software vendor’s service terms: “Client must provide a .csv file of recent bank transactions” before it can reconcile contributions, updated “up to three times per capital call.”</p>
-            <p class="src">A fund software vendor’s service terms, rev. May 17, 2023, source 10 in docs/PROBLEM_EVIDENCE.md</p>
-          </div>
-        </li>
-        <li>
-          <span class="ico"><svg width="22" height="22"><use href="#i-payments"/></svg></span>
-          <div>
-            <p class="h3">Partial, split and wrong-name payments are worked by hand.</p>
-            <p class="body">Capital call tools reconcile each contribution against candidate bank transactions, and one ops guide advises counting money only once it has cleared.</p>
-            <p class="src">Product docs and ops guides, sources 9 to 11 in docs/PROBLEM_EVIDENCE.md</p>
-          </div>
-        </li>
-        <li>
-          <span class="ico"><svg width="22" height="22"><use href="#i-shield"/></svg></span>
-          <div>
-            <p class="h3">Fake notices with swapped payment details are a known fraud.</p>
-            <p class="body">Funds fight it with callbacks, dual approval and faster reconciliation. All of it sits outside the payment itself.</p>
-            <p class="src">FTI Consulting, SVB, Luxembourg FIU, sources 6 to 8</p>
-          </div>
-        </li>
-      </ul>
+      <h2 class="title">A capital call is often a notice, a wire and a spreadsheet.</h2>
+      <p class="lead">A notice is just an email, so fake ones work. And someone matches wires to LPs by hand before the fund knows what it can invest.</p>
+      <p class="note" style="margin-top: 20px">Our hypothesis, drawn from public sources.</p>
     </div>
     <figure class="quote">
-      <span class="mark-q" aria-hidden="true">“</span>
-      <blockquote>A wide range of scams using fake capital call or drawdown notices, falsified invoices or fraudulent loan repayment instructions has been detected.</blockquote>
-      <cite><b>Luxembourg Financial Intelligence Unit</b>Trend alert #2, Business Email Compromise targeting the investment sector, November 2025</cite>
+      <blockquote>“A wide range of scams using fake capital call or drawdown notices, falsified invoices or fraudulent loan repayment instructions has been detected.”</blockquote>
+      <cite><b>Luxembourg Financial Intelligence Unit</b>Trend alert, November 2025</cite>
     </figure>
   </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">12 public sources in docs/PROBLEM_EVIDENCE.md, 2 of them against our hypothesis.</span>
-    <span class="num">2 / 11</span>
-  </footer>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>2 / 11</span></footer>
 </section>
 
-<!-- 3 ---------------------------------------------------------------- -->
-<section class="slide" aria-label="The person it is for">
-  <h2 class="title">Built for the person who has to say what’s actually been funded.</h2>
-  <div class="person">
-    <div class="module idcard">
-      <div class="idcard-top">
-        <span class="idcard-ico"><svg width="28" height="28"><use href="#i-building"/></svg></span>
-        <div>
-          <p class="idcard-role">Fund COO or operations lead</p>
-          <p class="idcard-sub">at an emerging fund manager</p>
+<!-- 3 -->
+<section class="slide" aria-label="Who it is for">
+  <div class="who">
+    <div>
+      <h2 class="title">Built for the person who runs the call.</h2>
+      <p class="lead">The operations lead at an emerging fund manager, or the administrator who runs calls for several of them.</p>
+    </div>
+    <figure class="question green">
+      <p><small>The question DRAW answers</small>How much of this call is deployable right now, and what’s still unresolved?</p>
+    </figure>
+  </div>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>3 / 11</span></footer>
+</section>
+
+<!-- 4 -->
+<section class="slide middle" aria-label="How it works">
+  <h2 class="title">Issue once. Each LP pays its own notice.</h2>
+  <ol class="steps">
+    <li class="step"><span class="step-n">1</span><p class="name">Issue</p><p class="line">The fund issues one call. Each LP gets a private notice.</p></li>
+    <li class="step"><span class="step-n">2</span><p class="name">Pay</p><p class="line">The LP locks the exact amount in a Canton token allocation.</p></li>
+    <li class="step"><span class="step-n">3</span><p class="name">Settle</p><p class="line">One transaction checks the amount and moves the coin to the fund.</p></li>
+    <li class="step"><span class="step-n">4</span><p class="name">Verify</p><p class="line">A separate read-back finds the settlement on the ledger. Only then is the notice verified funded and the money deployable.</p></li>
+  </ol>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>4 / 11</span></footer>
+</section>
+
+<!-- 5 -->
+<section class="slide" aria-label="It runs today">
+  <div class="live">
+    <div>
+      <span class="net">DevNet</span>
+      <h2 class="title">It runs on Canton DevNet today.</h2>
+      <p class="lead">Two LPs paid and one didn’t. The fund sees exactly what it can deploy and what’s still open.</p>
+      <p class="note live-note">Scripted DevNet run, each party signing with its own key, all five keys on one machine. Test Canton Coin, scenario dollars.</p>
+    </div>
+    <figure class="callsheet">
+      <div class="callsheet-in">
+        <div class="cs-head"><p class="cs-title">Call 1, three LPs</p><p class="cs-due">Due time passed</p></div>
+        <ul class="cs-rows">
+          <li><div><b>LP A</b></div><span class="amt">$400,000</span><span class="mark good">Verified funded</span></li>
+          <li><div><b>LP B</b></div><span class="amt">$350,000</span><span class="mark good">Verified funded</span></li>
+          <li><div><b>LP C</b></div><span class="amt">$250,000</span><span class="mark bad">Overdue</span></li>
+        </ul>
+        <div class="cs-foot">
+          <div><p>Deployable now</p><p class="cs-fig ok">$750,000</p></div>
+          <div class="r"><p>Unresolved</p><p class="cs-fig">$250,000</p></div>
         </div>
       </div>
-      <dl>
-        <dt>Works at</dt><dd>An emerging manager. Our assumption: at a small fund, operations issues the call itself</dd>
-        <dt>Owns</dt><dd>The notices, matching wires to LPs, following up late payers, reporting funded versus outstanding</dd>
-        <dt>Uses today</dt><dd>A spreadsheet or admin system, email, wires and a bank export</dd>
-      </dl>
-      <p class="idcard-q"><small>The question DRAW answers for them</small>How much of this call is deployable right now, and what’s still unresolved?</p>
-    </div>
-    <ul class="others">
-      <li>
-        <p class="h3">Or the outsourced administrator who runs the call for them</p>
-        <p class="body">An administrator runs calls for several emerging managers at once, so one relationship reaches several funds.</p>
-      </li>
-      <li>
-        <p class="h3">The LP on the other side</p>
-        <p class="body">Gets a notice no other LP can read, and a clear answer on whether its payment counted.</p>
-      </li>
-      <li>
-        <p class="h3">Who pays <span class="mark wait">Hypothesis</span></p>
-        <p class="body">The manager, for a deployable figure it can trust. The administrator, for less matching work across its clients.</p>
-      </li>
-    </ul>
+    </figure>
   </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">docs/BUSINESS_BRIEF.md, docs/PRODUCT.md, from public sources. Who pays, and what a call costs them in time, stay assumptions until the interviews on slide 9 test them.</span>
-    <span class="num">3 / 11</span>
-  </footer>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>5 / 11</span></footer>
 </section>
 
-<!-- 4 ---------------------------------------------------------------- -->
-<section class="slide" aria-label="How it works">
-  <div class="how-head">
-    <h2 class="title">Issue once. Every LP pays its own notice.</h2>
-    <p class="lead">One call, one ledger. The money moving and the notice turning funded happen in the same transaction.</p>
+<!-- 6 -->
+<section class="slide" aria-label="Privacy you can see">
+  <div class="pair">
+    <div>
+      <span class="net">DevNet</span>
+      <h2 class="title">LP B opens LP A’s notice. The ledger returns nothing.</h2>
+      <p class="lead">A notice exists only if the fund issued it on the ledger, and only its LP can read it. Nothing comes back for anyone else.</p>
+      <p class="note">On DevNet one backend login reads for every demo seat. Separate logins per LP were tested on LocalNet.</p>
+    </div>
+    <figure class="lpb">
+      <p class="urlbar"><span class="mark good">Signed in as LP B</span><code>drawcalls.xyz/app/notices/‹LP A’s reference›</code></p>
+      <div class="shot crop"><img src="img/devnet-05-lpb-cannot-read.png" alt="LP B opening LP A's notice link and seeing Not on your ledger"></div>
+    </figure>
   </div>
-  <ol class="steps">
-    <li class="module step">
-      <div class="step-top"><span class="step-n">01</span><span class="who">Fund manager</span></div>
-      <p class="name">Issue</p>
-      <p class="body">One transaction creates a private notice for each LP. Other LPs and outsiders can’t read it, even by contract id.</p>
-      <p class="led">A contract signed by the fund and that LP</p>
-    </li>
-    <li class="module step">
-      <div class="step-top"><span class="step-n">02</span><span class="who">LP</span></div>
-      <p class="name">Pay</p>
-      <p class="body">The LP locks the exact amount in a Token Standard allocation that carries the notice’s reference. Nothing has moved yet.</p>
-      <p class="led">A CIP-0056 allocation to the fund’s party</p>
-    </li>
-    <li class="module step">
-      <div class="step-top"><span class="step-n">03</span><span class="who">Fund manager</span></div>
-      <p class="name">Settle</p>
-      <p class="body">One transaction checks reference, payer, amount and asset, moves the coin and marks the notice funded. Anything else is refused.</p>
-      <p class="led">The allocation is consumed, so it can’t pay twice</p>
-    </li>
-    <li class="module step step-final">
-      <div class="step-top"><span class="step-n">04</span><span class="who">Read-back</span></div>
-      <p class="name">Verify</p>
-      <p class="body">A read-back step reads the settlement from the ledger and runs 14 checks. Only then does the money count as deployable.</p>
-      <p class="led">A login that only reads, on LocalNet and on the live site</p>
-    </li>
-  </ol>
-  <p class="unpaid"><span class="mark bad">Overdue</span>An LP that doesn’t pay stays unresolved. Before the due time the ledger refuses to mark it overdue. After it, the fund can. The fund can also send a notice to review, or waive an overdue or reviewed one, each with a note.</p>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Daml package draw 0.3.0. Issuing the measured three-LP call took 1 transaction (LocalNet workload run 20261002T185353Z).</span>
-    <span class="num">4 / 11</span>
-  </footer>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>6 / 11</span></footer>
 </section>
 
-<!-- 5 ---------------------------------------------------------------- -->
-<section class="slide" aria-label="Live on DevNet">
-  <div class="live">
-    <div class="live-copy">
-      <span class="net" style="justify-self:start">DevNet</span>
-      <h2 class="title">It runs on DevNet today.</h2>
-      <p class="lead">The deployed app in a real browser, against the HackCanton node, where its latest journey passed 10 of 10 steps.</p>
-      <div class="labels">
-        <p class="label">DevNet, HackCanton shared node. DRAW’s backend login signs for every demo seat, and a different login reads each settlement back.</p>
-        <p class="label">Settles in Canton Coin from the DevNet faucet. Dollar figures are the scenario.</p>
-      </div>
-      <p class="url">drawcalls.xyz</p>
-      <p class="limits"><span class="strong">Have a HackCanton login?</span> An LP can join as itself, read its notices with its own token, and pay with Accept in its own Canton Coin wallet. DRAW never gets the token. Every run used the team’s own login as the LP.</p>
-    </div>
-    <!-- 1, 2 and 4 are crops of 03-call-issued, 04-lp-paid and 06-settled from the run in the footer, boxes (270,96)-(1254,757), (287,84)-(1028,582) and (270,96)-(1254,757). -->
-    <div class="grid4">
-      <figure>
-        <div class="shot"><img src="img/devnet-03-call-issued-crop.png" alt="Fund manager view of Call 2141 just after it was issued: $0 funded and verified, $100,000 unresolved, LP A awaiting payment"></div>
-        <figcaption><b>1</b><span>The fund manager issues Call 2141. LP A owes $100,000, paid as 10 CC, and all of it is unresolved.</span></figcaption>
-      </figure>
-      <figure>
-        <div class="shot"><img src="img/devnet-04-lp-notice-crop.png" alt="LP A's capital call notice for Call 2141: $100,000, pay 10 CC to the fund, status due"></div>
-        <figcaption><b>2</b><span>LP A opens its own notice for Call 2141. Paying locks the 10 CC for the fund, and nothing moves yet.</span></figcaption>
-      </figure>
-      <figure>
-        <div class="shot"><img src="img/devnet-05-lpb-cannot-read.png" alt="LP B opening LP A's notice link and seeing Not on your ledger"></div>
-        <figcaption><b>3</b><span>LP B opens LP A’s notice link. The ledger returns nothing.</span></figcaption>
-      </figure>
-      <figure>
-        <div class="shot"><img src="img/devnet-06-settled-crop.png" alt="Fund manager view of Call 2141 after settlement: $100,000 funded and verified, 10 CC received, $0 unresolved, LP A funded"></div>
-        <figcaption><b>4</b><span>The fund settles and the read-back step confirms it: $100,000 funded and verified, nothing unresolved.</span></figcaption>
-      </figure>
-    </div>
-  </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-journey-20261005214111</span>, the 2026-10-05 UI, when one hackathon login signed for every seat. 1, 2 and 4 are cropped. Latest journey: <span class="path">web-journey-20261007130359</span>. The live site reads each settlement back with a login of its own.</span>
-    <span class="num">5 / 11</span>
-  </footer>
-</section>
-
-<!-- 6 ---------------------------------------------------------------- -->
-<section class="slide" aria-label="An LP pays from its own Canton wallet">
-  <div class="live">
-    <div class="live-copy">
-      <span class="net" style="justify-self:start">DevNet</span>
+<!-- 7 -->
+<section class="slide wallet-slide" aria-label="An LP pays from its own Canton wallet">
+  <div class="wallet-head">
+    <div>
+      <span class="net">DevNet</span>
       <h2 class="title">An LP pays from its own Canton wallet.</h2>
-      <p class="lead">Each capital call also reaches the LP as a CIP-0056 allocation request. The node’s Canton Coin wallet lists it, and Accept pays it.</p>
-      <div class="labels">
-        <p class="label">DevNet, HackCanton shared node. The LP signs in with its own HackCanton login. The fund manager seat uses DRAW’s backend login.</p>
-        <p class="label">DRAW’s server learns only the LP’s party id. Every run used the team’s own login as the LP.</p>
-      </div>
-      <p class="limits"><span class="strong">9 of 9 steps</span> on the live site, from sign-in to verified funded. Paying from DRAW instead of the wallet passed 7 of 7. In the newest runs the server held nothing that could act for the LP’s party.</p>
     </div>
-    <div class="grid4">
-      <figure>
-        <div class="shot"><img src="img/devnet-signin-02-lp-committed.png" alt="DRAW read by the LP's own browser with its own HackCanton login: its notices, its commitment, and its own Canton wallet balance on the seat card"></div>
-        <figcaption><b>1</b><span>The LP signs in with its own HackCanton login and joins. Its browser reads its notices with its own token.</span></figcaption>
-      </figure>
-      <figure>
-        <div class="shot"><img src="img/devnet-signin-04-wallet-request-crop.png" alt="The node's Canton Coin wallet listing DRAW's capital call as an allocation request: 4 Amulet from the LP to the fund, executor the fund, with Accept and Reject"></div>
-        <figcaption><b>2</b><span>The fund calls 4 CC. The LP’s Canton Coin wallet lists the call as an allocation request.</span></figcaption>
-      </figure>
-      <figure>
-        <div class="shot"><img src="img/devnet-signin-05-wallet-accepted-crop.png" alt="The same wallet after Accept: the request now offers Withdraw, and the 4 Amulet allocation to the fund exists"></div>
-        <figcaption><b>3</b><span>The LP presses Accept. Its wallet locks 4 CC for the fund, and nothing moves yet.</span></figcaption>
-      </figure>
-      <figure>
-        <div class="shot"><img src="img/devnet-signin-08-lp-verified.png" alt="The LP's notice in DRAW after settlement: funded, and verified funded by the read-back step"></div>
-        <figcaption><b>4</b><span>The fund settles and the read-back step confirms it. The LP’s notice shows verified funded.</span></figcaption>
-      </figure>
+    <div>
+      <p class="lead">The call shows up in the LP’s Canton Coin wallet as a payment request. The LP presses Accept.</p>
+      <p class="note">9 of 9 steps on drawcalls.xyz, from sign-in to verified funded. We signed in as the LP with our own HackCanton login. No outside LP has used it yet.</p>
     </div>
   </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Screens from <span class="path">evidence/devnet/browser/web-hackcanton-wallet-20261006132730</span>, with the server on the backend client. 2 and 3 show the top of the wallet page. Newest runs, with the read-back on a login of its own: <span class="path">web-hackcanton-wallet-20261007130229</span>, and paying from DRAW, <span class="path">web-hackcanton-20261007130106</span>.</span>
-    <span class="num">6 / 11</span>
-  </footer>
+  <figure>
+    <div class="shot crop wallet-shot"><img src="img/devnet-signin-04-wallet-request-crop.png" alt="The node's Canton Coin wallet listing DRAW's capital call as an allocation request: 4 Amulet from the LP to the fund, with Accept and Reject"><span class="ring" aria-hidden="true"></span></div>
+    <figcaption class="note shot-cap">Amulet is Canton Coin’s token name.</figcaption>
+  </figure>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>7 / 11</span></footer>
 </section>
 
-<!-- 7 ---------------------------------------------------------------- -->
+<!-- 8 -->
 <section class="slide" aria-label="Why Canton">
-  <h2 class="title">Same call, same five attacks. A database let 4 through. DRAW let none through.</h2>
-  <div class="canton">
-    <table class="attacks">
-      <thead>
-        <tr><th scope="col">Attack</th><th scope="col">Database with a paid flag</th><th scope="col">DRAW on Canton</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Mark an unpaid LP funded</td><td><span class="mark bad">Got through</span></td><td><span class="mark good">Stopped</span></td></tr>
-        <tr><td>Read another LP’s notice</td><td><span class="mark bad">Got through</span></td><td><span class="mark good">Stopped</span></td></tr>
-        <tr><td>Reuse one payment for another notice</td><td><span class="mark bad">Got through</span></td><td><span class="mark good">Stopped</span></td></tr>
-        <tr><td>Count a payment row as money</td><td><span class="mark bad">Got through</span></td><td><span class="mark good">Stopped</span></td></tr>
-        <tr><td>LP changes its own notice</td><td><span class="mark good">Stopped</span></td><td><span class="mark good">Stopped</span></td></tr>
-      </tbody>
-      <tfoot>
-        <tr><td>Attacks that got through</td><td><span class="count bad">4 of 5</span></td><td><span class="count good">0 of 5</span></td></tr>
-      </tfoot>
-    </table>
-    <ul class="why">
-      <li>
-        <p class="h3">Privacy sits below the app</p>
-        <p class="body">With a login per party, as on LocalNet, LP A’s own login never gets LP B’s notice back, even by contract id. A missing filter in our code can’t change that.</p>
-      </li>
-      <li>
-        <p class="h3">Funded follows the money</p>
-        <p class="body">The notice turns funded in the same transaction that moves the coin, and that transfer needs the LP’s prior consent.</p>
-      </li>
-      <li>
-        <p class="h3">A payment can’t be reused</p>
-        <p class="body">A settled allocation is consumed. The same payment can’t fund a second notice.</p>
-      </li>
-      <li class="limits">What it doesn’t hide: the fund sees every LP by design, the node operator that hosts every party can read them all, and per the Scan docs the Canton Coin leg shows up in Scan with its random reference and the party ids, whose hints such as draw-lpa are readable, which we haven’t checked against Scan.</li>
-    </ul>
+  <h2 class="title" style="max-width: 24ch">Same call, same five attacks. A database let 4 through. DRAW let none through.</h2>
+  <div class="vs">
+    <div class="bad"><p class="who-l">Database with a paid flag</p><p class="big">4<small>of 5 got through</small></p><p class="sub">An unpaid LP marked funded, another LP’s notice read, a payment reused, a row counted as money.</p></div>
+    <div class="good"><p class="who-l">DRAW on Canton</p><p class="big">0<small>of 5 got through</small></p><p class="sub">The ledger refused every one.</p><p class="sub">Each notice is visible only to the fund and that LP, and the coin moves in the same atomic transaction that updates the notice.</p></div>
   </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src"><span class="path">evidence/local/ablation/20261002T193830Z</span>, LocalNet. The database attacker has write access, as an operator or a compromised app server would.</span>
-    <span class="num">7 / 11</span>
-  </footer>
+  <p class="note canton-note">LocalNet. The database attacker had write access, as an operator or a compromised app server would.</p>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>8 / 11</span></footer>
 </section>
 
-<!-- 8 ---------------------------------------------------------------- -->
-<section class="slide" aria-label="Proof">
-  <h2 class="title">Every number here comes from a script-written file.</h2>
-  <div class="proof">
-    <div class="tiles">
-      <div class="module tile">
-        <span class="net">DevNet</span>
-        <p class="fig">83/83</p>
-        <p class="what">checks on the HackCanton node</p>
-        <p class="small">Each party signed with its own key, all five keys on one machine. Two LPs funded in test Canton Coin, bad payments refused, the unpaid LP overdue. 2&nbsp;checks skipped: one login submitted for every party and read back.</p>
-      </div>
-      <div class="module tile">
-        <span class="net local">LocalNet</span>
-        <p class="fig">76/76</p>
-        <p class="what">checks, each party holding its own key</p>
-        <p class="small">The node can’t act for a party without that party’s signature, and another party’s key is refused.</p>
-      </div>
-      <div class="module tile">
-        <span class="net local">LocalNet</span>
-        <p class="fig">100/100</p>
-        <p class="what">generated capital calls</p>
-        <p class="small">191 notices. 0 false fundings, 0 privacy violations, 0 replays, 0 total mismatches.</p>
-      </div>
-      <div class="module tile">
-        <span class="net script">Daml Script</span>
-        <p class="fig">15/15</p>
-        <p class="what">deliberately broken guards caught</p>
-        <p class="small">Drop the amount, sender, reference, executor, instrument or deadline check and a test fails.</p>
-      </div>
-    </div>
-    <div class="keys">
-      <!-- Crop of evidence/local/browser/web-browser-keys-20261005005304/05-call-issued.png, box (0,0)-(1280,795), which drops the dev-server badge. -->
-      <div class="shot"><img src="img/localnet-05-call-issued-crop.png" alt="LocalNet: the fund manager's view of Call 1 to LP A and LP B, with the seat card reading Signs with your browser key"></div>
-      <p class="label">LocalNet. Each party signs with its own key.</p>
-      <div class="speed">
-        <div><b>5.0 s</b><span class="net">DevNet</span><p>Settlement record time to LP A’s read-back receipt, 5.3 s for LP B, in the 83/83 run. The read-back’s clock against the ledger’s</p></div>
-        <div><b>1,047 ms</b><span class="net local">LocalNet</span><p>Payment locked to verified funded. One machine, scripted fund manager, not production latency</p></div>
-      </div>
-    </div>
-  </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">Runs: DevNet <span class="path">20261007T130259Z</span> and <span class="path">20261007T125638Z</span> (82/82 on the demo seats, with a read-back login that only reads) on package 0.3.0, custody <span class="path">20261004T183146Z</span>, campaign <span class="path">20261002T193724Z</span>, mutation <span class="path">20261006T081625Z</span>, workload <span class="path">20261002T185353Z</span>, screen from browser keys <span class="path">20261005005304</span>, cropped. How to check each one: docs/PROOF.md.</span>
-    <span class="num">8 / 11</span>
-  </footer>
+<!-- 9 -->
+<section class="slide" aria-label="Proof in numbers">
+  <h2 class="title" style="max-width: 22ch">Every number comes from a scripted run.</h2>
+  <ul class="figs">
+    <li><span class="net">DevNet</span><p class="fig">83/83</p><p class="what">lifecycle checks, every party signing with its own key</p></li>
+    <li><span class="net local">LocalNet</span><p class="fig">76/76</p><p class="what">custody checks, every party signing with its own key</p></li>
+    <li><span class="net local">LocalNet</span><p class="fig">100/100</p><p class="what">generated calls with no false funding and no leaks</p></li>
+    <li><span class="net script">Daml tests</span><p class="fig">15/15</p><p class="what">deliberately broken guards caught</p></li>
+  </ul>
+  <ul class="note limits">
+    <li>Test Canton Coin and scenario dollars.</li>
+    <li>On DevNet all five keys sat on one machine.</li>
+    <li>On the live site, DRAW’s login signs for the demo LPs.</li>
+    <li>Not yet run with USDCx.</li>
+  </ul>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span class="check">Every number is checked on the proof page: drawcalls.xyz/proof</span><span>9 / 11</span></footer>
 </section>
 
-<!-- 9 ---------------------------------------------------------------- -->
-<section class="slide" aria-label="Validation and metrics">
-  <h2 class="title">What’s on file, and what we measure next.</h2>
-  <div class="val">
-    <div class="module col">
-      <span class="mark good status">On file</span>
-      <p class="h3">Public evidence</p>
-      <p class="big">12<small>sources</small></p>
-      <ul>
-        <li>An LP industry body, three law firms, two banks, a regulator, an incident responder and four vendors.</li>
-        <li>2 cut against us: LP defaults are rare. So we lead with late versus funded, and leave chasing defaulters out.</li>
-        <li>Test evidence on DevNet and LocalNet, slide 8.</li>
-      </ul>
-    </div>
-    <div class="module col">
-      <span class="mark wait status">In progress</span>
-      <p class="h3">Conversations with people who run calls</p>
-      <ul>
-        <li>Goal: 3 to 5 COOs or ops leads at emerging managers, fund administrators or LPs, 20 minutes each.</li>
-        <li>We record role, fund size band, LP count, calls per year, hours per call, the last incident and whether they’d shadow one call.</li>
-      </ul>
-      <p class="todo">To fill after the interviews: number held (0 as of Oct 7), roles, what they said about hours per call and the last incident, and who’d shadow a call.</p>
-    </div>
-    <div class="module col">
-      <span class="mark wait status">Planned</span>
-      <p class="h3">Usability tests on the live DevNet site</p>
-      <ul>
-        <li>Goal: 2 to 3 people, 15 minutes each.</li>
-        <li>Tasks: issue a call, pay as LP A, settle as the fund, check that LP B can’t open LP A’s notice.</li>
-        <li>We measure completion, time per task and where people got stuck.</li>
-      </ul>
-      <p class="todo">To fill after the tests: completed N of N, median time per task, the top point of confusion.</p>
-    </div>
-  </div>
-  <p class="pilotline">In a shadow pilot we’d measure the gap between DRAW’s unresolved list and the fund’s own spreadsheet, the admin’s time per day in each, and any LP confusion about what it sees.</p>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">docs/PROBLEM_EVIDENCE.md, docs/PILOT_PLAN.md. Placeholders get filled only from notes taken in the calls and tests. No quote is used without permission.</span>
-    <span class="num">9 / 11</span>
-  </footer>
-</section>
-
-<!-- 10 ---------------------------------------------------------------- -->
-<section class="slide" aria-label="Go to market and business model">
-  <h2 class="title">Go to market through the people who run the call.</h2>
-  <div class="gtm">
-    <div class="module">
-      <p class="h3">Who first</p>
-      <p class="body">One outsourced fund administrator serving several emerging managers, because one relationship reaches several funds. Then the COO or ops lead at emerging managers that run their own calls.</p>
-    </div>
-    <div class="module">
-      <p class="h3">How we reach them</p>
-      <p class="body">Direct outreach to fund ops people and administrators, introductions from people who run funds, and Canton ecosystem events. The interviews on slide 9 are the first pipeline.</p>
-    </div>
-    <div class="module">
-      <p class="h3">Pricing <span class="mark wait">Hypothesis</span></p>
-      <p class="body">A per-fund subscription for managers, and per-call pricing for administrators who serve many small funds. We haven’t had a pricing conversation yet. Each interview asks what the fund pays for administration today.</p>
-    </div>
-  </div>
-  <div class="module pilot">
-    <p class="h3">Pilot, in three stages</p>
-    <ol class="stages">
-      <li>
-        <span class="when">Stage 1</span>
-        <p class="h4">Shadow one real call</p>
-        <p class="body">No money moves. DRAW runs next to the fund’s spreadsheet until the call closes. It needs commitment amounts and about an hour a day from one ops person.</p>
-      </li>
-      <li>
-        <span class="when">Stage 2</span>
-        <p class="h4">A small test settlement</p>
-        <p class="body">2 or 3 LPs pay a small test amount on DevNet or TestNet from their own parties. The real call stays on the bank rail.</p>
-      </li>
-      <li>
-        <span class="when">Stage 3</span>
-        <p class="h4">What a real pilot needs</p>
-        <p class="body">A settlement asset the fund and LPs accept, LPs on validators they trust, LP sign-in that gives our server no LP credentials, export to the admin system and legal review.</p>
-      </li>
-    </ol>
-  </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">docs/PILOT_PLAN.md, docs/BUSINESS_BRIEF.md. Nobody has agreed to a pilot yet, and no customer or partner is implied.</span>
-    <span class="num">10 / 11</span>
-  </footer>
-</section>
-
-<!-- 11 --------------------------------------------------------------- -->
-<section class="slide" aria-label="Roadmap and the ask">
-  <h2 class="title">Next: one real call in shadow, then TestNet.</h2>
+<!-- 10 -->
+<section class="slide middle" aria-label="Go to market and next">
+  <h2 class="title" style="max-width: 20ch">Start with the administrators who run the calls.</h2>
   <ol class="road">
-    <li class="now">
-      <p class="when">Now</p>
-      <p class="h3">DevNet and LocalNet</p>
-      <p class="body">The full call on the shared HackCanton node, and LP sign-in with a HackCanton login. A key per party on LocalNet and in one scripted DevNet run.</p>
-    </li>
-    <li>
-      <p class="when">Next</p>
-      <p class="h3">Shadow pilot</p>
-      <p class="body">One real call alongside a fund or administrator. On DevNet, a second person signing in, and keys held by separate people.</p>
-    </li>
-    <li>
-      <p class="when">Then</p>
-      <p class="h3">TestNet with USDCx</p>
-      <p class="body">Needs Tokenomics Committee approval, an onboarding secret from a Super Validator sponsor and an allowlisted IP.</p>
-    </li>
-    <li>
-      <p class="when">After a pilot</p>
-      <p class="h3">MainNet</p>
-      <p class="body">LPs on validators they trust, export to the administrator’s system, then Featured App review.</p>
-    </li>
+    <li><span class="when">First</span><p class="h">Administrators</p><p class="line">One administrator runs calls for several emerging managers, so one relationship reaches several funds.</p></li>
+    <li><span class="when">Next</span><p class="h">Shadow one real call</p><p class="line">DRAW runs next to the fund’s spreadsheet until the call closes. No money moves.</p></li>
+    <li><span class="when">Then</span><p class="h">First paid calls on TestNet with USDCx</p><p class="line">A dollar settlement asset whose registry lists the same allocation API DRAW uses today. Not yet run.</p></li>
   </ol>
-  <div class="askrow">
-    <div class="ask">
-      <p class="h3">The ask</p>
-      <ol>
-        <li>Introduce us to an emerging manager’s COO or ops lead, or a fund administrator, who’d shadow one real call with no money moving.</li>
-        <li>Help us onto TestNet: a Super Validator sponsor and a Tokenomics Committee review.</li>
+  <p class="pricing"><span class="mark wait">Hypothesis</span>Per-fund pricing for managers, per-call for administrators. No interviews held yet.</p>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span>10 / 11</span></footer>
+</section>
+
+<!-- 11 -->
+<section class="slide green" aria-label="The ask">
+  <div class="ask">
+    <div>
+      <h2 class="title" style="max-width: 14ch">Help us run one real call.</h2>
+      <ol class="asks">
+        <li>An introduction to a fund ops lead or administrator who’d shadow one call.</li>
+        <li>Help onto TestNet, starting with a Super Validator sponsor.</li>
       </ol>
     </div>
-    <div class="module links">
-      <p class="label">Uses the Token Standard allocation interface, which the USDCx registry supports. Not run with USDCx.</p>
-      <dl>
-        <dt>Live</dt><dd>drawcalls.xyz</dd>
-        <dt>Repo</dt><dd><span class="todo">Public GitHub link to add</span></dd>
-        <dt>Video</dt><dd><span class="todo">Video link to add</span></dd>
-      </dl>
-    </div>
+    <dl class="links">
+      <div><dt>Live</dt><dd>drawcalls.xyz</dd></div>
+    </dl>
   </div>
-  <footer class="foot">
-    <span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span>
-    <span class="src">TestNet and MainNet requirements: docs.canton.network, global synchronizer onboarding process. Built from scratch during HackCanton Season 3. First commit 2026-10-01.</span>
-    <span class="num">11 / 11</span>
-  </footer>
+  <footer class="foot"><span class="brand"><svg class="seal"><use href="#seal"/></svg>draw</span><span class="check">Every number is checked on the proof page: drawcalls.xyz/proof</span><span>11 / 11</span></footer>
 </section>
 
 <script>

@@ -38,7 +38,7 @@ Post-hackathon plan: Conversations and usability tests first, then the shadow pi
 | Proof page | https://drawcalls.xyz/proof |
 | Repository | Not public yet, and the repository has no git remote. The URL goes here once it's published |
 | Demo video | Not recorded yet. The link goes here at submission |
-| Deck | v1, not linked yet. These fixes are made in [deck.html](pitch/deck.html), each checked against [claims.yaml](../claims.yaml), and the PDF was re-exported on 2026-10-07. Slide 8's timing, 5.0 s and 5.3 s, comes from run 20261007T130259Z, in which each party signed with its own key. Slide 2 no longer names a vendor and no longer says funds count money only once it's reconciled. The cover reads "Capital calls where each LP sees only its own notice." Slide 3 marks the small-fund line as our assumption. Slide 7 says the Scan line comes from the Scan docs and hasn't been checked against Scan. Next, the owner reviews it, and then the README links it |
+| Deck | v2, rebuilt on 2026-10-08 as 11 statement-led slides from [deck.html](pitch/deck.html): one idea per slide, the run ids and file paths moved to the proof page, the limits kept in short lines and checked against [claims.yaml](../claims.yaml). The owner reviews it, then the README links it |
 | Demo access code | The site doesn't print it yet. The owner decided on 2026-10-07 that it goes public on submission day: on 2026-10-09, set `DRAW_ACCESS_CODE_PUBLIC=true` in the API's `.env`, restart `draw`, and check that the landing page prints the code and the access dialog fills it in. Until then testers get the code directly. The code itself never goes in a tracked file |
 
 ## The six materials
