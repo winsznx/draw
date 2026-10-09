@@ -2,7 +2,7 @@
 
 This hackathon process record tracks each build requirement as done, partial, blocked or skipped, with the evidence behind it or what's left. The product is in [PRODUCT.md](PRODUCT.md), the proof in [PROOF.md](PROOF.md), the gate verdicts in [GATES.md](GATES.md) and the limits in [LIMITATIONS.md](LIMITATIONS.md).
 
-Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (written, needs the ledger to run), SKIPPED (with the reason). Updated 2026-10-07. Rows point at evidence in [evidence/](../evidence) where it exists, or say what is missing. Product rows with nothing in the last column are features you can see on the live site.
+Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (written, needs the ledger to run), SKIPPED (with the reason). Updated 2026-10-09. Rows point at evidence in [evidence/](../evidence) where it exists, or say what is missing. Product rows with nothing in the last column are features you can see on the live site.
 
 ## Mechanism and ledger
 
@@ -71,7 +71,7 @@ Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (writte
 | [GATES.md](GATES.md) | DONE |
 | [TRACK_PROOF_MODALITY.md](TRACK_PROOF_MODALITY.md) | DONE |
 | [PROBLEM_EVIDENCE.md](PROBLEM_EVIDENCE.md) | DONE (12 public sources). Direct evidence from fund operators BLOCKED_ON_HUMAN |
-| A test with an outside person, by conversation or on the live site | BLOCKED_ON_HUMAN. 0 held as of 2026-10-07 |
+| A test with an outside person, by conversation or on the live site | BLOCKED_ON_HUMAN. 0 held as of 2026-10-09 |
 | [PRODUCT.md](PRODUCT.md) | DONE |
 | [FIRST_UNIT_VALUE.md](FIRST_UNIT_VALUE.md) | DONE |
 | [PORTFOLIO_NOVELTY.md](PORTFOLIO_NOVELTY.md) | DONE (verdict ADJACENT) |
@@ -83,22 +83,17 @@ Status words: DONE, PARTIAL, TODO, BLOCKED_ON_HUMAN, BLOCKED_ON_LOCALNET (writte
 | [JUDGE_NOTE.md](JUDGE_NOTE.md) | DONE |
 | [RUBRIC_ARTIFACT_MAP.md](RUBRIC_ARTIFACT_MAP.md) | DONE, mapped to the six published Season 3 criteria |
 | [JUDGE_SCORECARD.md](JUDGE_SCORECARD.md) | DONE, the team's own check without scores |
-| [DEMO_SCRIPT.md](DEMO_SCRIPT.md) | DONE, the current UI on the live DevNet site plus a LocalNet segment |
 | [README](../README.md) | DONE |
 | [HACKATHON_DELTA.md](HACKATHON_DELTA.md) | DONE |
 | [SUBMISSION.md](SUBMISSION.md) | DONE (draft, Track 3 confirmed by the owner on 2026-10-07) |
 | [LIMITATIONS.md](LIMITATIONS.md), [PROOF.md](PROOF.md), [CLEAN_ROOM.md](CLEAN_ROOM.md) | DONE |
-| Deck ([deck.html](pitch/deck.html) and its PDF export) | PARTIAL, v1. The fixes listed in [SUBMISSION.md](SUBMISSION.md#links) are made and the PDF was re-exported on 2026-10-07. The owner hasn't reviewed it yet |
+| Deck ([deck.html](pitch/deck.html) and its [PDF export](pitch/DRAW-deck.pdf)) | DONE, v2. 11 statement-led slides, re-exported on 2026-10-09 with the video and code links on slide 11. The owner used it in the video |
 | The six platform materials ([docs/pitch/materials/](pitch/materials)) | PARTIAL, drafts, not yet reviewed |
-| Demo video | TODO |
+| Demo video | DONE. https://youtu.be/F4atPdV72M8, 4:30: the pitch over the deck, the live demo on drawcalls.xyz against DevNet, then the results and the ask |
 
 ## Needs the owner
 
 - One conversation with someone who has run capital calls, and two or three usability tests on the live site.
-- Mana burned to 1,000, the project profile with Track 3, and a journal entry every day.
-- A public repository, on 2026-10-09. The Apache-2.0 [LICENSE](../LICENSE) has been in since 2026-10-07. The 2026-10-06 scan found no secrets in the 45 commits up to `94ffc14`. The 31 commits after it, up to `13a3bcb` on 2026-10-07, haven't been scanned. Re-run the scan on the release commit at the freeze.
-- The demo access code goes public on submission day, as the owner decided on 2026-10-07. On 2026-10-09, set `DRAW_ACCESS_CODE_PUBLIC=true` on the API so the landing page prints it.
-- The deck: the owner reviews the re-exported PDF, and only then does the README link it.
-- The demo video and the voiceover.
+- The demo access code is public since 2026-10-09: `DRAW_ACCESS_CODE_PUBLIC=true` is set on the API, `GET /api/config` returns it, and the README lists it, `dda6f17bcea06d14`.
 - A sign-in run with a second person signing in, so the LP and the fund manager aren't the same person, and keys held by separate people, since all five keys in the own-keys run sat on one machine. NODERS created two more logins on 2026-10-07. The team used the first, xidoncapitals-t1, in sign-in run web-hackcanton-20261008221025, which separates the LP's login and party from the team's personal ones but not the people. The second is for judges, and its credentials go in the submission form only, never in the repository.
 - LocalNet isn't running. It's needed for a clean-room run of the current web app and for any new LocalNet evidence.

@@ -1,6 +1,6 @@
 # Limitations
 
-Plainly, what DRAW doesn't do or hasn't shown yet. Updated 2026-10-07.
+Plainly, what DRAW doesn't do or hasn't shown yet. Updated 2026-10-09.
 
 This list is for judges, and for anyone deciding whether DRAW could run a real capital call. DevNet and LocalNet are kept apart, and each item names the network it's about. What is proven, with its evidence, is in [PROOF.md](PROOF.md), and every public claim and its limits are in [claims.yaml](../claims.yaml).
 
@@ -55,7 +55,7 @@ This list is for judges, and for anyone deciding whether DRAW could run a real c
 
 ## Business
 
-- No conversation with a fund operations practitioner is on file, and no usability test with an outside person: 0 of each as of 2026-10-07. Market claims stay hypotheses.
+- No conversation with a fund operations practitioner is on file, and no usability test with an outside person: 0 of each as of 2026-10-09. Market claims stay hypotheses.
 - The problem rests on 12 public sources. 2 argue against, and 3 show fiat tools already handle notices and matching ([PROBLEM_EVIDENCE.md](PROBLEM_EVIDENCE.md)).
 - No pricing conversation has happened, and no price is set.
 - Nobody has agreed to a pilot. There are no customers, partners or letters of intent.

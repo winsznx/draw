@@ -1,6 +1,6 @@
 # Submission
 
-This hackathon process record holds the draft answers for the HackCanton project page, the links, the six materials and the compliance checklist, updated 2026-10-07. The product is in the [README](../README.md) and [PRODUCT.md](PRODUCT.md), and the proof in [PROOF.md](PROOF.md). Every answer stays inside [claims.yaml](../claims.yaml), and DevNet and LocalNet facts stay apart. HackCanton runs on AppsFactory, whose project dashboard gates a submission on Mana, the platform's points, which an account earns through daily activity and burns toward a project.
+This hackathon process record holds the draft answers for the HackCanton project page, the links, the six materials and the compliance checklist, updated 2026-10-09. The product is in the [README](../README.md) and [PRODUCT.md](PRODUCT.md), and the proof in [PROOF.md](PROOF.md). Every answer stays inside [claims.yaml](../claims.yaml), and DevNet and LocalNet facts stay apart. HackCanton runs on AppsFactory, whose project dashboard gates a submission on Mana, the platform's points, which an account earns through daily activity and burns toward a project.
 
 ## Answers
 
@@ -32,14 +32,14 @@ Post-hackathon plan: Conversations and usability tests first, then the shadow pi
 
 ## Links
 
-| Item | Status on 2026-10-07 |
+| Item | Status on 2026-10-09 |
 |---|---|
 | Live demo, DevNet | https://drawcalls.xyz |
 | Proof page | https://drawcalls.xyz/proof |
-| Repository | Not public yet, and the repository has no git remote. The URL goes here once it's published |
-| Demo video | Not recorded yet. The link goes here at submission |
-| Deck | v2, rebuilt on 2026-10-08 as 11 statement-led slides from [deck.html](pitch/deck.html): one idea per slide, the run ids and file paths moved to the proof page, the limits kept in short lines and checked against [claims.yaml](../claims.yaml). The owner reviews it, then the README links it |
-| Demo access code | The site doesn't print it yet. The owner decided on 2026-10-07 that it goes public on submission day: on 2026-10-09, set `DRAW_ACCESS_CODE_PUBLIC=true` in the API's `.env`, restart `draw`, and check that the landing page prints the code and the access dialog fills it in. Until then testers get the code directly. The code itself never goes in a tracked file |
+| Repository | https://github.com/winsznx/draw, public since 2026-10-09, Apache-2.0 |
+| Demo video | https://youtu.be/F4atPdV72M8, 4:30: the pitch, the live demo on DevNet, then the results and the ask |
+| Deck | v2, rebuilt on 2026-10-08 as 11 statement-led slides from [deck.html](pitch/deck.html): one idea per slide, the run ids and file paths moved to the proof page, the limits kept in short lines and checked against [claims.yaml](../claims.yaml). Re-exported on 2026-10-09 with the video and code links on slide 11, and used in the video: [DRAW-deck.pdf](pitch/DRAW-deck.pdf) |
+| Demo access code | `dda6f17bcea06d14`, public since 2026-10-09 as the owner decided on 2026-10-07. `DRAW_ACCESS_CODE_PUBLIC=true` is set on the API, so the site prints it and the access dialog fills it in |
 
 ## The six materials
 
@@ -58,16 +58,16 @@ The project dashboard asks for six uploads: Value, ICP, Metrics, GTM, Demo and P
 
 From the Season 3 rules.
 
-| Requirement | Status on 2026-10-07 |
+| Requirement | Status on 2026-10-09 |
 |---|---|
 | Submitted by 2026-10-09 23:59 UTC. Aim for 18:00 UTC. Nothing changed after the deadline counts | Open |
-| Public repository with all code and a README describing the project | Open. Not published yet and with no git remote. The repository goes public on 2026-10-09, and it has had an Apache-2.0 [LICENSE](../LICENSE) since 2026-10-07. On 2026-10-06 gitleaks 8.30.1 and a check for every `.env` value found nothing in the 45 commits up to `94ffc14`. The 31 commits after it, up to `13a3bcb` on 2026-10-07, haven't been scanned, so both scans have to be re-run on the release commit at the freeze, with its id and date recorded in [SECURITY.md](SECURITY.md) |
-| Demo: working prototype, live demo or recorded video, at most 5 minutes | The live site works. The video isn't recorded yet |
-| Pitch materials: problem and why it matters, solution and how Canton is used, target users and go-to-market, key metrics or validation | Drafts of the six materials, not yet reviewed. The deck has the fixes listed under Links and waits for the owner's review before the README links it |
+| Public repository with all code and a README describing the project | Done. Public at https://github.com/winsznx/draw since 2026-10-09, with an Apache-2.0 [LICENSE](../LICENSE). The secret scans of the full history are recorded in [SECURITY.md](SECURITY.md) |
+| Demo: working prototype, live demo or recorded video, at most 5 minutes | The live site works, and the 4:30 video is at https://youtu.be/F4atPdV72M8 |
+| Pitch materials: problem and why it matters, solution and how Canton is used, target users and go-to-market, key metrics or validation | Drafts of the six materials, not yet reviewed. The deck is final, v2, and the video presents it |
 | One track, selected at submission | Track 3, confirmed by the owner on 2026-10-07. Select it in the submission form |
-| 1,000 Mana burned toward the project | 100 of 1,000 on 2026-10-04. The rules add that 1,000 Mana "requires at least 10 days of daily activity on the platform", and the deadline is 2026-10-09, so this is an eligibility risk. The account's days of activity aren't recorded here and need checking on the dashboard. Before buying any Mana, ask AppsFactory about the 10-day condition and whether bought Mana counts |
+| 1,000 Mana burned toward the project | Done. On 2026-10-09 the dashboard shows 1,000 of 1,000 Mana burned, "Full mana reached". It was 100 of 1,000 on 2026-10-04 |
 | Completed project profile: description, team information, track | Open |
-| Non-empty journal, ideally an entry every day | One entry as of 2026-10-04. The plan is one a day from 2026-10-06 |
+| Non-empty journal, ideally an entry every day | Done. 6 entries and a 6-day streak on the dashboard on 2026-10-09 |
 | Everything public: no private links, "request access" pages or files judges can't open | Open. The live site and the proof page are open to read, and actions need the access code (see Links). Question for AppsFactory: does an access code that the site prints still count as a "request access" page? Check every link in a private window before submitting |
 | Meaningful Canton integration | Done. On package 0.3.0 the scripted DevNet runs passed 83 of 83 with each party signing with its own key, all five keys on one machine, and 82 of 82 on the live site's setup. The live web app settles through CIP-0056, each LP gets a CIP-0056 AllocationRequest, and an LP signed in on the node's Keycloak paid from its own Canton wallet, with the team's personal login and, in the newest run, with a second login NODERS created for the team, which the team also ran |
 | AI-assisted tools used transparently | Done. Disclosed in the README, in the AI use answer above and in [HACKATHON_DELTA.md](HACKATHON_DELTA.md) |

@@ -211,7 +211,7 @@ Backed by: [HACKATHON_DELTA.md](../HACKATHON_DELTA.md), git history.
 
 ### What if the live demo is busy?
 
-By default the site starts at most 3 new demo funds per visitor per hour and 20 overall. Actions from every demo fund run one at a time through one queue, and when the shared demo parties near their record ceiling, the site answers "The demo is full right now" instead of breaking. If it can't start a fund, the proof page, https://drawcalls.xyz/proof, shows the newest run of the same journey step by step with screenshots, and needs no access code. Reading needs no code either, on the proof page and on every seat of a demo fund the browser has already started. Every action, starting with "Create the demo fund", needs the demo access code. The site doesn't print it yet, and it goes public on submission day, 2026-10-09.
+By default the site starts at most 3 new demo funds per visitor per hour and 20 overall. Actions from every demo fund run one at a time through one queue, and when the shared demo parties near their record ceiling, the site answers "The demo is full right now" instead of breaking. If it can't start a fund, the proof page, https://drawcalls.xyz/proof, shows the newest run of the same journey step by step with screenshots, and needs no access code. Reading needs no code either, on the proof page and on every seat of a demo fund the browser has already started. Every action, starting with "Create the demo fund", needs the demo access code, `dda6f17bcea06d14`, which the site prints and fills in.
 
 Backed by: [DEPLOY.md](../DEPLOY.md#demo-limits-and-capacity), [the newest live-site journey](../../evidence/devnet/browser/web-journey-20261007205208/result.json), [demo.md](materials/demo.md).
 

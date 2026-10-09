@@ -12,8 +12,8 @@ The Demo material, for the MVP criterion. It's for judges who want to use DRAW o
 | How to check each claim | [PROOF.md](../../PROOF.md) |
 | Every claim, with its network and limits | [claims.yaml](../../../claims.yaml) |
 | Pitch and deck | [pitch.md](pitch.md) |
-
-The video and the public repository link are added at submission, and [SUBMISSION.md](../../SUBMISSION.md) tracks both.
+| Video, 4:30 | https://youtu.be/F4atPdV72M8 |
+| Code | https://github.com/winsznx/draw |
 
 ## What you're looking at
 
@@ -24,7 +24,7 @@ The live site runs on the HackCanton DevNet node. You take a seat as the fund ma
 
 Each browser gets its own demo fund. The demo funds share the same five parties, the fund, three LPs and an unrelated party, so keeping one browser out of another's fund is the app's doing, and keeping each LP out of the others' records is the ledger's.
 
-Every action, starting with "Create the demo fund", needs the demo access code, which the site asks for once. The site doesn't print the code yet, and it goes public on submission day, 2026-10-09. Without it a new browser can't start a demo fund and its seats stay empty. Reading needs no code: the proof page, which shows the newest run of the core of this tour step by step with screenshots, and every seat of a demo fund the browser has already started.
+Every action, starting with "Create the demo fund", needs the demo access code, `dda6f17bcea06d14`, which the site prints and fills in. Reading needs no code: the proof page, which shows the newest run of the core of this tour step by step with screenshots, and every seat of a demo fund the browser has already started.
 
 ## The tour
 

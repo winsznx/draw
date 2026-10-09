@@ -61,7 +61,7 @@ For engineers and Canton judges who want the model and the trust model.
 
 ### Platform materials and presenting
 
-The six uploads the hackathon platform asks for, one per judging criterion, then the judge Q&A and the presenters' scripts. Drafts, not reviewed yet.
+The six uploads the hackathon platform asks for, one per judging criterion, then the judge Q&A, the video and the deck. Drafts, not reviewed yet.
 
 27. [pitch/materials/value.md](pitch/materials/value.md): Value. The problem, why now, why Canton, what's proven.
 28. [pitch/materials/icp.md](pitch/materials/icp.md): ICP. The person DRAW is built for, who isn't a fit yet, and what the interviews will test.
@@ -70,10 +70,9 @@ The six uploads the hackathon platform asks for, one per judging criterion, then
 31. [pitch/materials/demo.md](pitch/materials/demo.md): Demo. The live tour and where each step is proven.
 32. [pitch/materials/pitch.md](pitch/materials/pitch.md): Pitch. One line, thirty seconds, the slide outline and the numbers with their labels.
 33. [pitch/judge-qa.md](pitch/judge-qa.md): short answers to the questions judges are likely to ask, each with what backs it.
-34. [DEMO_SCRIPT.md](DEMO_SCRIPT.md): the presenter's script for showing the live site, with labels, timings and narration.
-35. [pitch/video-script.md](pitch/video-script.md): scenes and voiceover for the demo video.
+34. The video, 4:30: https://youtu.be/F4atPdV72M8. The pitch, then the live demo on DevNet.
 
-The deck, pitch/DRAW-deck.pdf, is v1. The fixes listed in [SUBMISSION.md](SUBMISSION.md#links) are made and the PDF was re-exported on 2026-10-07, and it isn't linked here until the owner has reviewed it.
+35. [pitch/DRAW-deck.pdf](pitch/DRAW-deck.pdf): the deck, v2, 11 statement-led slides built from [pitch/deck.html](pitch/deck.html), with the video and code links on the last slide.
 
 ### Hackathon process records
 

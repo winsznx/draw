@@ -8,7 +8,7 @@ Private capital calls on Canton. Each LP reads and pays only its own notice, and
 
 ## After 30 seconds
 
-In [the newest scripted DevNet run](../evidence/devnet/runs/20261007T130259Z), a fund called $1,000,000 from three investors (LPs). Two paid and one didn't. DRAW shows $750,000 deployable and $250,000 unresolved. Each LP's view of the ledger held only its own notice, and a payment that didn't match exactly was refused by the ledger and never counted.
+In [the newest passing scripted DevNet run](../evidence/devnet/runs/20261007T130259Z), a fund called $1,000,000 from three investors (LPs). Two paid and one didn't. DRAW shows $750,000 deployable and $250,000 unresolved. Each LP's view of the ledger held only its own notice, and a payment that didn't match exactly was refused by the ledger and never counted.
 
 That run is on the HackCanton shared DevNet node. In it each party signed its own transactions with its own key, with every party's key on the machine that ran it. On the live site DRAW's backend login signs for every demo seat. Both settle in Canton Coin from the DevNet faucet, and the dollar figures are the scenario.
 
