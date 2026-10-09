@@ -1,0 +1,48 @@
+{
+  "run": "20261009T150720Z",
+  "site": "https://drawcalls.xyz",
+  "tour": "f026c9de-f7b8-4d1e-a6be-d622c213fc33",
+  "call": "Outside LP call",
+  "steps": [
+    {
+      "at": "2026-10-09T15:07:42.323Z",
+      "step": "setup",
+      "by": "fund manager (team)",
+      "observed": "demo fund created for tour f026c9de-f7b8-4d1e-a6be-d622c213fc33",
+      "ok": true,
+      "screenshot": "01-setup.png"
+    },
+    {
+      "at": "2026-10-09T17:49:20.550Z",
+      "step": "issue",
+      "by": "fund manager (team)",
+      "observed": "the call form lists no HackCanton LP yet: the LP has not joined and accepted in this fund",
+      "ok": false,
+      "screenshot": "02-issue.png"
+    },
+    {
+      "at": "2026-10-09T17:52:34.333Z",
+      "step": "issue",
+      "by": "fund manager (team)",
+      "observed": "call \"Outside LP call\" issued: the HackCanton LP $40,000 as 4 CC, and the form's default line for demo seat LP A, $400,000 as 40 CC",
+      "ok": true,
+      "screenshot": "03-issue.png"
+    },
+    {
+      "at": "2026-10-09T19:13:10.548Z",
+      "step": "status",
+      "by": "fund manager (team)",
+      "observed": "the LP payment is locked and ready to settle",
+      "ok": true,
+      "screenshot": "04-status.png"
+    },
+    {
+      "at": "2026-10-09T19:13:26.791Z",
+      "step": "settle",
+      "by": "fund manager (team)",
+      "observed": "settled, and the read-back confirmed it: the notice shows Funded",
+      "ok": true,
+      "screenshot": "05-settle.png"
+    }
+  ]
+}

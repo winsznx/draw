@@ -55,6 +55,6 @@ Reconciliation hours per call, misattribution rates, days from due date to recon
 
 ## Conversations
 
-None as of 2026-10-09, and no usability test with an outside person either. The plan is 3 to 5 twenty-minute conversations with fund COOs, operations leads, administrators or LPs, each about their last real call, with the demo held to the end.
+None as of 2026-10-09. One usability test with a person outside the team ran that day, on the LP side only ([metrics.md](pitch/materials/metrics.md#3-usability-tests-on-the-live-devnet-site)). The plan is 3 to 5 twenty-minute conversations with fund COOs, operations leads, administrators or LPs, each about their last real call, with the demo held to the end.
 
 When they happen, each conversation is recorded here by role, never by name, and quotes appear only with the person's permission. The record template and the results tables are in [pitch/materials/metrics.md](pitch/materials/metrics.md), and the assumptions each question tests are in [pitch/materials/icp.md](pitch/materials/icp.md#what-the-interviews-will-test). The first conversation recorded here is what moves the market lock in [GATES.md](GATES.md#four-locks).

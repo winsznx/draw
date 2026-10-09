@@ -1,6 +1,6 @@
 # Metrics and validation
 
-The Metrics material: what DRAW has measured so far, on which network and from which file, then the plans for conversations and usability tests, and the metrics a pilot would track. It's for judges scoring validation. Test evidence exists today, and every number in section 1 comes from a script-written file. Evidence from people doesn't exist yet: as of 2026-10-07, 0 conversations and 0 usability tests have been held. Sections 2 and 3 say what they'll record, and nothing in them gets filled from memory or by estimate.
+The Metrics material: what DRAW has measured so far, on which network and from which file, then the plans for conversations and usability tests, and the metrics a pilot would track. It's for judges scoring validation. Test evidence exists today, and every number in section 1 comes from a script-written file. Evidence from people is thin: as of 2026-10-09, 0 conversations and 1 usability test, with one person outside the team on the LP side. Sections 2 and 3 say what they'll record, and nothing in them gets filled from memory or by estimate.
 
 ## 1. Test evidence, today
 
@@ -38,7 +38,7 @@ Limits that come with these numbers:
 - On DevNet one backend client acts for every demo party, and in the run in which each party signs with its own key, one login submitted for every party. So DevNet shows party-scoped reads and real settlement, and LP-from-LP credential separation is shown on LocalNet only, with a login per party and with keys held by each party.
 - In the run in which each party signs with its own key, all five keys sat on the machine that ran the script, so it shows the ledger needs each party's signature. It doesn't show that separate people held the keys. The live site still signs for its demo seats through the backend client.
 - The read-back step's own DevNet client can only read as the fund, and the live site has read back on it since about 13:00 UTC on 2026-10-07. In the run in which each party signs with its own key, the read-back used the login that submitted for every party. The read-back step runs in the same process as the submitter, in the scripts and the app.
-- Every sign-in run but the newest used the team's personal HackCanton login as the LP. The newest, web-hackcanton-20261008221025 on 2026-10-08, signed in with xidoncapitals-t1, a second HackCanton login NODERS created for the team, whose party is not the team's personal party. The team ran it too, so the LP's login and party were separate from the team's personal ones but the people were not, and no outside LP has used DRAW. In the newest runs nothing the server held could act for the LP's party. They show the LP's reads, acceptance and payment coming from its browser with its own token, and a second person signing in is still to show. NODERS also created a login for judges, which goes in the submission form only.
+- Every sign-in run but the newest used the team's personal HackCanton login as the LP. The newest, web-hackcanton-20261008221025 on 2026-10-08, signed in with xidoncapitals-t1, a second HackCanton login NODERS created for the team, whose party is not the team's personal party. The team ran it too, so the LP's login and party were separate from the team's personal ones but the people were not. On 2026-10-09 one person outside the team took the LP seat once, with a login NODERS created for the team, while the team ran the fund side. In the newest runs nothing the server held could act for the LP's party. They show the LP's reads, acceptance and payment coming from its browser with its own token, and a second person with a login of their own is still to show. NODERS also created a login for judges, which goes in the submission form only.
 - The timing figures are not production latency. They come from one run each.
 - Campaign cases call at most three LPs. Expired allocations and mid-payment network failures weren't generated.
 - Traffic cost per transaction on DevNet or MainNet hasn't been measured.
@@ -47,7 +47,7 @@ Limits that come with these numbers:
 
 Goal: 3 to 5 conversations, 20 minutes each, with fund COOs or operations leads at emerging managers, fund administrators, or LPs who pay into calls. The questions in [What the interviews will test](icp.md#what-the-interviews-will-test) in icp.md ask about the last real call, and the demo waits until the end.
 
-Status on 2026-10-07: 0 held.
+Status on 2026-10-09: 0 held.
 
 ### What we record for each conversation
 
@@ -69,7 +69,7 @@ Status on 2026-10-07: 0 held.
 
 ### Results
 
-No results yet as of 2026-10-07. Once conversations happen, the results table will record:
+No results yet as of 2026-10-09. Once conversations happen, the results table will record:
 
 - messages sent, replies, calls booked and calls held
 - the roles spoken with
@@ -99,14 +99,20 @@ What we measure for each task: completed without help, completed with a hint, or
 
 ### Results
 
-No results yet as of 2026-10-07. Once tests happen, the results table will record:
+One test so far, and it covered the LP's side, not the five fund-manager tasks above.
 
-- the number of people tested
-- how many completed all five tasks without help
-- the median time for each of the five tasks
-- the median ease rating for each task
-- the top three points of confusion
-- what we changed because of them
+| | |
+|---|---|
+| When | 2026-10-09, on https://drawcalls.xyz, DevNet |
+| Who | One person outside the team, another participant on the AppsFactory hackathon platform who isn't submitting or working on DRAW. Named by role only, with her permission |
+| What she did | Joined a demo fund, signed in with HackCanton as xidoncapitals-t1, a login NODERS created for the team, joined as an LP, accepted her commitment, paid 4 CC from that login's Canton wallet, and saw her notice turn verified funded. She followed a written guide on her own computer. The team ran the fund manager's side from a script |
+| Completed | All of the LP's steps, with no hint during the steps |
+| Ease, in her words | "Somewhat easy". She gave a word, not a 1 to 7 number |
+| Where she was confused | "I initially entered the LP A demo seat instead of signing in" |
+| What we'd change | The seat screen shows the demo seats before "Sign in with HackCanton", so someone with a login can take a demo seat by mistake. Not changed yet |
+| Record | The fund manager's side, script-written: [web-outside-lp-20261009T150720Z](../../../evidence/devnet/browser/web-outside-lp-20261009T150720Z/steps.json). The LP's side, from her screenshots and our notes: that run's [NOTE.md](../../../evidence/devnet/browser/web-outside-lp-20261009T150720Z/NOTE.md) |
+
+Times per step aren't in the table, because most of the time between steps was the two of us waiting on each other in a chat, not the app. One person is one data point, and the 2 to 3 tests above are still the goal.
 
 ## 4. Metrics a pilot would track
 
